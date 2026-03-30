@@ -92,22 +92,22 @@ Status: Completed
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
   **组件名称**                              **语言/平台**   **功能定位**                            **引入方式**    **GitHub**
   ----------------------------------------- --------------- --------------------------------------- --------------- ---------------------------------------------------
-  opentelemetry-python-contrib              Python          自动插桩                                pip install     open-telemetry/opentelemetry-python-contrib
+  opentelemetry-python-contrib              Python          自动插桩                                源码引用        open-telemetry/opentelemetry-python-contrib
                                                             openai/anthropic/LangChain/LlamaIndex                   
                                                             等主流框架                                              
 
-  openllmetry (traceloop)                   Python / JS     专为 LLM/Agent 场景设计的 OTel          pip install     traceloop/openllmetry
-                                                            语义扩展，覆盖 prompt/response/token    traceloop-sdk   
+  openllmetry (traceloop)                   Python / JS     专为 LLM/Agent 场景设计的 OTel          源码引用        traceloop/openllmetry
+                                                            语义扩展，覆盖 prompt/response/token
                                                             完整采集                                                
 
-  opentelemetry-instrumentation-openai-v2   Python          捕获 OpenAI SDK 的完整                  pip install     open-telemetry/opentelemetry-python-contrib
+  opentelemetry-instrumentation-openai-v2   Python          捕获 OpenAI SDK 的完整                  源码引用        open-telemetry/opentelemetry-python-contrib
                                                             messages/model/temperature 并写入 span                  
                                                             attributes                                              
 
-  opentelemetry-javaagent.jar               Java / JVM      字节码插桩，覆盖 HTTP Client / JDBC /   javaagent       open-telemetry/opentelemetry-java-instrumentation
-                                                            Kafka / gRPC / Spring Web 等 100+ 框架  启动参数        
+  opentelemetry-javaagent.jar               Java / JVM      字节码插桩，覆盖 HTTP Client / JDBC /   源码引用        open-telemetry/opentelemetry-java-instrumentation
+                                                            Kafka / gRPC / Spring Web 等 100+ 框架  (本地构建 jar)
 
-  opentelemetry-sdk (Go)                    Go              代理服务自身的 trace 上报               go mod          open-telemetry/opentelemetry-go
+  opentelemetry-sdk (Go)                    Go              代理服务自身的 trace 上报               源码引用        open-telemetry/opentelemetry-go
   ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 **2.2 数据管道组件**
@@ -213,9 +213,9 @@ Status: Completed
 +-----------------------------------------------------------------------+
 | **Python 接入方式（修改启动命令，业务代码零改动）**                   |
 |                                                                       |
-| \# 1. 安装依赖                                                        |
+| \# 1. 引用源码依赖（third_party 目录下已包含源码）                    |
 |                                                                       |
-| pip install traceloop-sdk opentelemetry-instrumentation-openai-v2     |
+| pip install -e third_party/openllmetry third_party/opentelemetry-python-contrib/instrumentation/opentelemetry-instrumentation-openai |
 |                                                                       |
 | \# 2. 修改启动命令（在原命令前添加 opentelemetry-instrument 前缀）    |
 |                                                                       |
