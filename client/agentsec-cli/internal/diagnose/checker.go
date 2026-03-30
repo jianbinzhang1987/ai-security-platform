@@ -1,0 +1,4 @@
+package diagnose
+
+func RunAllChecks() {
+}
