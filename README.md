@@ -60,11 +60,11 @@ graph TD
 ```text
 .
 ├── client/                     # 客户端采集组件
-│   ├── agentsec-cli/           # Go 语言实现的管理 CLI
-│   └── agentsec-python-sdk/    # Python SDK 插桩组件
+├── agentsec-cli/           # Go 语言实现的管理 CLI
+├── agentsec-python-sdk/    # Python SDK 插桩组件
 ├── server/                     # 服务端组件
-│   ├── RuoYi/                  # Spring Boot 后端 (管理 API & 规则引擎)
-│   └── RuoYi-Vue3/             # Vue 3 前端 (管理后台界面)
+├── RuoYi/                  # Spring Boot 后端 (管理 API & 规则引擎)
+├── RuoYi-Vue3/             # Vue 3 前端 (管理后台界面)
 ├── third_party/                # 第三方引用或固定版本依赖
 ├── 设计文档/                   # 详细架构与 PRD 文档
 └── AGENTS.md                   # 详细的开发说明书与贡献指南
