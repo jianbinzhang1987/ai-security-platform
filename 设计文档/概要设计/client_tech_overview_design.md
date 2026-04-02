@@ -1,10 +1,17 @@
 # AI Agent 安全监控平台 — 客户端技术概要设计文档
+<!-- test sync -->
 
-**文档编号**：AGENTSEC-TECH-CLIENT-OVR-v1.0  
-**版本**：v1.0  
-**日期**：2026-03  
-**状态**：评审中  
+**文档编号**：AGENTSEC-TECH-CLIENT-OVR-v1.1
+**版本**：v1.1
+**日期**：2026-03
+**状态**：评审中
 **关联文档**：架构设计文档 v1.0 / 客户端 PRD v1.0
+
+**变更记录**：
+| 版本 | 日期 | 变更说明 |
+|------|------|----------|
+| v1.0 | 2026-03 | 初稿 |
+| v1.1 | 2026-03 | 注册激活流程改为机器指纹自动注册，移除 enroll-key 依赖（适配纯内网部署场景） |
 
 ---
 
@@ -21,7 +28,266 @@
 
 ---
 
-## 2. 技术语言选型
+## 2. 业务流程与核心功能
+
+### 2.1 核心业务场景
+
+客户端覆盖以下三类核心业务场景：
+
+| # | 场景 | 典型触发 | 客户端行为 |
+|---|------|----------|------------|
+| 1 | **LLM 调用监控** | Agent 调用 OpenAI / Anthropic / 本地模型 | 自动捕获 prompt / response / token 用量，进行端侧脱敏、密钥扫描与注入拦截 |
+| 2 | **工具调用监控** | Agent 调用 MCP 工具 / 外部 HTTP API / DB | 捕获工具名、入参、出参，检查白名单与危险参数 |
+| 3 | **算力配额管控** | Token 消耗接近或达到预算上限 | 实时熔断非预期的高额调用 |
+| 4 | **实时阻断响应** | 管理端下发阻断指令 | BlockCheckProcessor 拦截下一次 LLM 调用，返回安全回复 |
+
+### 2.2 全业务生命周期流程图
+
+本节描述从 SDK 安装到安全检测上报的**完整生命周期**，分为五个阶段。
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段一：安装（Install）                                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Python:  pip install agentsec-sdk                                          │
+│  Java:    下载 agentsec-javaagent.jar，配置 JVM 启动参数                     │
+│  CLI:     curl 下载 agentsec-cli 二进制 / brew / apt 安装                   │
+│                                                                             │
+│  安装完成 ──► 进入阶段二                                                     │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段二：注册 & 激活（Register & Activate）                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  【内网零配置自动注册模式】                                                  │
+│                                                                             │
+│  1. SDK / CLI 启动时自动采集机器指纹                                        │
+│       fingerprint = { hostname, machine_id, os, arch, ip, sdk_version }     │
+│       │                                                                     │
+│       ▼                                                                     │
+│  2. POST /api/v1/agents/auto-register  （无需 enroll-key）                   │
+│       Body: { fingerprint }                                                 │
+│       │                                                                     │
+│       ▼                                                                     │
+│  3. 管理端自动审批 → 返回 agent_token                                       │
+│       │                                                                     │
+│       ├──► token 写入本地缓存 ~/.agentsec/agent.token                       │
+│       │                                                                     │
+│       ▼                                                                     │
+│  4. 后续启动直接读取缓存 token，跳过注册步骤                                │
+│                                                                             │
+│  注：若设置了 AGENTSEC_TOKEN 环境变量，直接使用，跳过自动注册               │
+│                                                                             │
+│  注册完成 ──► 进入阶段三                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段三：部署 & 初始化（Deploy & Init）                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Agent 进程启动                                                              │
+│       │                                                                     │
+│       ├──► [Init-1] 插桩注册                                                 │
+│       │       instrument_openai() / instrument_anthropic() / instrument_mcp()│
+│       │       openllmetry TracerProvider 注入全局                            │
+│       │                                                                     │
+│       ├──► [Init-2] Processor Pipeline 挂载                                 │
+│       │       PIIRedactor → SecurityTagger → BlockChecker → SamplingProcessor│
+│       │                                                                     │
+│       ├──► [Init-3] Exporter 初始化                                          │
+│       │       OTLPExporter(collector_url) → RetryExporter → LocalBuffer     │
+│       │       建立 OTLP gRPC 连接（TLS），握手成功则 ready                   │
+│       │                                                                     │
+│       ├──► [Init-4] 后台服务启动（daemon 线程）                              │
+│       │       ConfigManager.start()   — 拉取初始配置                        │
+│       │       HeartbeatService.start() — 30s 心跳                           │
+│       │       LocalApiServer.start()  — :13133 健康端点                     │
+│       │                                                                     │
+│       └──► [Init-5] SDK 自注册上报                                           │
+│               POST /v1/agents/register                                      │
+│               Body: { tenant_id, app_id, agent_token, sdk_version, pid }    │
+│               管理端标记该 Agent 实例为「在线」                               │
+│                                                                             │
+│  初始化完成 ──► 进入阶段四                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段四：运行时检测（Runtime Detection）                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  用户输入 ──► Agent 主循环                                                   │
+│                    │                                                        │
+│       ┌────────────▼────────────┐                                           │
+│       │  LLM / 工具调用触发      │                                           │
+│       │  自动插桩开启 Span        │                                           │
+│       └────────────┬────────────┘                                           │
+│                    │                                                        │
+│       ┌────────────▼────────────┐   命中阻断/配额？                          │
+│       │  SecurityGateProcessor  │──── 是 ──► 抛 AgentSecBlockException      │
+│       │  [Block + RateLimit]    │           业务层返回安全回复/429           │
+│       └────────────┬────────────┘                                           │
+│                    │ 未命中，放行                                             │
+│       ┌────────────▼────────────┐                                           │
+│       │  LocalSecurityScanner   │  1. LLM Guard (注入检测)                  │
+│       │  [Injection + Secret]   │  2. detect-secrets (凭证扫描)             │
+│       └────────────┬────────────┘                                           │
+│                    │                                                        │
+│       ┌────────────▼────────────┐                                           │
+│       │  PIIRedactor            │  调用 Microsoft Presidio 本地清洗隐私数据  │
+│       │  (本地脱敏引擎)         │  手机号/身份证/APIKey/银行卡/Email          │
+│       └────────────┬────────────┘                                           │
+│                    │                                                        │
+│       ┌────────────▼────────────┐                                           │
+│       │  Enricher & Tagger      │  注入 security.risk.level / tag           │
+│       │  注入多租户标识          │  注入 tenant_id / app_id / session_id     │
+│       └────────────┬────────────┘                                           │
+│                    │                                                        │
+│       ┌────────────▼────────────┐   被采样丢弃？                             │
+│       │  SamplingProcessor      │──── 是 ──► span 丢弃，不上报              │
+│       │  按配置采样率决策        │                                           │
+│       └────────────┬────────────┘                                           │
+│                    │ 保留上报                                                │
+│       ┌────────────▼────────────┐                                           │
+│       │  LLM 调用实际执行        │  SDK 等待 LLM 响应（业务主路径）           │
+│       │  response 写回 Span      │  response/completion 同步写入 span        │
+│       └────────────┬────────────┘                                           │
+│                    │                                                        │
+│                    ▼  span.end()                                             │
+│             进入阶段五：上报                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  阶段五：上报 & 反馈闭环（Export & Feedback Loop）                           │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  span.end() 触发                                                            │
+│       │                                                                     │
+│       ▼                                                                     │
+│  BatchSpanExporter 缓冲区（批量聚合，默认 512 span 或 5s 到期）               │
+│       │                                                                     │
+│       ├──► 网络正常 ──► OTLP gRPC (TLS) ──► OTel Collector (:4317)
+│       │                   重试策略：失败最多 5 次，指数退避 1→16s
+│       │
+│       │       ├──► 本地审计溯源 ──► File Exporter ──► /var/log/agentsec/compliance.log
+│       │
+│       │                                    ▼
+│       │                              Kafka Topic                            │
+│       │                                    │                                │
+│       │                    ┌───────────────┼───────────────┐                │
+│       │                    ▼               ▼               ▼                │
+│       │             安全检测引擎      行为分析引擎      PII 二次审计           │
+│       │          (Prompt Injection)  (异常调用链)    (服务端脱敏复核)         │
+│       │                    │               │               │                │
+│       │                    └───────────────┼───────────────┘                │
+│       │                                    ▼                                │
+│       │                         ClickHouse / PostgreSQL                     │
+│       │                                    │                                │
+│       │                          风险等级 ≥ high？                           │
+│       │                          是 ──► 告警引擎                             │
+│       │                                    │                                │
+│       │                    ┌───────────────┼──────────────────┐             │
+│       │                    ▼               ▼                  ▼             │
+│       │             邮件/钉钉告警    Dashboard 标注         阻断指令生成      │
+│       │                                                        │             │
+│       │                                    WebSocket 推送      │             │
+│       │                                    ◄───────────────────┘             │
+│       │                                    │                                │
+│       │                              SDK BlockCheckProcessor                │
+│       │                              更新本地阻断列表（TTL 1h）              │
+│       │                              下次 LLM 调用前命中 → 阻断              │
+│       │                                                                     │
+│       └──► 网络中断 ──► LocalSpanBuffer（环形队列，上限 10,000 span）        │
+│                          网络恢复后自动重传                                   │
+│                                                                             │
+│  ◄─────────────────── 持续运行，回到阶段四 ────────────────────────────────  │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 2.3 阶段状态转换一览
+
+| 阶段 | 前置条件 | 完成标志 | 异常处理 |
+|------|----------|----------|----------|
+| 安装 | 网络可达 PyPI / CDN | 依赖安装无报错 | 私有源镜像兜底 |
+| 注册 | 管理端服务可达（内网） | 收到 agent_token 并写入本地缓存 | 注册失败 → Fail-Open，SDK 降级为旁路模式；token 缓存命中则跳过注册 |
+| 激活 | config.yaml 存在且 token 有效 | bootstrap.init() 无异常 | Fail-Open，SDK 降级为旁路模式 |
+| 部署初始化 | Collector 网络可达 | gRPC 握手成功 + 自注册响应 200 | Collector 不可达 → LocalBuffer 兜底，异步重连 |
+| 运行时检测 | SDK 已激活 | 持续拦截 LLM/工具调用 | 插桩异常隔离，不影响业务调用 |
+| 上报反馈 | Span 数据完整 | Collector 返回 200 | 重试 5 次后仍失败 → 写入 LocalBuffer |
+
+### 2.4 主要功能清单
+
+#### F1 — LLM 调用自动插桩
+- 零代码修改接入：通过 openllmetry 自动插桩 OpenAI SDK / Anthropic SDK / LangChain / LlamaIndex / CrewAI
+- Java 端通过 JavaAgent 字节码织入，覆盖 HTTP 客户端 + 自定义 LLM 调用框架
+- 捕获字段：`gen_ai.prompt`、`gen_ai.completion`、`gen_ai.model`、`gen_ai.usage.prompt_tokens`、`gen_ai.usage.completion_tokens`
+
+#### F2 — 本地 PII 与密钥脱敏 (DLP)
+- 在 span 离开进程前执行，数据**不出境**即完成脱敏与扫描
+- 核心引擎：Microsoft Presidio (PII) + detect-secrets (Secrets)
+- 支持 hash 模式（SHA256）和掩码模式（`***`），可按字段配置
+- 提供审计模式：发现敏感信息但不脱敏，仅在 span 中打标，用于内部合规审计
+
+#### F11 — 算力配额与速率熔断
+- 实时统计端侧 Token 消耗，支持配置日/时配额
+- 超限即阻断，防止 Agent 故障演变为高额账单风险
+
+#### F12 — 本地合规审计日志
+- 根据合规需求，将所有「拦截动作」与「脱敏操作」本地落盘留档
+- JSON 滚动日志，支持加密存储与外部日志采集器（Fluentd/Filebeat）挂载
+
+#### F3 — 安全标签注入
+- 为每个 LLM / 工具调用 span 注入 `security.risk.level`（none / low / medium / high / critical）
+- 客户端仅做初步标注（基于简单规则），深度检测由服务端安全引擎完成
+- 注入 `agentsec.tenant_id`、`agentsec.app_id`、`agentsec.session_id` 多租户隔离标识
+
+#### F4 — 动态采样控制
+- 默认采样率 100%，支持管理端下发采样率配置
+- 采样率变更通过 WebSocket 推送，**5 秒内生效**（无需重启 Agent）
+- 支持按 `security.risk.level` 差异化采样（高风险全量采集，低风险按比例采集）
+
+#### F5 — 异步批量导出 & 本地缓冲
+- `BatchSpanExporter` 异步批量发送，额外延迟 < 5ms (P99)，不阻塞 LLM 调用
+- 网络中断时切换至 `LocalSpanBuffer`（内存环形队列，上限 10,000 span）
+- `RetryExporter` 最多重试 5 次（指数退避：1s / 2s / 4s / 8s / 16s），恢复后自动重传缓冲 span
+
+#### F6 — 配置热更新
+- `ConfigManager` 每 30 秒轮询管理端配置 API（`ETag` / `304 Not Modified` 优化）
+- 原子替换内存配置对象（`threading.Lock`），变更实时通知各 Processor
+- 管理的配置项：采样率、PII 脱敏开关、阻断模式、span 内容截断长度
+
+#### F7 — 心跳与连通性检测
+- `HeartbeatSvc` 每 30 秒向管理端上报 SDK 存活状态
+- 上报内容：SDK 版本、运行时语言/版本、Collector 连通性、缓冲队列水位
+- 管理端据此判断 Agent 是否离线并触发断连告警
+
+#### F8 — 本地健康 API
+- 内嵌轻量 HTTP 服务监听 `localhost:13133`
+- `/agentsec/health` — K8s 存活/就绪探针可直接对接
+- `/agentsec/metrics` — Prometheus 格式指标（span 上报量、导出延迟 P99、缓冲队列水位、错误率）
+- `/agentsec/traces` — 查询本地缓冲中最近 N 条 span（调试用）
+
+#### F9 — 实时阻断响应
+- 管理端检测到高风险事件后，通过 WebSocket 长连接向 SDK 推送 `BlockCommand`
+- `BlockCheckProcessor` 在**每次 LLM 调用前**检查阻断列表（Redis key: `block:{session_id}`）
+- 命中阻断 → 抛出 `AgentSecBlockException` → 业务层捕获 → 返回配置的安全回复文案
+- 阻断指令带 TTL（默认 1 小时），自动过期
+
+#### F10 — CLI 诊断工具
+- `agentsec register` — 手动触发机器指纹采集与自动注册（首次部署或 token 失效时使用）
+- `agentsec verify` — 发送测试 span，端到端验证 SDK → Collector → 管理端链路
+- `agentsec diagnose` — 本地环境诊断（网络连通性、Token 有效性、配置合法性）
+- `agentsec status` — 查看当前 SDK 运行状态（调用本地 Health API）
+- `agentsec traces` — 查看最近上报的 span 列表
+
+---
+
+## 3. 技术语言选型
 
 ### 2.1 选型原则
 
@@ -164,13 +430,15 @@ agentsec-python-sdk/
 │   │   └── mcp_client.py         # MCP 工具调用插桩（自研）
 │   ├── processors/
 │   │   ├── __init__.py
-│   │   ├── pii_redactor.py       # PII 脱敏 SpanProcessor
-│   │   ├── security_tagger.py    # 安全标签注入 SpanProcessor
-│   │   ├── sampling_processor.py # 采样决策 SpanProcessor
-│   │   └── block_checker.py      # 阻断指令检查（WebSocket 接收阻断信号）
+│   │   ├── injection_guard.py    # Prompt 注入拦截 SpanProcessor
+│   │   ├── pii_redactor.py       # 基于 Presidio 的 PII 脱敏 SpanProcessor
+│   │   ├── secret_scanner.py     # 基于 detect-secrets 的凭证扫描 SpanProcessor
+│   │   ├── rate_limiter.py       # Token 配额与速率限制 SpanProcessor
+│   │   └── security_tagger.py    # 安全标签注入 SpanProcessor
 │   ├── exporters/
 │   │   ├── __init__.py
 │   │   ├── otlp_exporter.py      # OTLP gRPC/HTTP 导出器封装
+│   │   ├── local_file_exporter.py # 合规审计日志落盘导出器
 │   │   ├── local_buffer.py       # 内存环形队列（10000 span）
 │   │   └── retry_exporter.py     # 断线重连 + 指数退避
 │   ├── heartbeat/
@@ -245,6 +513,7 @@ agentsec-java-agent/
 agentsec-cli/
 ├── cmd/
 │   ├── root.go                   # 根命令（cobra）
+│   ├── register.go               # agentsec-cli register（机器指纹采集 & 自动注册）
 │   ├── verify.go                 # agentsec-cli verify
 │   ├── diagnose.go               # agentsec-cli diagnose
 │   ├── status.go                 # agentsec-cli status
@@ -252,11 +521,13 @@ agentsec-cli/
 │   └── traces.go                 # agentsec-cli traces list|get
 ├── internal/
 │   ├── auth/
-│   │   └── token.go              # Token 读取与验证
+│   │   └── token.go              # Token 读取、缓存（~/.agentsec/agent.token）与验证
+│   ├── registration/
+│   │   └── fingerprint.go        # 机器指纹采集（hostname/machine-id/OS/arch/IP）
 │   ├── collector/
 │   │   └── client.go             # OTLP gRPC 客户端（发送测试 span）
 │   ├── api/
-│   │   └── platform_client.go    # 平台 REST API 客户端（verify 回调）
+│   │   └── platform_client.go    # 平台 REST API 客户端（register / verify 回调）
 │   ├── diagnose/
 │   │   └── checker.go            # 诊断检查（环境变量/网络/TLS/Token）
 │   └── output/

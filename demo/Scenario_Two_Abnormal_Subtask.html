@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中孚信息 | AI安全战略演练 - 行为管控</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&family=Work+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-red: #B71C1C;
+            --deep-red: #8B0000;
+            --gold: #C5A059;
+            --paper: #FDFDFB;
+            --ink: #121212;
+            --slate: #4A4A4A;
+            --transition-main: 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0A0A0A;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Work Sans', 'Microsoft YaHei', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .slide-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-height: 100vh;
+            max-width: 177.78vh;
+            background: var(--paper);
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            overflow: hidden;
+            color: var(--ink);
+        }
+
+        .slide-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .slide-meta {
+            position: absolute;
+            top: 50px;
+            left: 70px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 60;
+            opacity: 0.6;
+        }
+
+        .meta-logo {
+            width: 20px; height: 20px; background: var(--primary-red);
+        }
+
+        .meta-text {
+            font-size: 11px;
+            letter-spacing: 0.3em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .page-num {
+            position: absolute;
+            bottom: 50px;
+            left: 70px;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            color: var(--gold);
+            z-index: 60;
+        }
+
+        .content-main {
+            padding: 120px 60px 80px 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .title-reveal {
+            overflow: hidden;
+            margin-bottom: 50px;
+        }
+
+        .slide-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 4.2rem;
+            line-height: 1.1;
+            color: var(--deep-red);
+            transform: translateY(100%);
+            animation: slideUp var(--transition-main) forwards;
+        }
+
+        .slide-subtitle {
+            font-size: 1.6rem;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            margin-top: 15px;
+            color: var(--ink);
+            opacity: 0;
+            animation: fadeIn var(--transition-main) 0.3s forwards;
+        }
+
+        .visual-stage {
+            flex: 1;
+            position: relative;
+            opacity: 0;
+            animation: fadeIn var(--transition-main) 0.6s forwards;
+            display: flex;
+            align-items: center;
+        }
+
+        .simulation-card {
+            width: 100%;
+            background: white;
+            padding: 45px;
+            box-shadow: 40px 40px 80px rgba(0,0,0,0.03);
+            border-top: 4px solid var(--primary-red);
+            position: relative;
+        }
+
+        .task-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .task-node {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            padding: 20px;
+            background: #FAFAFA;
+            border: 1px solid #EEE;
+            position: relative;
+            transition: all 0.6s;
+        }
+
+        .node-index {
+            width: 30px; height: 30px; border: 1px solid #DDD; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px;
+        }
+
+        .task-node.danger {
+            background: rgba(183, 28, 28, 0.03);
+            border-color: var(--primary-red);
+            animation: alertPulse 2s infinite;
+        }
+
+        .task-node.danger .node-index {
+            background: var(--primary-red); color: white; border-color: var(--primary-red);
+        }
+
+        .node-status {
+            margin-left: auto;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .node-content {
+            font-size: 16px; color: var(--slate); font-weight: 400;
+        }
+
+        .content-sidebar {
+            background: white;
+            padding: 100px 60px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #EEE;
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeIn var(--transition-main) 0.9s forwards;
+        }
+
+        .sidebar-header {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 13px;
+            color: var(--gold);
+            letter-spacing: 0.4em;
+            margin-bottom: 40px;
+            display: flex; align-items: center; gap: 15px;
+        }
+
+        .sidebar-header::after {
+            content: ""; height: 1px; flex: 1; background: var(--gold); opacity: 0.2;
+        }
+
+        .insight-text {
+            font-size: 18px;
+            line-height: 2;
+            color: var(--slate);
+            font-weight: 300;
+            letter-spacing: 0.04em;
+            text-align: justify;
+        }
+
+        .metric-block {
+            margin-top: auto;
+            padding-top: 40px;
+            border-top: 1px solid #EEE;
+        }
+
+        .metric-head {
+            font-size: 11px; letter-spacing: 0.2em; color: var(--primary-red); font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+        }
+
+        .dot { width: 6px; height: 6px; background: var(--primary-red); border-radius: 50%; }
+
+        .metric-text { font-size: 14px; color: var(--slate); font-weight: 300; }
+
+        .deck-nav {
+            position: absolute;
+            bottom: 50px;
+            right: 50px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+
+        .deck-btn {
+            width: 54px; height: 54px;
+            border: 1px solid #EEE;
+            background: white;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.4s;
+            color: var(--ink);
+            text-decoration: none;
+        }
+
+        .deck-btn:hover {
+            background: var(--ink); color: white; border-color: var(--ink);
+            transform: translateY(-5px);
+        }
+
+        .fs-toggle {
+            background: transparent; border: none; font-size: 10px; color: #BBB; letter-spacing: 0.2em; cursor: pointer;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes alertPulse {
+            0% { background: rgba(183, 28, 28, 0.03); }
+            50% { background: rgba(183, 28, 28, 0.1); }
+            100% { background: rgba(183, 28, 28, 0.03); }
+        }
+
+        .impact-flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary-red); z-index: 1000; opacity: 0; pointer-events: none;
+        }
+
+        .flash-active { animation: flashImpact 0.5s ease-out; }
+
+        @keyframes flashImpact {
+            0% { opacity: 0; }
+            20% { opacity: 0.4; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slide-container" id="slide">
+        <div class="impact-flash" id="flash"></div>
+
+        <div class="slide-meta">
+            <div class="meta-logo"></div>
+            <div class="meta-text">ZHONGFU AGENTSEC STRATEGY 2026</div>
+        </div>
+
+        <div class="page-num">SLIDE 02</div>
+
+        <main class="content-main">
+            <div class="title-reveal">
+                <h1 class="slide-title">行为逻辑动态监管</h1>
+            </div>
+            <p class="slide-subtitle">复杂任务链条下的“隐性越权”主动阻断</p>
+
+            <div class="visual-stage">
+                <div class="simulation-card">
+                    <div style="font-size: 13px; color: var(--slate); margin-bottom: 25px; letter-spacing: 0.05em;">正在监控智能体子任务链：生成“各事业部年度经营效能对标报告”</div>
+                    <div class="task-grid">
+                        <div class="task-node">
+                            <div class="node-index">01</div>
+                            <div class="node-content">子任务 1：从公开渠道获取行业对标中位数数据</div>
+                            <div class="node-status" style="color: #2E7D32;">✓ 已完成</div>
+                        </div>
+                        <div class="task-node danger">
+                            <div class="node-index">02</div>
+                            <div class="node-content">子任务 2：通过插件接口尝试调用各事业部年度财务结算表</div>
+                            <div class="node-status" style="color: var(--primary-red);">✕ 已拦截</div>
+                        </div>
+                        <div class="task-node" style="opacity: 0.4;">
+                            <div class="node-index">03</div>
+                            <div class="node-content">子任务 3：比对检索数据并生成年度效能对标矩阵</div>
+                            <div class="node-status">待挂起</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="content-sidebar">
+            <div class="sidebar-header">AUTONOMOUS BEHAVIOR AUDIT</div>
+            <article class="insight-text">
+                当智能体具备分解复杂任务的能力时，安全风险将从“静态指令”转向“动态逻辑”。中孚信息 AgentSec 引擎实时追踪智能体每一跳（Hop）的执行意图。通过多级逻辑探针，我们在异常子任务执行前精准识别其“隐性越权”企图，实现端到端的闭环管控。
+            </article>
+
+            <div class="metric-block">
+                <div class="metric-head"><span class="dot"></span>STRATEGIC RESPONSE ACTIVE</div>
+                <p class="metric-text">检测到异常行为深度：Level 5 (API Abuse Prevention)</p>
+            </div>
+        </aside>
+
+        <nav class="deck-nav">
+            <button class="fs-toggle" onclick="toggleFS()">FULLSCREEN</button>
+            <a href="Scenario_One_Unauthorized_Access.html" class="deck-btn">←</a>
+            <a href="#" class="deck-btn" style="opacity: 0.2; pointer-events: none;">→</a>
+        </nav>
+    </div>
+
+    <script>
+        function toggleFS() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+            }
+        }
+
+        // 触发阻断瞬间的视觉反馈
+        setTimeout(() => {
+            const flash = document.getElementById('flash');
+            flash.classList.add('flash-active');
+        }, 1200);
+    </script>
+</body>
+</html>

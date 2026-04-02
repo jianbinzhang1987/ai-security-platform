@@ -25,7 +25,9 @@ AgentSecSDK.init() 调用栈：
 
 1. _load_config_from_env()
    - 读取 AGENTSEC_TOKEN、AGENTSEC_COLLECTOR
-   - 缺失必填项 → 打印警告日志，返回 NoopSDK（空操作 SDK）
+   - 检查本地 Token 缓存（路径：$HOME/.agentsec/agent.token 或 /tmp/agentsec.token）
+   - 若本地缓存存在且有效，将其赋值给 AGENTSEC_TOKEN
+   - Token 和本地缓存均无 → 进入自动注册流程（见步骤5）
    - 不抛出异常，不影响业务启动
 
 2. _validate_token()
@@ -49,7 +51,13 @@ AgentSecSDK.init() 调用栈：
    - BlockWatcher.start()：启动 WebSocket 阻断指令监听
 
 5. _register_with_platform()（异步，不阻塞）
-   - 向管理端发送 agent.connected 事件
+   - 情况 A：已有 AGENTSEC_TOKEN（来自环境变量或本地缓存）
+     - 向管理端发送 agent.connected 事件（含版本、状态信息）
+   - 情况 B：无 TOKEN（内网自动注册）
+     - 采集机器指纹：`{"hostname": "node-1", "os": "linux", "arch": "amd64", "machine_id": "uuid-xxxx", "ip": "10.0.0.1"}`
+     - 调用 `POST /api/v1/agents/auto-register`（无需 Authorization header）
+     - 成功：管理端自动审批，返回 Agent Token，存入本地缓存，激活采集链路
+     - 失败：记录错误日志，本次生命周期保持 Noop 状态（Fail-Open）
    - 失败不影响 SDK 启动
 ```
 
@@ -860,6 +868,63 @@ Response 200（未收到）：
 }
 ```
 
+#### 7.1.4 Agent 自动注册接口
+
+内网部署场景下无需 Authorization header，管理端自动审批。
+
+```http
+POST /api/v1/agents/auto-register
+Content-Type: application/json
+
+Body：
+{
+    "hostname": "node-1",
+    "os": "linux",
+    "arch": "amd64",
+    "machine_id": "uuid-xxxx",
+    "ips": ["192.168.1.100"],
+    "agent_version": "1.0.0"
+}
+
+Response 200（注册成功）：
+{
+    "status": "success",
+    "agent_id": "agent-xxxxx",
+    "tenant_id": "tenant-yyyyy",
+    "token": "jwt_token_string",
+    "expires_at": "2027-03-01T00:00:00Z"
+}
+
+Response 503：管理端暂时不可达，SDK 进入 Noop 模式并定期重试
+```
+
+#### 7.1.5 阻断指令推送通道 (WebSocket)
+
+```http
+WSS /ws/block
+Authorization: Bearer {agent_token}
+
+Client <- Server (实时推送指令)：
+{
+    "command_id": "cmd-12345",
+    "session_id": "session-abcde",
+    "reason": "检测到高危提示词注入",
+    "action": "block",
+    "ttl_seconds": 3600,
+    "issued_at": "2026-03-01T12:05:00Z"
+}
+```
+
+#### 7.1.6 追踪数据上报接口 (OTLP)
+
+```http
+POST /v1/traces  (OTLP/HTTP)
+或者 OTLP/gRPC
+Authorization: Bearer {agent_token}
+
+数据内容：标准的 OpenTelemetry Span 格式，携带客户端相关属性供服务端分析与检测。
+```
+
 ### 7.2 本地 API 规范
 
 ```
@@ -892,6 +957,177 @@ Response：
     "in_sync": true
 }
 ```
+
+---
+
+## 7.3 接口汇总清单
+
+### 7.3.1 SDK 与管理端接口汇总
+
+| # | 接口名称 | 方法 | 路径 | 认证方式 | 调用方 | 所属模块 |
+|---|----------|------|------|----------|--------|----------|
+| 1 | 追踪数据上报 | POST (OTLP/HTTP 或 gRPC) | `/v1/traces` | Bearer {agent_token} | SDK Exporter | C-M2 |
+| 2 | 配置拉取 | GET | `/internal/sdk-config` | Bearer {agent_token} | ConfigManager | C-M2/C-M3 |
+| 3 | 心跳上报 | POST | `/internal/heartbeat` | Bearer {agent_token} | HeartbeatService | C-M4 |
+| 4 | Token 校验（Collector 侧调用管理端） | POST | `/internal/validate-token` | 服务间密钥 | OTel Collector | C-M1 |
+| 5 | Agent 自动注册 | POST | `/api/v1/agents/auto-register` | 无需 Header | RegistrationManager | C-M1 |
+| 6 | 接入验证（CLI verify） | GET | `/internal/verify-span` | Bearer {agent_token} | agentsec-cli | C-M1 |
+| 7 | 阻断指令推送通道 | WebSocket | `WSS /ws/block` | Bearer {agent_token} | BlockWatcher | C-M3 |
+| 8 | Agent 上线通知 | POST | `/internal/events/agent-connected` | Bearer {agent_token} | SDK 初始化 | C-M1 |
+| 9 | Agent 下线通知 | POST | `/internal/events/agent-disconnected` | Bearer {agent_token} | SDK 析构/atexit | C-M1 |
+
+### 7.3.2 本地 API 接口汇总
+
+| # | 接口名称 | 方法 | 路径 | 认证方式 | 调用方 |
+|---|----------|------|------|----------|--------|
+| 1 | 健康检查 | GET | `/agentsec/health` | 无 | 运维探针 / CLI |
+| 2 | Prometheus 指标 | GET | `/agentsec/metrics` | 无 | Prometheus / CLI |
+| 3 | Trace 列表查询 | GET | `/agentsec/traces` | Bearer {local_token} | agentsec-cli / 调试 |
+| 4 | Trace 详情查询 | GET | `/agentsec/traces/{trace_id}` | Bearer {local_token} | agentsec-cli / 调试 |
+| 5 | 配置同步状态 | GET | `/agentsec/config/status` | Bearer {local_token} | agentsec-cli / 运维 |
+| 6 | 阻断状态查询 | GET | `/agentsec/block/status` | Bearer {local_token} | agentsec-cli / 运维 |
+
+### 7.3.3 补充接口详细定义
+
+#### 7.3.3.1 Token 校验接口（Collector → 管理端内部调用）
+
+```
+POST /internal/validate-token
+Authorization: {collector_service_secret}  （服务间密钥，非 JWT）
+Content-Type: application/json
+
+Body：
+{
+    "token_hash": "sha256hex_of_agent_token"
+}
+
+Response 200（有效）：
+{
+    "valid": true,
+    "tenant_id": "tenant-yyyyy",
+    "app_id": "app-xxxxx",
+    "expires_at": "2027-03-01T00:00:00Z"
+}
+
+Response 401（无效或已吊销）：
+{
+    "valid": false,
+    "reason": "token_revoked"  // token_revoked | token_expired | token_not_found
+}
+```
+
+> 调用场景：OTel Collector 在本地缓存未命中时，向管理端发起此调用以验证 SDK 携带的 agent_token。结果缓存 60s（TTL）。Token 吊销时通过 Redis Pub/Sub 广播失效事件使缓存立即失效。
+
+#### 7.3.3.2 Agent 上线通知接口
+
+```
+POST /internal/events/agent-connected
+Authorization: Bearer {agent_token}
+Content-Type: application/json
+
+Body：
+{
+    "instance_id": "hostname-pid-uuid",
+    "sdk_version": "1.2.3",
+    "sdk_language": "python",
+    "hostname": "node-1",
+    "os": "linux",
+    "arch": "amd64",
+    "config_version": 8,
+    "connected_at": "2026-03-01T12:00:00Z"
+}
+
+Response 200：
+{
+    "status": "ok",
+    "latest_config_version": 8  // 若与本地不一致，SDK 立即触发一次配置拉取
+}
+
+Response 401：Token 无效
+```
+
+> 调用时机：SDK 初始化完成（`_register_with_platform()` 步骤 A，已有 Token 时），在后台异步发送，不阻塞业务启动。
+
+#### 7.3.3.3 Agent 下线通知接口
+
+```
+POST /internal/events/agent-disconnected
+Authorization: Bearer {agent_token}
+Content-Type: application/json
+
+Body：
+{
+    "instance_id": "hostname-pid-uuid",
+    "reason": "graceful_shutdown",  // graceful_shutdown | crash
+    "uptime_seconds": 3600,
+    "disconnected_at": "2026-03-01T13:00:00Z"
+}
+
+Response 200：{ "status": "ok" }
+```
+
+> 调用时机：通过 Python `atexit` 钩子在进程退出时触发。crash 场景下由心跳超时（管理端侧 >3 个心跳周期无响应）被动检测，SDK 侧不保证发送成功。
+
+#### 7.3.3.4 阻断状态查询接口（本地 API）
+
+```
+GET http://localhost:13133/agentsec/block/status
+Authorization: Bearer {local_token}
+
+Response 200：
+{
+    "active_blocks": [
+        {
+            "session_id": "session-abcde",
+            "reason": "检测到高危提示词注入",
+            "issued_at": "2026-03-01T12:05:00Z",
+            "expires_at": "2026-03-01T13:05:00Z",
+            "source": "websocket"  // websocket | heartbeat_poll | local_rule
+        }
+    ],
+    "block_count": 1,
+    "ws_connected": true,
+    "last_ws_message_at": "2026-03-01T12:05:01Z"
+}
+```
+
+### 7.3.4 接口错误码规范
+
+所有 SDK 与管理端接口遵循统一错误响应格式：
+
+```json
+{
+    "error": "error_code_snake_case",
+    "message": "人类可读的错误说明",
+    "request_id": "uuid"
+}
+```
+
+| HTTP 状态码 | error 字段 | 说明 | SDK 处理策略 |
+|-------------|------------|------|--------------|
+| 200 | — | 成功 | 正常处理 |
+| 304 | — | 配置无变化（仅配置拉取接口） | 保持当前配置 |
+| 400 | `invalid_request` | 请求格式错误 | 记录错误日志，不重试 |
+| 401 | `token_invalid` | Token 无效或格式错误 | 记录错误，切换 Noop 模式 |
+| 401 | `token_expired` | Token 已过期 | 触发机器指纹重新注册；失败切换 Noop |
+| 401 | `token_revoked` | Token 已被吊销 | 停止上报，切换 Noop 模式，打印告警日志 |
+| 401 | `machine_fingerprint_invalid` | 机器指纹无效或未授权 | 注册失败，切换 Noop 模式 |
+| 429 | `rate_limited` | 请求频率超限 | 指数退避重试（初始 1s，最大 60s） |
+| 500 | `internal_error` | 服务端错误 | 静默重试（遵循 RetryExporter 策略） |
+| 503 | `service_unavailable` | 服务暂时不可用 | 静默重试，本地缓冲继续积压 |
+
+### 7.3.5 接口调用频率限制
+
+| 接口 | 频率上限（每实例） | 说明 |
+|------|-------------------|------|
+| `GET /internal/sdk-config` | 2 次/分钟 | ConfigManager 默认 30s 轮询 |
+| `POST /internal/heartbeat` | 6 次/分钟 | HeartbeatService 默认 10s 间隔 |
+| `POST /internal/events/agent-connected` | 1 次/启动 | 仅初始化时调用一次 |
+| `POST /internal/events/agent-disconnected` | 1 次/退出 | 仅退出时调用一次 |
+| `GET /internal/verify-span` | 10 次/分钟 | CLI 交互场景 |
+| `POST /api/v1/agents/auto-register` | 3 次/小时 | 注册失败后退避重试 |
+| `POST /v1/traces` (OTLP) | 受采样率控制 | BatchExporter 5s/批 或 1000 spans/批 |
+| `WSS /ws/block` | 1 条长连接/实例 | 断线后指数退避重连 |
 
 ---
 

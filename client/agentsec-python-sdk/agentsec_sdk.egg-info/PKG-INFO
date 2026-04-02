@@ -1,0 +1,46 @@
+Metadata-Version: 2.4
+Name: agentsec-sdk
+Version: 0.1.0
+Summary: AI Agent Security Monitoring SDK
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: traceloop-sdk>=0.22
+Requires-Dist: opentelemetry-api>=1.20
+Requires-Dist: opentelemetry-sdk>=1.20
+Requires-Dist: opentelemetry-exporter-otlp-proto-grpc>=1.20
+Requires-Dist: opentelemetry-exporter-otlp-proto-http>=1.20
+Requires-Dist: opentelemetry-instrumentation-openai-v2>=0.22
+Requires-Dist: opentelemetry-instrumentation-requests>=0.44b0
+Requires-Dist: opentelemetry-instrumentation-httpx>=0.44b0
+Requires-Dist: pydantic>=2.0
+Requires-Dist: aiohttp>=3.9
+Requires-Dist: prometheus-client>=0.18
+Requires-Dist: httpx>=0.25
+Requires-Dist: grpcio>=1.59
+Requires-Dist: websockets>=12.0
+Requires-Dist: presidio-analyzer>=2.2
+Requires-Dist: presidio-anonymizer>=2.2
+Requires-Dist: detect-secrets>=1.5
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.23; extra == "dev"
+
+# AgentSec Python SDK
+
+AI Agent Security Monitoring Platform - Python SDK.
+
+## Installation
+
+```bash
+pip install agentsec-sdk
+```
+
+## Basic Usage
+
+```python
+import agentsec
+
+agentsec.init()
+# ... your agent code ...
+agentsec.shutdown()
+```

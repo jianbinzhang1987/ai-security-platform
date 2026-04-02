@@ -1,0 +1,57 @@
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - link "Gmail" [ref=e9] [cursor=pointer]:
+          - /url: https://mail.google.com/mail/?authuser=0&ogbl
+        - link "搜索图片" [ref=e11] [cursor=pointer]:
+          - /url: https://www.google.com/imghp?hl=zh-CN&authuser=0&ogbl
+          - text: 图片
+      - button "Google 应用" [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+      - button "Google 账号： 张建彬 (jianbin1987@gmail.com)" [ref=e19] [cursor=pointer]:
+        - img [ref=e21]
+        - img [ref=e26]
+  - img "Google" [ref=e29]
+  - search [ref=e37]:
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - button "上传文件或图片" [ref=e43] [cursor=pointer]:
+          - img [ref=e45]
+        - combobox "搜索" [active] [ref=e48]
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - button "按语音搜索" [ref=e51] [cursor=pointer]:
+              - img [ref=e52]
+            - button "按图搜索" [ref=e54] [cursor=pointer]:
+              - img [ref=e55]
+          - link "AI 模式" [ref=e57] [cursor=pointer]:
+            - generic [ref=e59]:
+              - img [ref=e61]
+              - generic [ref=e68]: AI 模式
+      - generic [ref=e70]:
+        - button "Google 搜索" [ref=e71] [cursor=pointer]
+        - button "手气不错" [ref=e72] [cursor=pointer]
+  - generic [ref=e75]:
+    - text: Google 提供：
+    - link "日本語" [ref=e76] [cursor=pointer]:
+      - /url: https://www.google.com/setprefs?sig=0_wkw-YTZou3VcGTDMr7SrXnRXaU8%3D&hl=ja&source=homepage&sa=X&ved=0ahUKEwi1gLvR782TAxWvmq8BHSm8F4YQ2ZgBCCs
+  - contentinfo [ref=e78]:
+    - generic [ref=e79]: 日本
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - link "关于 Google" [ref=e82] [cursor=pointer]:
+          - /url: https://about.google/?utm_source=google-JP&utm_medium=referral&utm_campaign=hp-footer&fg=1
+        - link "广告" [ref=e83] [cursor=pointer]:
+          - /url: https://www.google.com/intl/zh-CN_jp/ads/?subid=ww-ww-et-g-awa-a-g_hpafoot1_1!o2&utm_source=google.com&utm_medium=referral&utm_campaign=google_hpafooter&fg=1
+        - link "商务" [ref=e84] [cursor=pointer]:
+          - /url: https://www.google.com/services/?subid=ww-ww-et-g-awa-a-g_hpbfoot1_1!o2&utm_source=google.com&utm_medium=referral&utm_campaign=google_hpbfooter&fg=1
+        - link "Google 搜索的运作方式" [ref=e85] [cursor=pointer]:
+          - /url: https://google.com/search/howsearchworks/?fg=1
+      - generic [ref=e86]:
+        - link "隐私权" [ref=e87] [cursor=pointer]:
+          - /url: https://policies.google.com/privacy?hl=zh-CN&fg=1
+        - link "条款" [ref=e88] [cursor=pointer]:
+          - /url: https://policies.google.com/terms?hl=zh-CN&fg=1
+        - button "设置" [ref=e92] [cursor=pointer]:
+          - generic [ref=e93]: 设置
