@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.agentsec.BlockLogMapper">
+
+    <resultMap id="BlockLogResult" type="com.ruoyi.system.domain.agentsec.BlockLog">
+        <id property="blockLogId" column="block_log_id" />
+        <result property="targetType" column="target_type" />
+        <result property="targetId" column="target_id" />
+        <result property="reason" column="reason" />
+        <result property="status" column="status" />
+        <result property="createBy" column="create_by" />
+        <result property="createTime" column="create_time" />
+        <result property="updateBy" column="update_by" />
+        <result property="updateTime" column="update_time" />
+        <result property="remark" column="remark" />
+    </resultMap>
+
+    <insert id="insertBlockLog" parameterType="com.ruoyi.system.domain.agentsec.BlockLog">
+        insert into agentsec_block_log (
+            block_log_id, tenant_id, target_type, target_id, reason, status, remark, create_by, create_time, update_by, update_time
+        ) values (
+            #{blockLogId}, 'tenant_demo_001', #{targetType}, #{targetId}, #{reason}, #{status}, #{remark}, #{createBy}, sysdate(), #{updateBy}, sysdate()
+        )
+    </insert>
+
+    <select id="selectBlockLogList" parameterType="com.ruoyi.system.domain.agentsec.BlockLog" resultMap="BlockLogResult">
+        select block_log_id, target_type, target_id, reason, status, remark, create_by, create_time, update_by, update_time
+        from agentsec_block_log
+        <where>
+            <if test="targetType != null and targetType != ''">and target_type = #{targetType}</if>
+            <if test="targetId != null and targetId != ''">and target_id = #{targetId}</if>
+            <if test="status != null and status != ''">and status = #{status}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

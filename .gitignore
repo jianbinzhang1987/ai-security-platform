@@ -11,7 +11,7 @@ env/
 
 # Go
 bin/
-main
+/main
 *.exe
 *.dll
 *.so
