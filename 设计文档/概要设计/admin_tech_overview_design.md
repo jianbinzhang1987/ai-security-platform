@@ -1,9 +1,9 @@
 # AI Agent 安全监控平台 — 管理端技术概要设计文档
 
-**文档编号**：AGENTSEC-TECH-ADMIN-OVR-v1.0  
-**版本**：v1.0  
-**日期**：2026-03  
-**状态**：评审中  
+**文档编号**：AGENTSEC-TECH-ADMIN-OVR-v1.1
+**版本**：v1.1
+**日期**：2026-04-16
+**状态**：评审中
 **关联文档**：架构设计文档 v1.0 / 管理端 PRD v1.0
 
 ---
@@ -18,6 +18,20 @@
 - 关键技术决策与稳定性保障策略
 
 管理端是平台的服务核心，运行在平台自身的基础设施上，负责接收海量 span 事件、执行安全检测、存储分析数据、触发响应动作，并提供安全运营控制台。
+
+本平台主要面向企业内网与私有化客户。技术设计中可保留必要的安全行业术语，但产品 API、菜单、页面标题、报告和审计记录应优先采用"风险、合规、异常、越界、证据、处置、能力边界、风险链路、风险溯源"等口径。
+
+统一对象口径如下：
+
+| 对象 | 技术定位 |
+|------|----------|
+| `app_id` / 接入应用 | 接入治理主键，承载租户、凭证、策略、配置、责任归属 |
+| Agent / Workflow Node | 安全分析主体，承载行为基线、意图范围、风险画像 |
+| Tool / MCP / Skill | 能力边界与风险面，承载权限声明、越界审计、影子工具发现 |
+| Resource | 数据库、知识库、外部 API、文件等被访问资源，承载敏感级别 |
+| Span | 最小证据单元，承载 Prompt、Response、Tool I/O、风险证据 |
+| Trace | 默认调查入口，用于还原一次 Agent run 的风险链路 |
+| Session | 多轮或长任务聚合视角，仅在 `session_id` 稳定存在时启用 |
 
 ---
 
@@ -188,7 +202,7 @@ Kafka: agentsec-spans
        │                     └──► risk_events 写入 PostgreSQL
        │
        ├─► [行为序列消费者] ─────► Trace / Session 调用链重建
-       │   （session 级触发）  ────► 威胁模式库匹配（已知攻击链）
+       │   （trace 优先，session 可选）► 风险模式库匹配（已知风险链路）
        │                     ────► 统计异常检测（P99 阈值）
        │                     ────► 综合异常分计算（0-100）
        │                     └──► risk_events 写入 PostgreSQL
@@ -196,9 +210,25 @@ Kafka: agentsec-spans
        └─► [意图对齐消费者] ─────► 意图提取（LLM 调用）
            （高价值任务触发）  ────► AlignmentCheck（LlamaFirewall）
                              ────► 意图相关性评分（0-1）
-                             ────► 任务劫持检测（< 0.2 相关性）
+                             ────► 任务偏离检测（< 0.2 相关性）
                              └──► risk_events + 可解释性文本
 ```
+
+### 4.3 安全可观测性主链路
+
+管理端数据流按以下主链路设计，所有查询、页面下钻和处置动作都围绕该链路闭环：
+
+```text
+Raw Span（客户端 SDK 上报）
+  → 归一化 Span（Collector Processor：脱敏 / 打标 / 路由）
+  → 安全检测结果（检测引擎输出 risk_type / confidence / evidence）
+  → Risk Event（关联 subject / risk_stage / 标准风险映射）
+  → Alert / Incident（规则匹配、通知、工单、阻断指令）
+  → Evidence Panel（安全证据面板）
+  → Trace / Asset / Policy 回溯（还原风险路径、关联受影响资产、定位策略缺口）
+```
+
+`session_id` 不作为 MVP 依赖。查询服务默认以 `trace_id` 获取 Span 树；当 `session_id` 稳定存在时再补充 Session 聚合上下文。
 
 ---
 
@@ -319,15 +349,17 @@ frontend/
 │   │   ├── dashboard/            # 实时监控大盘
 │   │   ├── agents/               # Agent 应用管理
 │   │   ├── security-events/      # 安全事件列表 + 详情
-│   │   ├── trace-viewer/         # 调用链 Trace 可视化
+│   │   ├── risk-trace/           # 风险溯源工作台（三栏布局）
 │   │   ├── rules/                # 告警规则管理
 │   │   ├── reports/              # 安全报告
 │   │   ├── settings/             # 系统配置（租户/用户/通知）
 │   │   └── onboarding/           # 接入向导
 │   ├── components/
-│   │   ├── TraceWaterfall/       # Trace 瀑布图组件（基于 Langfuse 扩展）
+│   │   ├── RiskTraceWorkbench/   # Trace 风险剧本视图（基于 Langfuse 思路扩展）
+│   │   ├── EvidencePanel/        # 安全证据面板（Span / Event 统一详情）
+│   │   ├── ToolBoundaryGraph/    # 工具权限边界图（P1）
 │   │   ├── SecurityEventCard/    # 安全事件卡片
-│   │   ├── RiskHeatmap/          # 风险热力图
+│   │   ├── RiskHeatmap/          # 工具×风险类型热力图
 │   │   ├── AlertBadge/           # 告警标记组件
 │   │   └── RuleEditor/           # 规则编辑器（可视化 AND/OR/NOT）
 │   ├── hooks/                    # React 自定义 Hooks
@@ -373,7 +405,8 @@ OpenSearch 层：
 
 Redis 层：
   - Key 命名规范：{tenant_id}:{key_type}:{id}
-  - 阻断 Key：block:{tenant_id}:{session_id}
+  - 阻断 Key：block:{tenant_id}:{scope}:{subject_id}
+  - 阻断 scope：session / tool / agent / app；应用熔断必须具备二次确认或 MFA、TTL、审批和回滚能力
 ```
 
 ### 6.3 OTel Collector Processor 热更新机制
@@ -402,7 +435,7 @@ Kafka Consumer Group 设计：
 各消费者组独立消费 agentsec-spans Topic
 每个消费者组配置不同的并发度：
   - Prompt 检测：高并发（每 span 独立检测），partition 数 = 24
-  - 行为序列分析：session 级聚合，按 session_id hash 路由到固定 partition
+  - 行为序列分析：trace 优先、session 可选；有稳定 session_id 时按 session_id hash 路由到固定 partition，否则按 trace_id 路由
   - 意图对齐审计：LLM 调用成本高，限制并发度（max 8 并发）
 ```
 
@@ -449,7 +482,7 @@ API 层限流：
     → ClickHouse（ReplacingMergeTree，span_id 去重；同时保留 trace_id / parent_span_id 用于还原 Trace）
 
 风险事件可靠性：
-  检测引擎 → PostgreSQL（事务写入，risk_events 以 span_id 为最小证据锚点，并冗余 trace_id / span_kind / block_action / block_reason）
+  检测引擎 → PostgreSQL（事务写入，risk_events 以 span_id 为最小证据锚点，并冗余 trace_id / span_kind / block_action / block_reason / detector_id / rule_version / risk_stage / source_field / subject_type / subject_id / tool_id / resource_id）
   PostgreSQL → 告警引擎（polling 或 CDC）
   告警引擎 → Redis/WebSocket（阻断）+ 通知服务
 

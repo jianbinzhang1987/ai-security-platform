@@ -204,11 +204,11 @@
                     <div
                         class="nav-item-top"
                         data-page="pages/assets/dashboard.html"
-                        data-label="安全大盘"
+                        data-label="安全态势大盘"
                         onclick="
                             loadPage(
                                 'pages/assets/dashboard.html',
-                                '安全大盘',
+                                '安全态势大盘',
                                 this,
                             )
                         "
@@ -255,7 +255,7 @@
                                 opacity=".5"
                             />
                         </svg>
-                        <span class="nav-label">安全大盘</span>
+                        <span class="nav-label">安全态势大盘</span>
                     </div>
 
                     <!-- 资产管理 -->
@@ -294,23 +294,37 @@
                                 opacity=".4"
                             />
                         </svg>
-                        <span class="nav-label">资产管理</span>
+                        <span class="nav-label">AI资产与暴露面</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children show">
                         <div
                             class="nav-item active"
                             data-page="pages/assets/app-list.html"
-                            data-label="接入应用管理"
+                            data-label="智能体安全台账"
                             onclick="
                                 loadPage(
                                     'pages/assets/app-list.html',
-                                    '接入应用管理',
+                                    '智能体安全台账',
                                     this,
                                 )
                             "
                         >
-                            接入应用管理
+                            智能体安全台账
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/assets/tool-exposure.html"
+                            data-label="MCP工具与暴露面"
+                            onclick="
+                                loadPage(
+                                    'pages/assets/tool-exposure.html',
+                                    'MCP工具与暴露面',
+                                    this,
+                                )
+                            "
+                        >
+                            MCP工具与暴露面
                         </div>
                         <div
                             class="nav-item"
@@ -329,16 +343,16 @@
                         <div
                             class="nav-item"
                             data-page="pages/assets/topology.html"
-                            data-label="资产拓扑"
+                            data-label="权限与风险拓扑"
                             onclick="
                                 loadPage(
                                     'pages/assets/topology.html',
-                                    '资产拓扑',
+                                    '权限与风险拓扑',
                                     this,
                                 )
                             "
                         >
-                            资产拓扑
+                            权限与风险拓扑
                         </div>
                     </div>
 
@@ -365,23 +379,23 @@
                                 stroke-linecap="round"
                             />
                         </svg>
-                        <span class="nav-label">安全监控</span>
+                        <span class="nav-label">安全调用与调查工作台</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
                         <div
                             class="nav-item"
                             data-page="pages/monitor/trace-list.html"
-                            data-label="调用观测工作台"
+                            data-label="Trace攻击链研判"
                             onclick="
                                 loadPage(
                                     'pages/monitor/trace-list.html',
-                                    '调用观测工作台',
+                                    'Trace攻击链研判',
                                     this,
                                 )
                             "
                         >
-                            调用观测工作台
+                            Trace攻击链研判
                         </div>
                         <div
                             class="nav-item"
@@ -400,16 +414,16 @@
                         <div
                             class="nav-item"
                             data-page="pages/monitor/saved-views.html"
-                            data-label="保存的调查模板"
+                            data-label="意图偏离分析台"
                             onclick="
                                 loadPage(
                                     'pages/monitor/saved-views.html',
-                                    '保存的调查模板',
+                                    '意图偏离分析台',
                                     this,
                                 )
                             "
                         >
-                            保存的调查模板
+                            意图偏离分析台
                         </div>
                     </div>
 
@@ -441,7 +455,7 @@
                                 fill="currentColor"
                             />
                         </svg>
-                        <span class="nav-label">安全事件</span>
+                        <span class="nav-label">安全事件与响应</span>
                         <span class="nav-badge">12</span>
                         <span class="nav-arrow"></span>
                     </div>
@@ -492,7 +506,7 @@
                                 stroke-linejoin="round"
                             />
                         </svg>
-                        <span class="nav-label">策略中心</span>
+                        <span class="nav-label">策略与模式防护</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
