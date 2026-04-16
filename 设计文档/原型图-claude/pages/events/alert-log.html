@@ -2,78 +2,97 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>告警与阻断日志</title>
+  <title>告警与处置记录</title>
   <link rel="stylesheet" href="../../css/style.css">
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="search-bar">
-      <div class="search-item">
-        <span class="form-label">追踪实体名</span>
-        <input type="text" class="form-control" placeholder="智能体/应用/服务器名称">
+    <div class="page-header">
+      <div>
+        <div class="page-title">告警与处置记录</div>
+        <div class="page-subtitle">查看自动告警、限制处置、恢复动作和对应证据链路。</div>
       </div>
-      <div class="search-item">
-        <span class="form-label">处理类型</span>
-        <select class="form-select">
-          <option value="">全部记录类型</option>
-          <option value="仅告警">观察模式(仅通知记录)</option>
-          <option value="已阻断">拦截模式(实时阻断连接)</option>
-          <option value="降级路由">降级模式(切换安全大模型)</option>
-        </select>
-      </div>
-      <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">搜索日志</button>
-        <button class="btn btn-default" onclick="resetSearch()">清空</button>
-      </div>
+      <button class="btn btn-default" onclick="toastSuccess('处置记录已导出')">导出记录</button>
     </div>
 
-    <!-- 数据列表 -->
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">关联对象</span><input type="text" class="form-control" placeholder="应用 / Agent / Tool"></div>
+      <div class="search-item">
+        <span class="form-label">动作类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>通知</option>
+          <option>限制</option>
+          <option>降级</option>
+          <option>恢复</option>
+        </select>
+      </div>
+      <div class="search-item"><span class="form-label">事件 / Trace</span><input type="text" class="form-control" placeholder="event_id / trace_id"></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
     <div class="card">
       <div class="table-toolbar">
-        <div class="table-toolbar-left" style="color: #606266; font-size: 13px;">
-          提示：当前页仅提供过去 180 天的自动化触发流水存档作为审计凭证。手工处置流转请前往事件中心。
+        <div class="table-toolbar-left" style="color:#606266;font-size:13px;">
+          所有处置动作均保留 TTL、审批和回滚状态，支持跳转到风险事件和 Trace 证据。
         </div>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>系统动作指纹流水</th>
-              <th>发生时间戳</th>
-              <th>命中策略规则</th>
-              <th>执行类型</th>
-              <th>实体网元属性</th>
-              <th>防护前文关联信息</th>
-              <th style="width: 80px;">凭证追溯</th>
+              <th>动作 ID</th>
+              <th>关联事件</th>
+              <th>Trace / Span</th>
+              <th>关联对象</th>
+              <th>动作类型</th>
+              <th>范围</th>
+              <th>TTL</th>
+              <th>操作人</th>
+              <th>审批</th>
+              <th>回滚状态</th>
+              <th style="width:130px;">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>LOG-B101-AFG</td>
-              <td>2026-04-14 05:12:00</td>
-              <td>[拦截正则集] R-P-1090 核心越权指令</td>
-              <td><span class="tag tag-danger">强阻断丢弃</span></td>
-              <td>服务器: Prod-A / 智能体: 客服接待</td>
-              <td><span style="color:#f56c6c;">尝试使用OS工具执行网络探测探测。</span></td>
-              <td><button class="btn btn-link" onclick="viewLogEvidence()">查看底稿</button></td>
+              <td>ACT-20260416-018</td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A018')">EVT-2026-A018</button></td>
+              <td><span class="mono">TRC-20260416-018</span><br><span class="form-hint mono">sp_04_tool</span></td>
+              <td>研发代码审查助手<br><span class="form-hint">external_http_post</span></td>
+              <td><span class="tag tag-warning">限制</span></td>
+              <td>Tool</td>
+              <td>1 小时</td>
+              <td>张安全</td>
+              <td>APR-20260416-003</td>
+              <td><span class="tag tag-success">可回滚</span></td>
+              <td><button class="btn btn-link" onclick="goTrace()">溯源</button><button class="btn btn-link warning" onclick="toastSuccess('回滚申请已提交')">回滚</button></td>
             </tr>
             <tr>
-              <td>LOG-B102-KDF</td>
-              <td>2026-04-14 06:14:44</td>
-              <td>[脱敏引擎] PI-脱敏掩码匹配</td>
-              <td><span class="tag tag-warning">降级与数据清洗</span></td>
-              <td>服务器: Office-N / 智能体: 邮件归档</td>
-              <td>发现 3 处疑似通讯录电话，执行加星。</td>
-              <td><button class="btn btn-link" onclick="viewLogEvidence()">查看底稿</button></td>
+              <td>ACT-20260416-012</td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A012')">EVT-2026-A012</button></td>
+              <td><span class="mono">TRC-20260416-012</span><br><span class="form-hint mono">sp_06_output</span></td>
+              <td>人事档案助理<br><span class="form-hint">hr_profile_reader</span></td>
+              <td><span class="tag tag-info">通知</span></td>
+              <td>Event</td>
+              <td>-</td>
+              <td>系统</td>
+              <td>-</td>
+              <td><span class="tag tag-info">无需回滚</span></td>
+              <td><button class="btn btn-link" onclick="goTrace()">溯源</button></td>
             </tr>
             <tr>
-              <td>LOG-B103-XMC</td>
-              <td>2026-04-14 08:00:22</td>
-              <td>[风险探针] K-Word 潜在违规名词</td>
-              <td><span class="tag tag-info">告警审计</span></td>
-              <td>服务器: Test-ENV / 智能体: 开发助手</td>
-              <td>触发低置信度监控，未影响业务可用性。</td>
-              <td><button class="btn btn-link" onclick="viewLogEvidence()">查看底稿</button></td>
+              <td>ACT-20260415-041</td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A041')">EVT-2026-A041</button></td>
+              <td><span class="mono">TRC-20260415-041</span><br><span class="form-hint mono">sp_03_llm</span></td>
+              <td>智能客服 Copilot<br><span class="form-hint">crm_search</span></td>
+              <td><span class="tag tag-success">恢复</span></td>
+              <td>Agent</td>
+              <td>-</td>
+              <td>李运营</td>
+              <td>APR-20260415-011</td>
+              <td><span class="tag tag-info">已完成</span></td>
+              <td><button class="btn btn-link" onclick="goTrace()">溯源</button></td>
             </tr>
           </tbody>
         </table>
@@ -85,23 +104,13 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof renderPagination === 'function') {
-        renderPagination('pagination', 50123, 1, 10, function(p){ });
-      }
+      if (typeof renderPagination === 'function') renderPagination('pagination', 50123, 1, 10, function(p){});
+      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '风险事件' }, { label: '告警与处置记录' }]);
     });
-
-    function searchData() {
-      toastSuccess('只读流水刷新成功');
-    }
-
-    function resetSearch() {
-      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
-      inputs.forEach(function(input) { input.value = ''; });
-    }
-
-    function viewLogEvidence() {
-      toastSuccess('只读：该操作将展开原始数据报文与底稿以备国家规范留存审查');
-    }
+    function searchData() { toastSuccess('处置记录已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function goTrace() { window.parent.loadPage('pages/monitor/trace-list.html', '风险溯源工作台', null); }
+    function goEvent(id) { window.parent.loadPage('pages/events/event-detail.html?id=' + encodeURIComponent(id), '风险事件详情', null); }
   </script>
 </body>
 </html>

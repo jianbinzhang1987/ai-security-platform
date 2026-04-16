@@ -2,213 +2,171 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>调用链分析</title>
+  <title>风险溯源工作台</title>
   <link rel="stylesheet" href="../../css/style.css">
   <style>
-    .waterfall-container {
-      padding: 10px 0;
-    }
-    .waterfall-header {
-      display: flex;
-      background: #f5f7fa;
-      padding: 8px 10px;
-      font-weight: bold;
-      border-bottom: 1px solid #e4e7ed;
-      color: #606266;
-    }
-    .waterfall-row {
-      display: flex;
-      padding: 10px;
-      border-bottom: 1px solid #ebeef5;
-      position: relative;
-    }
-    .waterfall-row:hover {
-      background: #fafafa;
-    }
-    .col-name { width: 30%; flex-shrink: 0; }
-    .col-time { width: 20%; flex-shrink: 0; color: #909399; font-size: 13px; }
-    .col-bar { flex: 1; position: relative; display: flex; align-items: center; }
-    
-    .timeline-bar {
-      height: 12px;
-      background: #409eff;
-      border-radius: 6px;
-      min-width: 5px;
-      position: absolute;
-    }
-    
-    .bar-warning { background: #e6a23c; }
-    .bar-danger { background: #f56c6c; }
-    .bar-success { background: #67c23a; }
+    .workbench { display: grid; grid-template-columns: 280px 1fr 340px; gap: 16px; align-items: start; }
+    .filter-panel, .script-panel, .evidence-panel { background: #fff; border: 1px solid #EBEEF5; border-radius: 4px; }
+    .panel-head { padding: 14px 16px; border-bottom: 1px solid #EBEEF5; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+    .panel-body { padding: 16px; }
+    .filter-block { margin-bottom: 14px; }
+    .filter-block .form-label { display: block; margin-bottom: 6px; color: #606266; }
+    .trace-card { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; margin-bottom: 10px; cursor: pointer; }
+    .trace-card.active { border-color: #409EFF; background: #F5FAFF; }
+    .trace-card-title { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .trace-meta { color: #909399; font-size: 12px; line-height: 1.7; }
+    .script-flow { display: grid; gap: 12px; }
+    .script-step { display: grid; grid-template-columns: 94px 1fr; gap: 12px; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; background: #fff; }
+    .script-step.risk { border-color: #F56C6C; background: #FFF7F7; }
+    .step-stage { font-weight: 600; color: #606266; }
+    .step-title { font-weight: 600; margin-bottom: 4px; }
+    .step-detail { color: #606266; font-size: 13px; line-height: 1.7; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; font-size: 13px; line-height: 1.8; color: #303133; }
+    .evidence-mark { background: #FFF0F0; color: #D93026; padding: 1px 3px; border-radius: 3px; }
+    .kv-list { display: grid; gap: 10px; }
+    .kv { display: grid; grid-template-columns: 88px 1fr; gap: 8px; font-size: 13px; }
+    .kv .k { color: #909399; }
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <!-- 顶层过滤 -->
-    <div class="search-bar">
-      <div class="search-item">
-        <span class="form-label">会话编号</span>
-        <input type="text" class="form-control" placeholder="请输入会话追踪编号">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险溯源工作台</div>
+        <div class="page-subtitle">以 trace_id 为默认调查入口，围绕 Span 证据、工具调用和处置状态还原一次智能体运行风险。</div>
       </div>
-      <div class="search-item">
-        <span class="form-label">智能体名称</span>
-        <input type="text" class="form-control" placeholder="请输入名称">
-      </div>
-      <div class="search-item">
-        <span class="form-label">风险等级</span>
-        <select class="form-select">
-          <option value="">全部</option>
-          <option value="极高风险">极高风险</option>
-          <option value="高风险">高风险</option>
-          <option value="中风险">中风险</option>
-          <option value="低风险">无风险</option>
-        </select>
-      </div>
-      <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">查询</button>
-        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="openModal('createEventModal')">关联风险事件</button>
+        <button class="btn btn-default" onclick="toastSuccess('调查视图已保存')">保存视图</button>
       </div>
     </div>
 
-    <!-- 数据列表 -->
-    <div class="card">
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>追踪编号</th>
-              <th>智能体名称</th>
-              <th>所属应用</th>
-              <th>采集节点数</th>
-              <th>总计耗时(毫秒)</th>
-              <th>风险等级</th>
-              <th>发生时间</th>
-              <th style="width: 120px;">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>TRC-20260414-001</td>
-              <td>智能客服助理</td>
-              <td>核心业务系统</td>
-              <td>12</td>
-              <td>1450</td>
-              <td><span class="tag tag-success">无异常</span></td>
-              <td>2026-04-14 10:22:15</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-001')">瀑布图分析</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>TRC-20260414-002</td>
-              <td>文档代码审查器</td>
-              <td>研发门户</td>
-              <td>8</td>
-              <td>3500</td>
-              <td><span class="tag tag-danger">极高风险</span></td>
-              <td>2026-04-14 10:25:33</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-002')">瀑布图分析</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>TRC-20260414-003</td>
-              <td>数据报表引擎</td>
-              <td>内网看板</td>
-              <td>15</td>
-              <td>8200</td>
-              <td><span class="tag tag-warning">中度异常</span></td>
-              <td>2026-04-14 10:28:41</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-003')">瀑布图分析</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="pagination"></div>
-    </div>
-  </div>
-
-  <!-- 调用链详情大弹窗 -->
-  <div class="modal-overlay" id="traceModal">
-    <div class="modal-box" style="width: 800px;">
-      <div class="modal-header">
-        <div class="modal-title">调用链瀑布图 (<span id="modalTraceId"></span>)</div>
-        <div class="modal-close" onclick="closeModal('traceModal')">×</div>
-      </div>
-      <div class="modal-body">
-        <div class="waterfall-container">
-          <div class="waterfall-header">
-            <div class="col-name">处理节点与方法</div>
-            <div class="col-time">响应时延(毫秒)</div>
-            <div class="col-bar">时序追踪视图</div>
+    <div class="workbench">
+      <div class="filter-panel">
+        <div class="panel-head">筛选条件</div>
+        <div class="panel-body">
+          <div class="filter-block"><span class="form-label">时间范围</span><input class="form-control" value="2026-04-16 00:00 ~ 2026-04-16 23:59"></div>
+          <div class="filter-block"><span class="form-label">Trace ID</span><input class="form-control mono" value="TRC-20260416-018"></div>
+          <div class="filter-block"><span class="form-label">接入应用</span><select class="form-select"><option>全部</option><option selected>研发代码审查助手</option><option>智能客服 Copilot</option></select></div>
+          <div class="filter-block"><span class="form-label">Agent / 节点</span><input class="form-control" placeholder="agent_name / node_name" value="代码审查工作流"></div>
+          <div class="filter-block"><span class="form-label">风险等级</span><select class="form-select"><option>全部</option><option selected>高风险</option><option>中风险</option><option>低风险</option></select></div>
+          <div class="filter-block"><span class="form-label">事件状态</span><select class="form-select"><option>全部</option><option>New</option><option selected>In Progress</option><option>Resolved</option><option>False Positive</option></select></div>
+          <div class="filter-block"><span class="form-label">工具 / MCP</span><input class="form-control" placeholder="tool_name / mcp_server" value="external_http_post"></div>
+          <div class="action-row"><button class="btn btn-primary" onclick="toastSuccess('风险链路已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+          <hr class="divider">
+          <div class="trace-card active" onclick="selectTrace(this,'TRC-20260416-018')">
+            <div class="trace-card-title"><strong class="mono">TRC-20260416-018</strong><span class="tag tag-danger">高</span></div>
+            <div class="trace-meta">研发代码审查助手 | 7 个 Span<br>工具外联数据流需确认 | 10:25:33</div>
           </div>
-          <!-- 瀑布图模拟数据 -->
-          <div class="waterfall-row">
-            <div class="col-name">网关接收请求</div>
-            <div class="col-time">10</div>
-            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 0%; width: 2%;"></div></div>
+          <div class="trace-card" onclick="selectTrace(this,'TRC-20260416-012')">
+            <div class="trace-card-title"><strong class="mono">TRC-20260416-012</strong><span class="tag tag-warning">中</span></div>
+            <div class="trace-meta">人事档案助理 | 5 个 Span<br>敏感字段输出过多 | 09:48:11</div>
           </div>
-          <div class="waterfall-row">
-            <div class="col-name" style="padding-left: 20px;">身份认证与鉴权</div>
-            <div class="col-time">45</div>
-            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 2%; width: 8%;"></div></div>
-          </div>
-          <div class="waterfall-row">
-            <div class="col-name" style="padding-left: 20px;">拦截器预处理</div>
-            <div class="col-time">25</div>
-            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 10%; width: 5%;"></div></div>
-          </div>
-          <div class="waterfall-row">
-            <div class="col-name" style="padding-left: 40px;">大模型接口调用</div>
-            <div class="col-time">1200</div>
-            <div class="col-bar"><div class="timeline-bar bar-primary" style="left: 15%; width: 50%;"></div></div>
-          </div>
-          <div class="waterfall-row">
-            <div class="col-name" style="padding-left: 60px;">内容安全检测 (发现越权)</div>
-            <div class="col-time">300</div>
-            <div class="col-bar"><div class="timeline-bar bar-danger" style="left: 65%; width: 25%;"></div></div>
-          </div>
-          <div class="waterfall-row">
-            <div class="col-name" style="padding-left: 40px;">返回阻断响应</div>
-            <div class="col-time">15</div>
-            <div class="col-bar"><div class="timeline-bar bar-warning" style="left: 90%; width: 5%;"></div></div>
+          <div class="trace-card" onclick="selectTrace(this,'TRC-20260416-009')">
+            <div class="trace-card-title"><strong class="mono">TRC-20260416-009</strong><span class="tag tag-primary">低</span></div>
+            <div class="trace-meta">智能客服 Copilot | 12 个 Span<br>疑似规则误报 | 09:12:04</div>
           </div>
         </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('traceModal')">关 闭</button>
+
+      <div class="script-panel">
+        <div class="panel-head">
+          <span>Trace 风险剧本：<span class="mono" id="traceIdTitle">TRC-20260416-018</span></span>
+          <span class="tag tag-danger">已生成风险事件 EVT-2026-A018</span>
+        </div>
+        <div class="panel-body">
+          <div class="script-flow">
+            <div class="script-step">
+              <div class="step-stage">意图输入</div>
+              <div><div class="step-title">用户提交代码审查任务</div><div class="step-detail">Span: <span class="mono">sp_01_input</span> | source_field: prompt.input<br>任务目标：检查合并请求中的配置文件和网络调用。</div></div>
+            </div>
+            <div class="script-step">
+              <div class="step-stage">上下文检索</div>
+              <div><div class="step-title">读取企业代码规范知识库</div><div class="step-detail">Span: <span class="mono">sp_02_retriever</span> | resource: kb_secure_coding<br>未发现敏感字段外流。</div></div>
+            </div>
+            <div class="script-step">
+              <div class="step-stage">模型推理</div>
+              <div><div class="step-title">生成审查步骤和工具调用计划</div><div class="step-detail">Span: <span class="mono">sp_03_llm</span> | detector: intent-boundary-v2<br>模型计划包含外部 URL 请求，超出当前应用声明边界。</div></div>
+            </div>
+            <div class="script-step risk">
+              <div class="step-stage">工具调用</div>
+              <div><div class="step-title">调用未声明工具 external_http_post</div><div class="step-detail">Span: <span class="mono">sp_04_tool</span> | tool_id: tool_external_http_post<br>命中规则：未声明工具调用 + 外联数据流确认。已生成证据片段。</div></div>
+            </div>
+            <div class="script-step risk">
+              <div class="step-stage">响应输出</div>
+              <div><div class="step-title">输出包含内部仓库路径和摘要</div><div class="step-detail">Span: <span class="mono">sp_05_output</span> | source_field: llm.response<br>已脱敏展示，原文保留在对象存储，需授权查看。</div></div>
+            </div>
+            <div class="script-step">
+              <div class="step-stage">处置状态</div>
+              <div><div class="step-title">Tool 范围限制已建议，等待人工确认</div><div class="step-detail">建议范围：Tool / external_http_post；TTL：1 小时；影响：3 个 Agent。</div></div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div class="evidence-panel">
+        <div class="panel-head">安全证据面板</div>
+        <div class="panel-body">
+          <div class="kv-list">
+            <div class="kv"><div class="k">事件编号</div><div class="mono">EVT-2026-A018</div></div>
+            <div class="kv"><div class="k">风险类型</div><div>工具能力边界越界</div></div>
+            <div class="kv"><div class="k">风险阶段</div><div>工具能力边界确认</div></div>
+            <div class="kv"><div class="k">风险等级</div><div><span class="tag tag-danger">高风险</span></div></div>
+            <div class="kv"><div class="k">置信度</div><div>0.91</div></div>
+            <div class="kv"><div class="k">证据锚点</div><div class="mono">span_id = sp_04_tool</div></div>
+            <div class="kv"><div class="k">分析主体</div><div>Workflow Node / ReviewChain.invoke</div></div>
+            <div class="kv"><div class="k">关联资源</div><div>external.example/upload</div></div>
+            <div class="kv"><div class="k">规则版本</div><div class="mono">tool-boundary-v1.8.2</div></div>
+            <div class="kv"><div class="k">脱敏状态</div><div><span class="tag tag-success">已脱敏</span></div></div>
+          </div>
+          <hr class="divider">
+          <div class="evidence-box">
+            Tool Input: { "url": "https://external.example/upload", "payload": "<span class="evidence-mark">repo_path=internal/payment</span>", "reason": "code review context" }
+          </div>
+          <div class="action-row">
+            <button class="btn btn-primary" onclick="toastSuccess('事件已确认，状态变更为处理中')">确认风险</button>
+            <button class="btn btn-warning" onclick="openModal('actionModal')">建议处置</button>
+            <button class="btn btn-default" onclick="toastSuccess('已标记为误报样本')">标记误报</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="actionModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">处置建议确认</div><div class="modal-close" onclick="closeModal('actionModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>建议先按 Tool 范围限制，避免直接影响整个应用。</span></div>
+        <div class="form-row"><div class="form-label">处置范围</div><div class="form-field"><select class="form-select"><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>Session: 当前 Trace 关联 Session</option></select></div></div>
+        <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
+        <div class="form-row"><div class="form-label">审批备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明处置依据和影响范围"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="closeModal('actionModal');toastSuccess('处置动作已下发并记录审计')">确认下发</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createEventModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">关联风险事件</div><div class="modal-close" onclick="closeModal('createEventModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">Trace ID</div><div class="form-field"><input class="form-control mono" value="TRC-20260416-018" readonly></div></div>
+        <div class="form-row"><div class="form-label">证据 Span</div><div class="form-field"><input class="form-control mono" value="sp_04_tool" readonly></div></div>
+        <div class="form-row"><div class="form-label">事件类型</div><div class="form-field"><select class="form-select"><option>工具能力边界越界</option><option>敏感数据输出</option><option>意图偏移</option></select></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('createEventModal')">取消</button><button class="btn btn-primary" onclick="closeModal('createEventModal');toastSuccess('已关联风险事件')">确认</button></div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      if (typeof renderPagination === 'function') {
-        renderPagination('pagination', 125, 1, 10, function(p){ console.log(p); });
-      }
-    });
-
-    function searchData() {
-      toastSuccess('查询数据更新成功');
-    }
-
-    function resetSearch() {
-      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
-      inputs.forEach(function(input) { input.value = ''; });
-    }
-
-    function openTraceModal(id) {
-      document.getElementById('modalTraceId').textContent = id;
-      openModal('traceModal');
+    function selectTrace(el, id) {
+      document.querySelectorAll('.trace-card').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      document.getElementById('traceIdTitle').textContent = id;
+      toastSuccess('已切换到 ' + id);
     }
   </script>
 </body>

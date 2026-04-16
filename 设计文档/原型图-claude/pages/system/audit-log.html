@@ -7,87 +7,87 @@
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="search-bar">
-      <div class="search-item">
-        <span class="form-label">痕迹制造人标识</span>
-        <input type="text" class="form-control" placeholder="内部人真名或联络邮箱检索">
+    <div class="page-header">
+      <div>
+        <div class="page-title">操作审计日志</div>
+        <div class="page-subtitle">记录用户、系统和策略相关操作，支持按操作人、模块、结果和时间查询。</div>
       </div>
-      <div class="search-item">
-        <span class="form-label">触犯模块类型</span>
-        <select class="form-select">
-          <option value="">追索全部系统角落痕迹</option>
-          <option value="系统">高管越权系统指令动作</option>
-          <option value="策略">修改雷区布署参数动作</option>
-          <option value="阻断">拦截与定性误报判断操作</option>
-        </select>
-      </div>
-      <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">深入调阅证据</button>
-      </div>
+      <button class="btn btn-default" onclick="exportData()">导出审计日志</button>
     </div>
 
-    <!-- 列表 -->
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">操作人</span><input type="text" class="form-control" placeholder="姓名、邮箱或系统账号"></div>
+      <div class="search-item">
+        <span class="form-label">模块</span>
+        <select class="form-select">
+          <option value="">全部模块</option>
+          <option value="系统">系统管理</option>
+          <option value="策略">规则策略</option>
+          <option value="处置">事件处置</option>
+          <option value="接入">应用接入</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">结果</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>成功</option>
+          <option>失败</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
     <div class="card">
       <div class="table-toolbar">
-        <div class="table-toolbar-left" style="color: #606266; font-size: 13px;">
-          此页面流水账经过 <strong style="color:#67c23a">零信任区块技术加密保护追加</strong>写入模式锁死。系统严谨封锁撤销与自毁一切擦除日志入口，确保不丢失一切追踪线索。
-        </div>
-        <div class="table-toolbar-right">
-          <button class="btn btn-default btn-sm" onclick="exportData()">拷贝全息审计证据卷宗表格</button>
+        <div class="table-toolbar-left" style="color:#606266;font-size:13px;">
+          审计日志采用追加写入和权限控制方式保存，普通用户仅可查询授权范围内记录。
         </div>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>防改写区块链存根流水</th>
-              <th>追索核心责任发起人</th>
-              <th>操作实施的动作切面类型</th>
-              <th>触犯被波及的核心目标实体</th>
-              <th>定格精确案发时间</th>
-              <th>操作是否落地完毕</th>
-              <th style="width: 100px;">审查底稿</th>
+              <th>日志 ID</th>
+              <th>操作人</th>
+              <th>操作类型</th>
+              <th>操作对象</th>
+              <th>发生时间</th>
+              <th>结果</th>
+              <th>客户端 IP</th>
+              <th style="width:100px;">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>ADT-HASH-A12B9C</td>
-              <td>王大拿 (核心超级管理员)</td>
-              <td><span class="tag tag-danger">强制切断吊销账号网络权</span></td>
-              <td>张三丰 (只读看客)</td>
+              <td>ADT-20260414-001</td>
+              <td>王丹</td>
+              <td><span class="tag tag-warning">禁用用户</span></td>
+              <td>张三丰 / 只读查看员</td>
               <td>2026-04-14 09:22:11</td>
-              <td><span style="color:#67c23a; font-weight:bold;">成功指令下达</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="viewAudit()">审查明文</button>
-                </div>
-              </td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.8.21</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
             </tr>
             <tr>
-              <td>ADT-HASH-B981C2</td>
-              <td>安全防御护卫系统-李四</td>
-              <td><span class="tag tag-warning">部署覆盖雷区策略下发</span></td>
-              <td>财务部算力结算专用机群</td>
+              <td>ADT-20260413-018</td>
+              <td>李四</td>
+              <td><span class="tag tag-primary">发布规则版本</span></td>
+              <td>tool-boundary-v1.8.2</td>
               <td>2026-04-13 18:30:20</td>
-              <td><span style="color:#67c23a; font-weight:bold;">成功指令下达</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="viewAudit()">审查明文</button>
-                </div>
-              </td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.10.8</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
             </tr>
             <tr>
-              <td>ADT-HASH-D34A7B</td>
-              <td>不明外部越权撞库探测</td>
-              <td><span class="tag tag-danger">密码字典尝试碰撞强开后门</span></td>
-              <td>管理员门户大门锁系统</td>
+              <td>ADT-20260410-022</td>
+              <td>系统认证服务</td>
+              <td><span class="tag tag-danger">异常登录尝试</span></td>
+              <td>管理员门户</td>
               <td>2026-04-10 03:22:10</td>
-              <td><span style="color:#f56c6c; font-weight:bold;">阴谋被门卫挫败抛出失败</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="viewAudit()">审查明文</button>
-                </div>
-              </td>
+              <td><span class="tag tag-danger">失败</span></td>
+              <td>10.20.4.18</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
             </tr>
           </tbody>
         </table>
@@ -99,21 +99,13 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof renderPagination === 'function') {
-        renderPagination('pagination', 569800, 1, 10, function(p){ });
-      }
+      if (typeof renderPagination === 'function') renderPagination('pagination', 569800, 1, 10, function(p){});
+      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: '操作审计日志' }]);
     });
-
-    function searchData() { toastSuccess('深入数据库底库提取记录结束！'); }
-
-    function exportData() {
-      toastSuccess('申请了高危批量拉取，安全中心将在审核后下发加密包到个人消息信箱。');
-    }
-
-    function viewAudit() {
-      // 没有任何修改与编辑的可能
-      toastSuccess('模拟抽取底层防篡改文本快照呈现给检查官阅读。该页不设任何阻断外操作权。');
-    }
+    function searchData() { toastSuccess('审计日志已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function exportData() { toastSuccess('审计日志导出任务已创建'); }
+    function viewAudit() { toastSuccess('审计详情已打开'); }
   </script>
 </body>
 </html>

@@ -48,14 +48,14 @@
         <div class="stat-card-footer">Collector 在线率 98.2%</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">近 24h 调用量</div>
-        <div class="stat-card-value">2,486万</div>
+        <div class="stat-card-label">近 24h Trace</div>
+        <div class="stat-card-value">428万</div>
         <div class="stat-card-footer">Span 上报 9,812万</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">近 24h Token 消耗</div>
-        <div class="stat-card-value orange">8.9亿</div>
-        <div class="stat-card-footer">环比昨日 +12.4%</div>
+        <div class="stat-card-label">工具声明缺口</div>
+        <div class="stat-card-value orange">14</div>
+        <div class="stat-card-footer">4 个为高风险能力</div>
       </div>
       <div class="stat-card">
         <div class="stat-card-label">近 24h 高危风险</div>
@@ -92,7 +92,7 @@
       <div class="workflow-step"><strong>2. SDK 配置</strong><span>AGENTSEC_APP_ID / TOKEN</span></div>
       <div class="workflow-step"><strong>3. 实例注册</strong><span>校验 Token 并签发 Session Token</span></div>
       <div class="workflow-step"><strong>4. 配置下发</strong><span>采样、脱敏、工具策略自动同步</span></div>
-      <div class="workflow-step"><strong>5. 观测调查</strong><span>Trace / Span / 风险事件下钻</span></div>
+      <div class="workflow-step"><strong>5. 风险溯源</strong><span>Trace / Span / 风险事件下钻</span></div>
     </div>
 
     <div class="search-bar">
@@ -125,7 +125,7 @@
           <option value="">全部</option>
           <option>正常</option>
           <option>告警</option>
-          <option>阻断</option>
+          <option>限制中</option>
           <option>离线</option>
           <option>待接入</option>
           <option>已归档</option>
@@ -152,7 +152,7 @@
         <div class="table-toolbar-left">
           <button class="btn btn-success" onclick="openGuideModal()">接入指引</button>
           <button class="btn btn-warning" id="btnBatchPolicy" onclick="batchBindPolicy()" disabled>批量绑定策略</button>
-          <button class="btn btn-info" id="btnBatchBlock" onclick="batchBlock()" disabled>批量阻断</button>
+          <button class="btn btn-info" id="btnBatchBlock" onclick="batchBlock()" disabled>批量限制</button>
           <button class="btn btn-danger" id="btnBatchDisable" onclick="batchDisable()" disabled>批量停用</button>
         </div>
         <div class="table-toolbar-right">
@@ -171,9 +171,9 @@
               <th>负责人</th>
               <th>语言框架</th>
               <th>活跃实例</th>
-              <th>近 24h 调用量</th>
-              <th>Token 消耗</th>
-              <th>平均延迟</th>
+              <th>近 24h Trace</th>
+              <th>工具声明</th>
+              <th>Trace 完整率</th>
               <th>近 24h 风险</th>
               <th>采集健康</th>
               <th>策略覆盖</th>
@@ -196,14 +196,14 @@
               <td>周敏</td>
               <td>Python / LangChain</td>
               <td>18</td>
-              <td>386.2万</td>
-              <td>1.6亿</td>
-              <td>842ms</td>
+              <td>42.1万</td>
+              <td>9 / 12</td>
+              <td>96%</td>
               <td><span style="color:#F56C6C;font-weight:600;">12</span></td>
               <td><span class="tag tag-success">98.7%</span></td>
               <td><div class="coverage"><span>92%</span><div class="progress-bar"><div class="progress-fill green" style="width:92%;"></div></div></div></td>
               <td>2026-04-15 17:21:09</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail()">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link warning" onclick="openTokenModal()">凭证</button><button class="btn btn-link danger" onclick="openBlockModal('app_copilot_service')">阻断</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail()">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link warning" onclick="openTokenModal()">凭证</button><button class="btn btn-link danger" onclick="openBlockModal('app_copilot_service')">限制</button></div></td>
             </tr>
             <tr data-id="app_rd_code_review">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
@@ -219,14 +219,14 @@
               <td>李航</td>
               <td>Python / LangChain</td>
               <td>7</td>
-              <td>94.8万</td>
-              <td>8,420万</td>
-              <td>1,268ms</td>
+              <td>12.4万</td>
+              <td>5 / 11</td>
+              <td>81%</td>
               <td><span style="color:#F56C6C;font-weight:600;">19</span></td>
               <td><span class="tag tag-warning">85.4%</span></td>
               <td><div class="coverage"><span>76%</span><div class="progress-bar"><div class="progress-fill orange" style="width:76%;"></div></div></div></td>
               <td>2026-04-15 17:18:44</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail()">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link warning" onclick="openTokenModal()">凭证</button><button class="btn btn-link danger" onclick="openBlockModal('app_rd_code_review')">阻断</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail()">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link warning" onclick="openTokenModal()">凭证</button><button class="btn btn-link danger" onclick="openBlockModal('app_rd_code_review')">限制</button></div></td>
             </tr>
             <tr data-id="app_knowledge_rag">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
@@ -242,9 +242,9 @@
               <td>陈卓</td>
               <td>Java / Spring AI</td>
               <td>12</td>
-              <td>221.6万</td>
-              <td>2.2亿</td>
-              <td>698ms</td>
+              <td>26.8万</td>
+              <td>7 / 8</td>
+              <td>98%</td>
               <td>3</td>
               <td><span class="tag tag-success">99.1%</span></td>
               <td><div class="coverage"><span>88%</span><div class="progress-bar"><div class="progress-fill green" style="width:88%;"></div></div></div></td>
@@ -386,7 +386,7 @@
               <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" checked> Prompt 注入检测</label>
                 <label class="checkbox-item"><input type="checkbox" checked> 敏感信息脱敏</label>
-                <label class="checkbox-item"><input type="checkbox"> 高危工具阻断</label>
+                <label class="checkbox-item"><input type="checkbox"> 高风险工具限制</label>
               </div>
             </div>
           </div>
@@ -504,14 +504,15 @@ agentsec-langchain run --service-name customer-copilot</pre>
 
   <div class="modal-overlay" id="blockModal">
     <div class="modal-box modal-md">
-      <div class="modal-header"><div class="modal-title">应用级阻断</div><div class="modal-close" onclick="closeModal('blockModal')">×</div></div>
+      <div class="modal-header"><div class="modal-title">应用级限制申请</div><div class="modal-close" onclick="closeModal('blockModal')">×</div></div>
       <div class="modal-body">
-        <div class="alert-box alert-danger"><span class="alert-icon">!</span><span>应用级阻断会阻断该 app_id 下所有实例的所有调用，适用于重大安全事件。</span></div>
+        <div class="alert-box alert-danger"><span class="alert-icon">!</span><span>应用级限制会影响该 app_id 下所有实例，需确认影响范围、TTL 和审批依据。</span></div>
         <div class="form-row"><div class="form-label">目标 app_id</div><div class="form-field"><input id="blockAppId" class="form-control mono" readonly></div></div>
-        <div class="form-row"><div class="form-label required">阻断原因</div><div class="form-field"><textarea id="blockReason" class="form-textarea" placeholder="请输入阻断原因"></textarea></div></div>
+        <div class="form-row"><div class="form-label required">处置原因</div><div class="form-field"><textarea id="blockReason" class="form-textarea" placeholder="请输入处置原因和证据依据"></textarea></div></div>
         <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option><option>手动恢复</option></select></div></div>
+        <div class="form-row"><div class="form-label">二次确认</div><div class="form-field"><input class="form-control" placeholder="输入审批单号或 MFA 验证码"></div></div>
       </div>
-      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('blockModal')">取消</button><button class="btn btn-danger" onclick="submitBlock()">确认阻断</button></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('blockModal')">取消</button><button class="btn btn-danger" onclick="submitBlock()">提交限制申请</button></div>
     </div>
   </div>
 
@@ -587,9 +588,9 @@ agentsec-langchain run --service-name customer-copilot</pre>
     function submitPolicyBind() { closeModal('policyBindModal'); toastSuccess('策略已绑定，新配置版本已发布'); }
     function openBlockModal(appId) { document.getElementById('blockAppId').value = appId; document.getElementById('blockReason').value = ''; openModal('blockModal'); }
     function submitBlock() {
-      if (!document.getElementById('blockReason').value) { toastError('请填写阻断原因'); return; }
+      if (!document.getElementById('blockReason').value) { toastError('请填写处置原因'); return; }
       closeModal('blockModal');
-      toastSuccess('应用级阻断指令已下发');
+      toastSuccess('应用级限制申请已提交并记录审计');
     }
     function batchBlock() { openBlockModal('已选择的 app_id'); }
     function openArchiveModal(appId) { document.getElementById('archiveAppId').value = appId; openModal('archiveModal'); }

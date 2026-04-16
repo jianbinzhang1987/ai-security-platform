@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>大模型安全监测平台 - 管理控制台</title>
+        <link rel="icon" href="data:," />
         <link rel="stylesheet" href="css/style.css" />
         <style>
             /* ---- 主框架补充样式 ---- */
@@ -186,6 +187,11 @@
                 background: #ebeef5;
                 margin: 4px 0;
             }
+
+            /* P0 MVP 菜单收敛：非 P0 页面仅在导航中屏蔽，页面文件与入口配置保留 */
+            .nav-hidden-p0 {
+                display: none !important;
+            }
         </style>
     </head>
     <body>
@@ -200,15 +206,15 @@
 
                 <!-- 导航菜单 -->
                 <nav class="sidebar-nav" id="sidebarNav">
-                    <!-- 安全大盘 -->
+                    <!-- 安全总览 -->
                     <div
                         class="nav-item-top"
                         data-page="pages/assets/dashboard.html"
-                        data-label="安全态势大盘"
+                        data-label="安全总览"
                         onclick="
                             loadPage(
                                 'pages/assets/dashboard.html',
-                                '安全态势大盘',
+                                '安全总览',
                                 this,
                             )
                         "
@@ -255,7 +261,7 @@
                                 opacity=".5"
                             />
                         </svg>
-                        <span class="nav-label">安全态势大盘</span>
+                        <span class="nav-label">安全总览</span>
                     </div>
 
                     <!-- 资产管理 -->
@@ -294,40 +300,54 @@
                                 opacity=".4"
                             />
                         </svg>
-                        <span class="nav-label">AI资产与暴露面</span>
+                        <span class="nav-label">资产中心</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children show">
                         <div
                             class="nav-item active"
                             data-page="pages/assets/app-list.html"
-                            data-label="智能体安全台账"
+                            data-label="接入应用"
                             onclick="
                                 loadPage(
                                     'pages/assets/app-list.html',
-                                    '智能体安全台账',
+                                    '接入应用',
                                     this,
                                 )
                             "
                         >
-                            智能体安全台账
+                            接入应用
                         </div>
                         <div
                             class="nav-item"
                             data-page="pages/assets/tool-exposure.html"
-                            data-label="MCP工具与暴露面"
+                            data-label="工具与权限"
                             onclick="
                                 loadPage(
                                     'pages/assets/tool-exposure.html',
-                                    'MCP工具与暴露面',
+                                    '工具与权限',
                                     this,
                                 )
                             "
                         >
-                            MCP工具与暴露面
+                            工具与权限
                         </div>
                         <div
                             class="nav-item"
+                            data-page="pages/assets/coverage.html"
+                            data-label="监控覆盖度"
+                            onclick="
+                                loadPage(
+                                    'pages/assets/coverage.html',
+                                    '监控覆盖度',
+                                    this,
+                                )
+                            "
+                        >
+                            监控覆盖度
+                        </div>
+                        <div
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/assets/device-register.html"
                             data-label="接入审批"
                             onclick="
@@ -341,18 +361,18 @@
                             接入审批
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/assets/topology.html"
-                            data-label="权限与风险拓扑"
+                            data-label="资产拓扑"
                             onclick="
                                 loadPage(
                                     'pages/assets/topology.html',
-                                    '权限与风险拓扑',
+                                    '资产拓扑',
                                     this,
                                 )
                             "
                         >
-                            权限与风险拓扑
+                            资产拓扑
                         </div>
                     </div>
 
@@ -379,26 +399,26 @@
                                 stroke-linecap="round"
                             />
                         </svg>
-                        <span class="nav-label">安全调用与调查工作台</span>
+                        <span class="nav-label">安全监控</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
                         <div
                             class="nav-item"
                             data-page="pages/monitor/trace-list.html"
-                            data-label="Trace攻击链研判"
+                            data-label="风险溯源工作台"
                             onclick="
                                 loadPage(
                                     'pages/monitor/trace-list.html',
-                                    'Trace攻击链研判',
+                                    '风险溯源工作台',
                                     this,
                                 )
                             "
                         >
-                            Trace攻击链研判
+                            风险溯源工作台
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/monitor/prompt-search.html"
                             data-label="内容检索"
                             onclick="
@@ -412,7 +432,7 @@
                             内容检索
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/monitor/saved-views.html"
                             data-label="意图偏离分析台"
                             onclick="
@@ -455,7 +475,7 @@
                                 fill="currentColor"
                             />
                         </svg>
-                        <span class="nav-label">安全事件与响应</span>
+                        <span class="nav-label">风险事件</span>
                         <span class="nav-badge">12</span>
                         <span class="nav-arrow"></span>
                     </div>
@@ -463,16 +483,16 @@
                         <div
                             class="nav-item"
                             data-page="pages/events/event-list.html"
-                            data-label="事件处置中心"
+                            data-label="风险事件"
                             onclick="
                                 loadPage(
                                     'pages/events/event-list.html',
-                                    '事件处置中心',
+                                    '风险事件',
                                     this,
                                 )
                             "
                         >
-                            事件处置中心
+                            风险事件
                         </div>
                         <div
                             class="nav-item"
@@ -506,7 +526,7 @@
                                 stroke-linejoin="round"
                             />
                         </svg>
-                        <span class="nav-label">策略与模式防护</span>
+                        <span class="nav-label">规则策略</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
@@ -539,7 +559,7 @@
                             告警规则
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/policy/guardrails.html"
                             data-label="自定义 Guardrail"
                             onclick="
@@ -553,7 +573,7 @@
                             自定义 Guardrail
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/policy/notify-channel.html"
                             data-label="通知渠道"
                             onclick="
@@ -569,7 +589,7 @@
                     </div>
 
                     <!-- 报告中心 -->
-                    <div class="nav-parent" onclick="toggleNav(this)">
+                    <div class="nav-parent nav-hidden-p0" onclick="toggleNav(this)">
                         <svg
                             class="nav-icon"
                             viewBox="0 0 16 16"
@@ -596,7 +616,7 @@
                         <span class="nav-label">报告中心</span>
                         <span class="nav-arrow"></span>
                     </div>
-                    <div class="nav-children">
+                    <div class="nav-children nav-hidden-p0">
                         <div
                             class="nav-item"
                             data-page="pages/report/report-list.html"
@@ -697,7 +717,7 @@
                             用户与权限
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/system/api-keys.html"
                             data-label="API Key 管理"
                             onclick="
@@ -725,7 +745,7 @@
                             操作审计日志
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/ops/service-status.html"
                             data-label="服务运行状态"
                             onclick="
@@ -753,7 +773,7 @@
                             数据采集器配置
                         </div>
                         <div
-                            class="nav-item"
+                            class="nav-item nav-hidden-p0"
                             data-page="pages/ops/deploy-config.html"
                             data-label="平台路由与部署"
                             onclick="

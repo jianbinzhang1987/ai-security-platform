@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>工具与权限</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .tool-layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; align-items: start; }
+    .tool-name { font-weight: 600; color: #303133; }
+    .tool-meta { color: #909399; font-size: 12px; margin-top: 4px; }
+    .boundary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .boundary-card { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; background: #fff; }
+    .boundary-card strong { display: block; margin-bottom: 4px; }
+    .side-section { margin-bottom: 16px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">工具与权限</div>
+        <div class="page-subtitle">发现 Tool / MCP / Skill 的声明状态、调用来源、能力边界和关联风险事件。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="toastSuccess('工具清单已导出')">导出清单</button>
+        <button class="btn btn-primary" onclick="toastSuccess('已生成声明模板')">生成声明模板</button>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-label">已观测工具</div><div class="stat-card-value blue">86</div><div class="stat-card-footer">MCP 工具 24 个</div></div>
+      <div class="stat-card"><div class="stat-card-label">未声明但已调用</div><div class="stat-card-value red">14</div><div class="stat-card-footer">4 个为高风险能力</div></div>
+      <div class="stat-card"><div class="stat-card-label">受限工具</div><div class="stat-card-value orange">9</div><div class="stat-card-footer">今日触发 6 次</div></div>
+      <div class="stat-card"><div class="stat-card-label">关联风险事件</div><div class="stat-card-value red">37</div><div class="stat-card-footer">未处置 11 个</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">工具名称</span><input class="form-control" placeholder="tool / mcp / skill"></div>
+      <div class="search-item"><span class="form-label">声明状态</span><select class="form-select"><option>全部</option><option selected>未声明但已调用</option><option>已声明</option><option>已声明但未使用</option></select></div>
+      <div class="search-item"><span class="form-label">能力类型</span><select class="form-select"><option>全部</option><option>网络访问</option><option>文件读写</option><option>数据库</option><option>代码执行</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('工具视图已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="tool-layout">
+      <div class="card">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left"><span class="tag tag-primary">P0 重点：已观测工具发现 + 声明差异 + 风险事件</span></div>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>工具 / MCP / Skill</th>
+                <th>类型</th>
+                <th>来源</th>
+                <th>声明状态</th>
+                <th>调用 Agent</th>
+                <th>近 7 日调用</th>
+                <th>关联事件</th>
+                <th>风险</th>
+                <th style="width:160px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><div class="tool-name">external_http_post</div><div class="tool-meta">tool_id: tool_external_http_post</div></td>
+                <td>网络访问</td>
+                <td>LangChain Tool</td>
+                <td><span class="tag tag-danger">未声明但已调用</span></td>
+                <td>6</td>
+                <td>128</td>
+                <td>9</td>
+                <td><span class="tag tag-danger">高</span></td>
+                <td><button class="btn btn-link" onclick="selectTool('external_http_post')">详情</button><button class="btn btn-link danger" onclick="toastSuccess('已加入限制名单草稿')">限制</button></td>
+              </tr>
+              <tr>
+                <td><div class="tool-name">direct_db_write</div><div class="tool-meta">mcp: mcp.finance.write</div></td>
+                <td>数据库写入</td>
+                <td>MCP Server</td>
+                <td><span class="tag tag-warning">已声明但需复核</span></td>
+                <td>2</td>
+                <td>17</td>
+                <td>4</td>
+                <td><span class="tag tag-danger">高</span></td>
+                <td><button class="btn btn-link" onclick="selectTool('direct_db_write')">详情</button><button class="btn btn-link">复核</button></td>
+              </tr>
+              <tr>
+                <td><div class="tool-name">crm_search</div><div class="tool-meta">tool_id: tool_crm_search</div></td>
+                <td>业务查询</td>
+                <td>LangChain 元数据</td>
+                <td><span class="tag tag-warning">未声明但已调用</span></td>
+                <td>12</td>
+                <td>18,742</td>
+                <td>3</td>
+                <td><span class="tag tag-warning">中</span></td>
+                <td><button class="btn btn-link" onclick="selectTool('crm_search')">详情</button><button class="btn btn-link">补声明</button></td>
+              </tr>
+              <tr>
+                <td><div class="tool-name">ticket_create</div><div class="tool-meta">mcp: mcp.ticket.create</div></td>
+                <td>工单创建</td>
+                <td>工具声明</td>
+                <td><span class="tag tag-success">已声明</span></td>
+                <td>5</td>
+                <td>4,381</td>
+                <td>0</td>
+                <td><span class="tag tag-success">低</span></td>
+                <td><button class="btn btn-link" onclick="selectTool('ticket_create')">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">工具安全档案</div></div>
+        <div class="card-body">
+          <div class="side-section">
+            <div class="desc-list" style="grid-template-columns:1fr;">
+              <div class="desc-item"><div class="desc-label">当前工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
+              <div class="desc-item"><div class="desc-label">能力边界</div><div class="desc-value">网络访问 / 外部 HTTP POST</div></div>
+              <div class="desc-item"><div class="desc-label">建议状态</div><div class="desc-value"><span class="tag tag-danger">限制名单</span></div></div>
+            </div>
+          </div>
+          <div class="side-section">
+            <div class="boundary-grid">
+              <div class="boundary-card"><strong>调用主体</strong><span>6 个 Agent</span></div>
+              <div class="boundary-card"><strong>关联资源</strong><span>外部域名 3 个</span></div>
+              <div class="boundary-card"><strong>高风险参数</strong><span>url, payload</span></div>
+              <div class="boundary-card"><strong>近 7 日风险</strong><span>9 个事件</span></div>
+            </div>
+          </div>
+          <div class="side-section">
+            <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
+              <div class="card-header"><div class="card-title">关联风险事件</div></div>
+              <div class="card-body">
+                <div class="timeline">
+                  <div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">10:25</div><div class="timeline-text">EVT-2026-A018 工具能力边界越界</div><div class="timeline-detail">TRC-20260416-018</div></div></div>
+                  <div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">09:44</div><div class="timeline-text">EVT-2026-A011 外联数据流待确认</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="toastSuccess('已生成工具声明草稿')">补充声明</button>
+            <button class="btn btn-warning" onclick="toastSuccess('已加入关注名单')">关注</button>
+            <button class="btn btn-danger" onclick="toastSuccess('已加入限制名单草稿')">限制</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    function selectTool(name) {
+      document.getElementById('toolName').textContent = name;
+      toastSuccess('已切换工具：' + name);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>风险事件详情</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .detail-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
+    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; line-height: 1.8; }
+    .evidence-mark { background: #FFF0F0; color: #D93026; padding: 1px 3px; border-radius: 3px; }
+    .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险事件详情 <span class="tag tag-danger">高风险</span> <span class="tag tag-warning">In Progress</span></div>
+        <div class="page-subtitle">EVT-2026-A018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="window.parent.loadPage('pages/events/event-list.html','风险事件',null)">返回列表</button>
+        <button class="btn btn-primary" onclick="window.parent.loadPage('pages/monitor/trace-list.html','风险溯源',null)">查看 Trace</button>
+      </div>
+    </div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">事件概况</div></div>
+          <div class="card-body">
+            <div class="desc-list">
+              <div class="desc-item"><div class="desc-label">风险类型</div><div class="desc-value">工具能力边界越界</div></div>
+              <div class="desc-item"><div class="desc-label">置信度</div><div class="desc-value">0.91</div></div>
+              <div class="desc-item"><div class="desc-label">标准风险阶段</div><div class="desc-value">工具能力边界确认</div></div>
+              <div class="desc-item"><div class="desc-label">事件状态</div><div class="desc-value"><span class="tag tag-warning">In Progress</span></div></div>
+              <div class="desc-item"><div class="desc-label">关联应用</div><div class="desc-value">研发代码审查助手</div></div>
+              <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value">代码审查工作流 / ReviewChain.invoke</div></div>
+              <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value">external_http_post</div></div>
+              <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value">external.example/upload</div></div>
+              <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value">tool-boundary-detector</div></div>
+              <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value">tool-boundary-v1.8.2</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">证据面板</div><span class="tag tag-success">已脱敏</span></div>
+          <div class="card-body">
+            <div class="evidence-box">
+              Tool Input: { "url": "https://external.example/upload", "payload": "<span class="evidence-mark">repo_path=internal/payment</span>", "reason": "code review context" }
+            </div>
+            <div class="form-hint" style="margin-top:8px;">source_field: tool.input | evidence_offset: 63-89 | raw_ref: minio://agentsec/raw/2026/04/16/sp_04_tool.json</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">处置记录</div></div>
+          <div class="card-body">
+            <div class="timeline">
+              <div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:25:33</div><div class="timeline-text">检测引擎生成风险事件</div><div class="timeline-detail">状态：New</div></div></div>
+              <div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:31:08</div><div class="timeline-text">SOC 用户确认风险</div><div class="timeline-detail">状态：Confirmed，负责人：张安全</div></div></div>
+              <div class="timeline-item"><div class="timeline-dot gray"></div><div class="timeline-content"><div class="timeline-time">待执行</div><div class="timeline-text">Tool 范围限制或接受风险审批</div></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">复核结论</div></div>
+          <div class="card-body">
+            <div class="desc-list">
+              <div class="desc-item"><div class="desc-label">误报原因</div><div class="desc-value">暂无，当前事件已确认进入处理中。</div></div>
+              <div class="desc-item"><div class="desc-label">接受风险原因</div><div class="desc-value">暂无，如业务确认接受风险需关联审批编号。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">处置动作</div></div>
+          <div class="card-body">
+            <div class="action-grid">
+              <button class="btn btn-primary" onclick="toastSuccess('事件已确认')">补充说明</button>
+              <button class="btn btn-warning" onclick="openModal('actionModal')">下发限制</button>
+              <button class="btn btn-default" onclick="toastSuccess('已标记误报并记录原因')">标记误报</button>
+              <button class="btn btn-default" onclick="toastSuccess('已记录接受风险审批')">接受风险</button>
+            </div>
+            <hr class="divider">
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>当前建议优先限制 Tool 范围，避免直接影响整个应用。</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">审计要求</div></div>
+          <div class="card-body">
+            <ul style="color:#606266;line-height:1.9;padding-left:18px;list-style:disc;">
+              <li>记录处置范围、TTL、操作人和审批编号。</li>
+              <li>误报必须填写原因，进入规则优化样本。</li>
+              <li>接受风险必须关联业务负责人审批。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="actionModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">下发限制动作</div><div class="modal-close" onclick="closeModal('actionModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">范围</div><div class="form-field"><select class="form-select"><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>App: app_rd_code_review</option></select></div></div>
+        <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
+        <div class="form-row"><div class="form-label">二次确认</div><div class="form-field"><input class="form-control" placeholder="输入审批单号或 MFA 验证码"></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="closeModal('actionModal');toastSuccess('限制动作已下发并写入审计')">确认下发</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+</body>
+</html>

@@ -7,88 +7,77 @@
 </head>
 <body class="page-content">
   <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">用户与权限</div>
+        <div class="page-subtitle">管理控制台用户、角色、MFA 状态和账号可用状态。</div>
+      </div>
+      <button class="btn btn-primary" onclick="openInviteModal()">邀请用户</button>
+    </div>
+
     <div class="search-bar">
       <div class="search-item">
-        <span class="form-label">注册实名联络</span>
-        <input type="text" class="form-control" placeholder="真名或数字邮箱">
+        <span class="form-label">用户</span>
+        <input type="text" class="form-control" placeholder="姓名或邮箱">
       </div>
       <div class="search-item">
-        <span class="form-label">指派角色</span>
+        <span class="form-label">角色</span>
         <select class="form-select">
-          <option value="">囊括一切角色</option>
-          <option value="超管">核心超级管理员</option>
-          <option value="租户管">边界租户长官</option>
-          <option value="安全管">专项安全管理员</option>
-          <option value="工程师">白班运营防护工程师</option>
-          <option value="只读">纯只读看客</option>
+          <option value="">全部角色</option>
+          <option value="超管">平台管理员</option>
+          <option value="租户管">租户管理员</option>
+          <option value="安全管">安全管理员</option>
+          <option value="工程师">安全运营工程师</option>
+          <option value="只读">只读查看员</option>
         </select>
       </div>
       <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">抓取匹配账户</button>
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
       </div>
     </div>
 
-    <!-- 列表 -->
     <div class="card">
-      <div class="table-toolbar">
-        <div class="table-toolbar-left">
-          <button class="btn btn-primary btn-sm" onclick="openInviteModal()">寄送组织加入请柬信</button>
-        </div>
-      </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>系统人员实体标识名</th>
-              <th>数字联络邮箱</th>
-              <th>头衔与职责角色认定</th>
-              <th>二次安全校验防护伞状态</th>
-              <th>最后一次成功进门时间</th>
-              <th>人员冻结情况</th>
-              <th style="width: 140px;">行政管理动作</th>
+              <th>用户姓名</th>
+              <th>邮箱</th>
+              <th>角色</th>
+              <th>MFA 状态</th>
+              <th>最近登录</th>
+              <th>账号状态</th>
+              <th style="width:150px;">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>王大拿 (主管理)</td>
+              <td>王丹</td>
               <td>dana.wang@company.example</td>
-              <td><span class="tag tag-danger">核心超级管理员</span></td>
-              <td><span class="tag tag-success">短信与令牌双重护航已建立</span></td>
+              <td><span class="tag tag-danger">平台管理员</span></td>
+              <td><span class="tag tag-success">已启用</span></td>
               <td>2026-04-14 01:22:33</td>
-              <td><span class="tag tag-success">绿灯通行放行中</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link">微调头衔</button>
-                  <button class="btn btn-link danger" onclick="disableUser('王大拿')">吊销通行证</button>
-                </div>
-              </td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link">编辑角色</button><button class="btn btn-link danger" onclick="disableUser('王丹')">禁用</button></div></td>
             </tr>
             <tr>
               <td>张三丰</td>
               <td>sf.zhang@company.example</td>
-              <td><span class="tag tag-info">白班运营防护工程师</span></td>
-              <td><span class="tag tag-warning">裸发空壳态(不设防)</span></td>
+              <td><span class="tag tag-info">安全运营工程师</span></td>
+              <td><span class="tag tag-warning">未启用</span></td>
               <td>2026-04-13 18:45:00</td>
-              <td><span class="tag tag-success">绿灯通行放行中</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link">微调头衔</button>
-                  <button class="btn btn-link danger" onclick="disableUser('张三丰')">吊销通行证</button>
-                </div>
-              </td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link">编辑角色</button><button class="btn btn-link danger" onclick="disableUser('张三丰')">禁用</button></div></td>
             </tr>
             <tr>
-              <td>神秘审计外包看客</td>
+              <td>审计查看员</td>
               <td>audit001@outer.example</td>
-              <td><span class="tag tag-info">纯只读看客</span></td>
-              <td><span class="tag tag-warning">裸发空壳态(不设防)</span></td>
+              <td><span class="tag tag-info">只读查看员</span></td>
+              <td><span class="tag tag-warning">未启用</span></td>
               <td>2026-01-10 10:00:00</td>
-              <td><span class="tag tag-danger">因久未登录已被吊销瘫痪</span></td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" style="color:#67c23a;">恢复通行证打通</button>
-                </div>
-              </td>
+              <td><span class="tag tag-danger">已禁用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" style="color:#67c23a;" onclick="toastSuccess('用户已恢复')">恢复</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -97,66 +86,40 @@
     </div>
   </div>
 
-  <!-- 邀约弹框 -->
   <div class="modal-overlay" id="inviteModal">
     <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">封装系统邀请链接向指定外部空投</div>
-        <div class="modal-close" onclick="closeModal('inviteModal')">×</div>
-      </div>
+      <div class="modal-header"><div class="modal-title">邀请用户</div><div class="modal-close" onclick="closeModal('inviteModal')">×</div></div>
       <div class="modal-body">
         <form id="inviteForm">
+          <div class="form-row"><div class="form-label required">邮箱</div><div class="form-field"><input type="email" class="form-control" required placeholder="请输入企业邮箱"></div></div>
           <div class="form-row">
-            <div class="form-label required">准确接头信箱</div>
-            <div class="form-field"><input type="email" class="form-control" required placeholder="只允许内部审查后的域名空间"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-label required">落地头衔预授权印发</div>
+            <div class="form-label required">角色</div>
             <div class="form-field">
               <select class="form-select" required>
-                <option value="">敲定角色...</option>
-                <option value="安全管">专项安全管理员 (具备极高攻击拦截破坏权)</option>
-                <option value="工程师">白班运营防护工程师 (负责看守告警闭环)</option>
-                <option value="只读">纯只读看客 (适合老总审阅审计不带任何破坏力)</option>
+                <option value="">请选择角色</option>
+                <option value="安全管">安全管理员（具备高影响处置权限）</option>
+                <option value="工程师">安全运营工程师</option>
+                <option value="只读">只读查看员</option>
               </select>
             </div>
           </div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('inviteModal')">撕毁邀请函</button>
-        <button class="btn btn-primary" onclick="submitInvite()">启动机房外接发送管道投递</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('inviteModal')">取消</button><button class="btn btn-primary" onclick="submitInvite()">发送邀请</button></div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof renderPagination === 'function') {
-        renderPagination('pagination', 34, 1, 10, function(p){ });
-      }
+      if (typeof renderPagination === 'function') renderPagination('pagination', 34, 1, 10, function(p){});
+      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: '用户与权限' }]);
     });
-
-    function searchData() { toastSuccess('扫描花名册验证完成'); }
-    
-    function openInviteModal() {
-      document.getElementById('inviteForm').reset();
-      openModal('inviteModal');
-    }
-
-    function submitInvite() {
-      if (validateForm('inviteForm')) {
-        toastSuccess('信箱投递投出，目标点击加密握手链接即可加入战斗！');
-        closeModal('inviteModal');
-      }
-    }
-
-    function disableUser(name) {
-      confirmDelete('冻结瘫痪代号为 ['+name+'] 的系统会话与准入令牌', function() {
-        toastSuccess('已将该人员踢出局，强制剔除其维持的存量交互隧道。');
-      });
-    }
+    function searchData() { toastSuccess('用户列表已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function openInviteModal() { document.getElementById('inviteForm').reset(); openModal('inviteModal'); }
+    function submitInvite() { if (validateForm('inviteForm')) { toastSuccess('邀请已发送'); closeModal('inviteModal'); } }
+    function disableUser(name) { showConfirm('确认禁用用户 [' + name + ']？该用户的控制台会话将被强制下线。', function(){ toastSuccess('用户已禁用，操作已写入审计日志'); }, '禁用确认', 'danger'); }
   </script>
 </body>
 </html>

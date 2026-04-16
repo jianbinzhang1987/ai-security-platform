@@ -2,306 +2,158 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>安全策略库</title>
+  <title>检测规则配置</title>
   <link rel="stylesheet" href="../../css/style.css">
   <style>
-    .policy-type-cards {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .policy-type-card {
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      padding: 15px;
-      flex: 1;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .policy-type-card:hover, .policy-type-card.active {
-      border-color: #409eff;
-      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
-    }
-    .policy-type-card .pt-title { font-weight: bold; margin-bottom: 5px; color: #303133; }
-    .policy-type-card .pt-desc { font-size: 12px; color: #909399; }
-    .preview-box { background: #f4f4f5; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; font-family: monospace; }
+    .rule-meta { color:#909399; font-size:12px; margin-top:4px; }
+    .sample-box { background:#f5f7fa; border:1px solid #EBEEF5; border-radius:4px; padding:10px; line-height:1.8; font-family:Consolas, monospace; font-size:12px; }
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
   </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="search-bar">
-      <div class="search-item">
-        <span class="form-label">策略名称</span>
-        <input type="text" class="form-control" placeholder="输入名称检索">
+    <div class="page-header">
+      <div>
+        <div class="page-title">检测规则配置</div>
+        <div class="page-subtitle">管理风险检测规则的启停、版本、应用绑定、干跑验证和命中统计。</div>
       </div>
-      <div class="search-item">
-        <span class="form-label">策略类别</span>
-        <select class="form-select">
-          <option value="">全部</option>
-          <option value="采集配置">采集与采样策略</option>
-          <option value="检测引擎">风险发现引擎策略</option>
-          <option value="阻断响应">阻断与响应规则</option>
-          <option value="脱敏">脱敏与替换规则</option>
-        </select>
-      </div>
-      <div class="search-item">
-        <span class="form-label">分发状态</span>
-        <select class="form-select">
-          <option value="">全部</option>
-          <option value="未下发">处于配置中未使用</option>
-          <option value="已下发">部分或全部下发生效</option>
-        </select>
-      </div>
-      <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">筛选库记录</button>
-        <button class="btn btn-default" onclick="resetSearch()">重置</button>
-      </div>
+      <button class="btn btn-primary" onclick="openRuleModal()">新增规则</button>
     </div>
 
-    <!-- 列表 -->
-    <div class="card">
-      <div class="table-toolbar">
-        <div class="table-toolbar-left">
-          <button class="btn btn-primary btn-sm" onclick="openCreateModal()">编排新策略</button>
-          <button class="btn btn-warning btn-sm" id="btnBatchDistribute" onclick="openDistributeModal()" disabled>批量选中下发指令集</button>
-        </div>
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">启用规则</div><div class="v" style="color:#67C23A;">42</div></div>
+      <div class="stat-lite"><div class="k">灰度规则</div><div class="v" style="color:#E6A23C;">6</div></div>
+      <div class="stat-lite"><div class="k">近 7 日命中</div><div class="v">18,204</div></div>
+      <div class="stat-lite"><div class="k">误报样本</div><div class="v" style="color:#409EFF;">112</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">规则名称</span><input type="text" class="form-control" placeholder="规则 ID / 名称"></div>
+      <div class="search-item">
+        <span class="form-label">风险类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>Prompt 风险</option>
+          <option>敏感数据输出</option>
+          <option>工具能力边界越界</option>
+          <option>意图偏移</option>
+        </select>
       </div>
+      <div class="search-item">
+        <span class="form-label">状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>灰度</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
+    <div class="card">
       <div class="table-wrapper">
-        <table class="data-table" id="policyTable">
+        <table class="data-table" id="ruleTable">
           <thead>
             <tr>
-              <th style="width: 40px;"><input type="checkbox" id="checkAll" onchange="toggleAllCheckbox(this, 'policyTable');checkBtnState()"></th>
-              <th>唯一编号</th>
-              <th>策略命称</th>
-              <th>归属类别</th>
-              <th>当前版本</th>
-              <th>使用情况</th>
-              <th>最后更新时间</th>
-              <th style="width: 180px;">操作</th>
+              <th>规则</th>
+              <th>风险类型</th>
+              <th>等级</th>
+              <th>置信度阈值</th>
+              <th>版本</th>
+              <th>绑定应用</th>
+              <th>近 7 日命中</th>
+              <th>误报</th>
+              <th>状态</th>
+              <th style="width:210px;">操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr data-id="POL-001">
-              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td>POL-DTI-01</td>
-              <td>通用全量采集标准模板</td>
-              <td>采集与采样策略</td>
-              <td>v1.0.4</td>
-              <td>覆盖 24 节点</td>
-              <td>2026-03-01 10:00:00</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openCreateModal()">编辑草稿</button>
-                  <button class="btn btn-link" onclick="openDistributeModal()">分发</button>
-                </div>
-              </td>
+            <tr>
+              <td><strong>未声明工具调用检测</strong><div class="rule-meta">tool-boundary-v1</div></td>
+              <td>工具能力边界越界</td>
+              <td><span class="tag tag-danger">高</span></td>
+              <td>0.85</td>
+              <td>v1.8.2</td>
+              <td>24 个应用</td>
+              <td>328</td>
+              <td>6</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('未声明工具调用检测')">干跑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
             </tr>
-            <tr data-id="POL-002">
-              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td>POL-SEC-02</td>
-              <td>大中华区脱敏强制掩码</td>
-              <td>脱敏与替换规则</td>
-              <td>v3.2.1</td>
-              <td>尚未绑定节点</td>
-              <td>2026-04-12 11:22:00</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openCreateModal()">编辑草稿</button>
-                  <button class="btn btn-link" onclick="openDistributeModal()">分发</button>
-                  <button class="btn btn-link danger">废弃</button>
-                </div>
-              </td>
+            <tr>
+              <td><strong>敏感字段输出检测</strong><div class="rule-meta">sensitive-output-v2</div></td>
+              <td>敏感数据输出</td>
+              <td><span class="tag tag-warning">中</span></td>
+              <td>0.78</td>
+              <td>v2.4.1</td>
+              <td>36 个应用</td>
+              <td>1,204</td>
+              <td>21</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('敏感字段输出检测')">干跑</button><button class="btn btn-link warning">停用</button></td>
             </tr>
-            <tr data-id="POL-003">
-              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td>POL-BLK-03</td>
-              <td>严格黑名单降级拦截机制</td>
-              <td>阻断与响应规则</td>
-              <td>v1.0.0</td>
-              <td>全局兜底生效</td>
-              <td>2026-04-10 09:15:00</td>
-              <td>
-                <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openCreateModal()">编辑草稿</button>
-                  <button class="btn btn-link" onclick="openDistributeModal()">分发</button>
-                </div>
-              </td>
+            <tr>
+              <td><strong>Prompt 异常指令检测</strong><div class="rule-meta">prompt-risk-v3</div></td>
+              <td>Prompt 风险</td>
+              <td><span class="tag tag-warning">中</span></td>
+              <td>0.72</td>
+              <td>v3.4.2</td>
+              <td>灰度 8 个应用</td>
+              <td>642</td>
+              <td>38</td>
+              <td><span class="tag tag-warning">灰度</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('Prompt 异常指令检测')">干跑</button><button class="btn btn-link">发布</button></td>
             </tr>
           </tbody>
         </table>
       </div>
-      <div id="pagination"></div>
     </div>
   </div>
 
-  <!-- 创建/编辑策略弹框 -->
-  <div class="modal-overlay" id="createModal">
-    <div class="modal-box" style="width: 700px;">
-      <div class="modal-header">
-        <div class="modal-title">编排系统安全策略字典</div>
-        <div class="modal-close" onclick="closeModal('createModal')">×</div>
-      </div>
+  <div class="modal-overlay" id="ruleModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">新增 / 编辑检测规则</div><div class="modal-close" onclick="closeModal('ruleModal')">×</div></div>
       <div class="modal-body">
-        <form id="createForm">
-          <div class="form-row">
-            <div class="form-label required">自定义名称</div>
-            <div class="form-field">
-              <input type="text" class="form-control" id="f_name" placeholder="为您的策略命名..." required>
-            </div>
-          </div>
-          <div class="form-row" style="margin-bottom: 5px;">
-            <div class="form-label required">配置范式模版库</div>
-          </div>
-          <!-- 选择策略类型的卡片组 -->
-          <div class="policy-type-cards">
-            <div class="policy-type-card active" onclick="switchPolicyType(this, 'collect')">
-              <div class="pt-title">基础采集参数集</div>
-              <div class="pt-desc">针对调用链完整度、开关等下发采集参数。</div>
-            </div>
-            <div class="policy-type-card" onclick="switchPolicyType(this, 'mask')">
-              <div class="pt-title">合规脱敏替换组</div>
-              <div class="pt-desc">对进出大模型数据的文本使用正则遮盖。</div>
-            </div>
-            <div class="policy-type-card" onclick="switchPolicyType(this, 'block')">
-              <div class="pt-title">动态阻断处理集</div>
-              <div class="pt-desc">当安全判定超标时自动干预阻断或降级。</div>
-            </div>
-          </div>
-
-          <!-- 根据选择显示的下层表单: 采集类 -->
-          <div id="panel_collect" style="display: block;">
-            <div class="form-row">
-              <div class="form-label">基础采集启用</div>
-              <div class="form-field">
-                <label style="margin-right: 15px;"><input type="checkbox" checked> 调用链明细网络开启</label>
-                <label><input type="checkbox" checked> 数据库交互痕迹记录</label>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-label">截断阈值配置</div>
-              <div class="form-field">
-                <input type="number" class="form-control" value="2000" style="width:100px;"> <span>字符超标则丢弃截断</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 根据选择显示的下层表单: 脱敏类 -->
-          <div id="panel_mask" style="display: none;">
-            <div class="form-row">
-              <div class="form-label">开启标准内建掩码</div>
-              <div class="form-field">
-                <label style="margin-right: 15px;"><input type="checkbox" checked> 手机联系格式识别隐匿</label>
-                <label><input type="checkbox" checked> 居民身份证号隐匿</label>
-              </div>
-            </div>
-          </div>
-
-          <!-- 根据选择显示的下层表单: 阻断类 -->
-          <div id="panel_block" style="display: none;">
-            <div class="form-row">
-              <div class="form-label">阻断响应动作路由</div>
-              <div class="form-field">
-                <select class="form-select">
-                  <option>直接物理阻断TCP返回前端文案</option>
-                  <option>转发路由至沙盒降级模型</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-label">被阻断时的文案替换</div>
-              <div class="form-field">
-                <textarea class="form-textarea">您的请求触发了内部公司智能体使用安全红线，予以拦截阻断。</textarea>
-              </div>
-            </div>
-          </div>
-
+        <form id="ruleForm">
+          <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input class="form-control" value="未声明工具调用检测" required></div></div>
+          <div class="form-row"><div class="form-label required">风险类型</div><div class="form-field"><select class="form-select" required><option>工具能力边界越界</option><option>Prompt 风险</option><option>敏感数据输出</option><option>意图偏移</option></select></div></div>
+          <div class="form-row"><div class="form-label">风险等级</div><div class="form-field"><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div></div>
+          <div class="form-row"><div class="form-label">置信度阈值</div><div class="form-field"><input class="form-control" value="0.85"></div></div>
+          <div class="form-row"><div class="form-label">绑定应用</div><div class="form-field"><select class="form-select"><option>全部生产应用</option><option>指定应用</option><option>灰度应用</option></select></div></div>
+          <div class="form-row"><div class="form-label">检测条件</div><div class="form-field"><textarea class="form-textarea">tool.declared=false AND span_kind=tool AND tool.name IS NOT NULL</textarea></div></div>
+          <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="说明本版本的规则调整原因"></textarea></div></div>
         </form>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('createModal')">取 消</button>
-        <button class="btn btn-primary" onclick="submitCreateForm()">存至本地仓库</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('ruleModal')">取消</button><button class="btn btn-primary" onclick="submitRule()">保存为新版本</button></div>
     </div>
   </div>
 
-  <!-- 分发下发弹框 -->
-  <div class="modal-overlay" id="distributeModal">
-    <div class="modal-box" style="width: 600px;">
-      <div class="modal-header">
-        <div class="modal-title">构建策略下发推送任务</div>
-        <div class="modal-close" onclick="closeModal('distributeModal')">×</div>
-      </div>
+  <div class="modal-overlay" id="dryRunModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">规则干跑验证：<span id="dryRunTitle"></span></div><div class="modal-close" onclick="closeModal('dryRunModal')">×</div></div>
       <div class="modal-body">
-        <div style="margin-bottom: 10px; font-weight: bold; color:#606266;">将对所有选择的目标群推送替换策略：</div>
-        <div class="form-row">
-          <div class="form-label required">下发范围圈选属性</div>
-          <div class="form-field">
-            <select class="form-select" onchange="document.getElementById('mockTarget').innerText = this.value === '全量' ? '预计受影响智能体数：12,450 个' : '预计受影响智能体数：312 个'">
-              <option value="部门">按所属部门框选分发</option>
-              <option value="业务线">按业务服务链路分发</option>
-              <option value="全量">全局覆盖推平一切网络节点</option>
-            </select>
-          </div>
-        </div>
-        <div class="preview-box" id="mockTarget">预计受影响智能体数：312 个</div>
-        <div class="form-row" style="margin-top:20px;">
-          <div class="form-label">执行窗口</div>
-          <div class="form-field">
-            <label><input type="radio" name="dtime" checked> 立即同步到配置中心</label>
-            <br>
-            <label style="margin-top: 10px; display:inline-block;"><input type="radio" name="dtime"> 设定预约更新凌晨窗口以免抖动</label>
-          </div>
-        </div>
+        <div class="form-row"><div class="form-label">样本 Trace</div><div class="form-field"><input class="form-control" value="TRC-20260416-018"></div></div>
+        <div class="form-row"><div class="form-label">样本 Span</div><div class="form-field"><input class="form-control" value="sp_04_tool"></div></div>
+        <div class="sample-box">命中结果：true<br>置信度：0.91<br>证据字段：tool.input<br>证据摘要：未声明工具 external_http_post 发起外联数据流。</div>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('distributeModal')">取消放弃</button>
-        <button class="btn btn-danger" onclick="submitDistribute()">阅读风险须知，确认强制下发覆盖</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('dryRunModal')">关闭</button><button class="btn btn-primary" onclick="toastSuccess('干跑结果已保存为样本')">保存样本</button></div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
   <script>
-    function searchData() { toastSuccess('查询检索完成'); }
-    function resetSearch() {
-      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
-      inputs.forEach(function(input) { input.value = ''; });
-    }
-    
-    function checkBtnState() {
-      var checked = getCheckedIds('policyTable');
-      document.getElementById('btnBatchDistribute').disabled = checked.length === 0;
-    }
-
-    function openCreateModal() {
-      document.getElementById('createForm').reset();
-      switchPolicyType(document.querySelector('.policy-type-card'), 'collect');
-      openModal('createModal');
-    }
-    
-    function submitCreateForm() {
-      if (validateForm('createForm')) {
-        toastSuccess('版本记录存入中央仓完毕');
-        closeModal('createModal');
-      }
-    }
-
-    function switchPolicyType(el, type) {
-      document.querySelectorAll('.policy-type-card').forEach(function(card){ card.classList.remove('active'); });
-      el.classList.add('active');
-      document.getElementById('panel_collect').style.display = type==='collect' ? 'block' : 'none';
-      document.getElementById('panel_mask').style.display = type==='mask' ? 'block' : 'none';
-      document.getElementById('panel_block').style.display = type==='block' ? 'block' : 'none';
-    }
-
-    function openDistributeModal() {
-      openModal('distributeModal');
-    }
-
-    function submitDistribute() {
-      toastSuccess('指令集已发往底层异步配置中央管道...');
-      closeModal('distributeModal');
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '规则策略' }, { label: '检测规则配置' }]);
+    });
+    function searchData() { toastSuccess('检测规则列表已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function openRuleModal() { openModal('ruleModal'); }
+    function submitRule() { closeModal('ruleModal'); toastSuccess('检测规则已保存为新版本'); }
+    function openDryRunModal(name) { document.getElementById('dryRunTitle').textContent = name; openModal('dryRunModal'); }
   </script>
 </body>
 </html>

@@ -7,53 +7,58 @@
   <style>
     .quota-box { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px dotted #ebeef5; padding: 8px 0; font-size: 13px; }
     .quota-box:last-child { border-bottom: none; }
-    .quota-lbl { color: #606266; font-weight: bold; }
+    .quota-lbl { color: #606266; font-weight: 600; }
     .quota-val { color: #409eff; }
   </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">租户管理</div>
+        <div class="page-subtitle">管理租户基础信息、套餐版本、资源配额和租户状态。</div>
+      </div>
+      <button class="btn btn-primary" onclick="openTenantModal()">新增租户</button>
+    </div>
+
     <div class="search-bar">
       <div class="search-item">
-        <span class="form-label">组织结构全称</span>
-        <input type="text" class="form-control" placeholder="查询租户公司名">
+        <span class="form-label">租户名称</span>
+        <input type="text" class="form-control" placeholder="请输入租户名称或租户 ID">
       </div>
       <div class="search-item">
-        <span class="form-label">账户冻结状态</span>
+        <span class="form-label">租户状态</span>
         <select class="form-select">
-          <option value="">全部情况</option>
-          <option value="正常">商业运作中</option>
-          <option value="冻结">已被后台拉闸冻结</option>
-          <option value="试用">灰度试用体验中</option>
+          <option value="">全部</option>
+          <option value="正常">正常</option>
+          <option value="冻结">已冻结</option>
+          <option value="试用">试用中</option>
         </select>
       </div>
       <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">提取全网租户</button>
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
       </div>
     </div>
 
-    <!-- 列表 -->
     <div class="card">
       <div class="table-toolbar">
-        <div class="table-toolbar-left" style="color: #f56c6c; font-size: 13px; font-weight: bold;">
-          操作警示：该页面权限受最高管理员控制。切勿随意拉闸物理隔离租户网关！
-        </div>
-        <div class="table-toolbar-right">
-          <button class="btn btn-primary btn-sm" onclick="openTenantModal()">开拓新商业租户空间</button>
+        <div class="table-toolbar-left" style="color:#606266;font-size:13px;">
+          高影响操作会写入审计日志；冻结租户前请确认业务影响范围。
         </div>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>超级标识码</th>
-              <th>登记商业主体名称</th>
-              <th>首席联络官邮箱</th>
-              <th>购买版本套餐等级</th>
-              <th>当前商业运作状态</th>
-              <th>底层资源划片详情</th>
-              <th>登记开拓时间</th>
-              <th style="width: 150px;">高风险操作指令</th>
+              <th>租户 ID</th>
+              <th>租户名称</th>
+              <th>管理员邮箱</th>
+              <th>套餐版本</th>
+              <th>状态</th>
+              <th>资源配额</th>
+              <th>创建时间</th>
+              <th style="width:150px;">操作</th>
             </tr>
           </thead>
           <tbody>
@@ -61,35 +66,35 @@
               <td>TN-0081-XX</td>
               <td>东方重工集团安全保密处</td>
               <td>admin@dfzg.example</td>
-              <td><span class="tag tag-warning">尊享私有企业版</span></td>
-              <td><span class="tag tag-success">商业运作中</span></td>
+              <td><span class="tag tag-warning">私有化企业版</span></td>
+              <td><span class="tag tag-success">正常</span></td>
               <td>
-                <div class="quota-box"><span class="quota-lbl">物理机群算力节点</span><span class="quota-val">不设上限</span></div>
-                <div class="quota-box"><span class="quota-lbl">最大数据沙盒保留天数</span><span class="quota-val">3650</span></div>
+                <div class="quota-box"><span class="quota-lbl">计算节点</span><span class="quota-val">不限</span></div>
+                <div class="quota-box"><span class="quota-lbl">数据保留天数</span><span class="quota-val">3650</span></div>
               </td>
               <td>2021-09-01 10:00:00</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="openTenantModal()">改款配额</button>
-                  <button class="btn btn-link danger" onclick="freezeTenant()">强制拉闸冻结</button>
+                  <button class="btn btn-link" onclick="openTenantModal()">编辑配额</button>
+                  <button class="btn btn-link danger" onclick="freezeTenant()">冻结</button>
                 </div>
               </td>
             </tr>
             <tr>
               <td>TN-0099-AA</td>
-              <td>极光科技互联（试用体验区）</td>
+              <td>极光科技互联（试用）</td>
               <td>sec_test@jiguang.example</td>
-              <td><span class="tag tag-info">免费乞丐基础测试版</span></td>
-              <td><span class="tag tag-danger">已被后台拉闸冻结</span></td>
+              <td><span class="tag tag-info">基础版（试用）</span></td>
+              <td><span class="tag tag-danger">已冻结</span></td>
               <td>
-                <div class="quota-box"><span class="quota-lbl">物理机群算力节点</span><span class="quota-val">3</span></div>
-                <div class="quota-box"><span class="quota-lbl">最大数据沙盒保留天数</span><span class="quota-val">7</span></div>
+                <div class="quota-box"><span class="quota-lbl">计算节点</span><span class="quota-val">3</span></div>
+                <div class="quota-box"><span class="quota-lbl">数据保留天数</span><span class="quota-val">7</span></div>
               </td>
               <td>2026-03-10 14:22:00</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link">改款配额</button>
-                  <button class="btn btn-link" style="color:#67c23a;" onclick="unfreezeTenant()">恢复推闸送电</button>
+                  <button class="btn btn-link">编辑配额</button>
+                  <button class="btn btn-link" style="color:#67c23a;" onclick="unfreezeTenant()">恢复</button>
                 </div>
               </td>
             </tr>
@@ -100,39 +105,33 @@
     </div>
   </div>
 
-  <!-- 弹框 -->
   <div class="modal-overlay" id="tenantModal">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">开拓并划拨算力隔离区资源给商户</div>
+        <div class="modal-title">新增 / 编辑租户</div>
         <div class="modal-close" onclick="closeModal('tenantModal')">×</div>
       </div>
       <div class="modal-body">
         <form id="tenantForm">
+          <div class="form-row"><div class="form-label required">租户名称</div><div class="form-field"><input type="text" class="form-control" required></div></div>
+          <div class="form-row"><div class="form-label required">管理员邮箱</div><div class="form-field"><input type="email" class="form-control" required></div></div>
           <div class="form-row">
-            <div class="form-label required">商业登记实体简称</div>
-            <div class="form-field"><input type="text" class="form-control" required></div>
-          </div>
-          <div class="form-row">
-            <div class="form-label required">入驻联络发票邮箱</div>
-            <div class="form-field"><input type="email" class="form-control" required></div>
-          </div>
-          <div class="form-row">
-            <div class="form-label required">结算版本等级</div>
+            <div class="form-label required">套餐版本</div>
             <div class="form-field">
               <select class="form-select" required>
-                <option value="">敲定套餐阶层...</option>
-                <option value="basic">基础限流试水版</option>
-                <option value="pro">高速专业独享版</option>
-                <option value="enterprise">高定企业无界版</option>
+                <option value="">请选择套餐版本</option>
+                <option value="basic">基础版</option>
+                <option value="pro">专业版</option>
+                <option value="enterprise">私有化企业版</option>
               </select>
             </div>
           </div>
+          <div class="form-row"><div class="form-label">数据保留</div><div class="form-field"><input class="form-control" value="180 天"></div></div>
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('tenantModal')">撕毁合约放弃</button>
-        <button class="btn btn-primary" onclick="submitTenant()">立即触发底层隔离切割</button>
+        <button class="btn btn-default" onclick="closeModal('tenantModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitTenant()">保存</button>
       </div>
     </div>
   </div>
@@ -140,34 +139,15 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (typeof renderPagination === 'function') {
-        renderPagination('pagination', 12, 1, 10, function(p){ });
-      }
+      if (typeof renderPagination === 'function') renderPagination('pagination', 12, 1, 10, function(p){});
+      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: '租户管理' }]);
     });
-
-    function searchData() { toastSuccess('扫描跨界租户隔离墙完毕'); }
-    
-    function openTenantModal() {
-      document.getElementById('tenantForm').reset();
-      openModal('tenantModal');
-    }
-
-    function submitTenant() {
-      if (validateForm('tenantForm')) {
-        toastSuccess('已触发底层K8S隔离舱网段切割挂载，系统将给商户发送凭证。');
-        closeModal('tenantModal');
-      }
-    }
-
-    function freezeTenant() {
-      confirmDelete('不可逆的直接停止算力计费与报文探取的危险物理阻断指令', function() {
-        toastSuccess('断网成功！该网域所有探针目前呈瘫痪状态。');
-      });
-    }
-
-    function unfreezeTenant() {
-      toastSuccess('指令已下达，等待路由重新建立网络桥梁激活租户。');
-    }
+    function searchData() { toastSuccess('租户列表已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function openTenantModal() { document.getElementById('tenantForm').reset(); openModal('tenantModal'); }
+    function submitTenant() { if (validateForm('tenantForm')) { toastSuccess('租户信息已保存'); closeModal('tenantModal'); } }
+    function freezeTenant() { showConfirm('确认冻结该租户？冻结后该租户的新数据接入和控制台访问将被限制。', function(){ toastSuccess('租户已冻结，操作已写入审计日志'); }, '冻结确认', 'danger'); }
+    function unfreezeTenant() { toastSuccess('租户已恢复，操作已写入审计日志'); }
   </script>
 </body>
 </html>

@@ -2,248 +2,149 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>安全大盘</title>
+  <title>安全总览</title>
   <link rel="stylesheet" href="../../css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
   <style>
-    .dashboard-container {
-      padding: 20px;
-      background-color: #f0f2f5;
-      min-height: calc(100vh - 40px);
-    }
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin-left: -10px;
-      margin-right: -10px;
-      margin-bottom: 20px;
-    }
-    .col {
-      padding-left: 10px;
-      padding-right: 10px;
-      box-sizing: border-box;
-    }
-    .col-3 { width: 25%; }
-    .col-6 { width: 50%; }
-    .col-12 { width: 100%; }
-
-    .panel {
-      background: #fff;
-      border-radius: 4px;
-      padding: 20px;
-      box-shadow: 0 1px 4px rgba(0,21,41,.08);
-      height: 100%;
-      box-sizing: border-box;
-    }
-    .panel-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 15px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #eee;
-    }
-    .stat-number {
-      font-size: 28px;
-      font-weight: bold;
-      color: #1890ff;
-      line-height: 1.2;
-    }
-    .stat-desc {
-      font-size: 14px;
-      color: #666;
-      margin-top: 5px;
-    }
-    .chart-box {
-      width: 100%;
-      height: 300px;
-    }
-    .chart-box-large {
-      width: 100%;
-      height: 400px;
-    }
+    .dashboard-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
+    .risk-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+    .risk-card { background: #fff; border: 1px solid #EBEEF5; border-radius: 4px; padding: 14px; box-shadow: 0 1px 4px rgba(0,21,41,.06); }
+    .risk-card .label { color: #909399; font-size: 12px; margin-bottom: 8px; }
+    .risk-card .value { font-size: 24px; font-weight: 700; color: #303133; line-height: 1.2; }
+    .risk-card .hint { color: #909399; font-size: 12px; margin-top: 8px; }
+    .value.red { color: #F56C6C; }
+    .value.orange { color: #E6A23C; }
+    .value.green { color: #67C23A; }
+    .value.blue { color: #409EFF; }
+    .trend-bars { height: 220px; display: flex; align-items: flex-end; gap: 12px; padding: 12px 6px 28px; border: 1px solid #EBEEF5; border-radius: 4px; background: #fff; }
+    .trend-day { flex: 1; height: 100%; display: flex; align-items: flex-end; gap: 3px; position: relative; }
+    .bar { flex: 1; min-width: 8px; border-radius: 3px 3px 0 0; }
+    .bar.high { background: #F56C6C; }
+    .bar.mid { background: #E6A23C; }
+    .bar.low { background: #409EFF; }
+    .trend-day::after { content: attr(data-label); position: absolute; left: 50%; bottom: -22px; transform: translateX(-50%); color: #909399; font-size: 12px; }
+    .rank-columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .rank-list { display: grid; gap: 10px; }
+    .rank-item { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; border-bottom: 1px solid #F0F0F0; padding-bottom: 10px; }
+    .rank-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .rank-no { width: 24px; height: 24px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; background: #F5F7FA; color: #606266; font-weight: 600; }
+    .rank-meta { color: #909399; font-size: 12px; margin-top: 3px; }
+    .coverage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .coverage-item { border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; background: #fff; }
+    .coverage-title { display: flex; justify-content: space-between; margin-bottom: 8px; color: #606266; }
+    .todo-list { display: grid; gap: 10px; }
+    .todo-item { border-left: 3px solid #E6A23C; background: #fff; border-radius: 4px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .todo-item.high { border-left-color: #F56C6C; }
+    .todo-item.ok { border-left-color: #67C23A; }
+    .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   </style>
 </head>
 <body class="page-content">
-  <div class="dashboard-container">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">安全总览</div>
+        <div class="page-subtitle">面向内网智能体运行安全，优先展示待处置风险、证据链路、能力边界和监控覆盖缺口。</div>
+      </div>
+      <div class="quick-actions">
+        <button class="btn btn-primary" onclick="goPage('../events/event-list.html','风险事件')">查看待处置</button>
+        <button class="btn btn-default" onclick="goPage('../monitor/trace-list.html','风险溯源')">进入风险溯源</button>
+        <button class="btn btn-default" onclick="goPage('coverage.html','监控覆盖度')">查看覆盖缺口</button>
+      </div>
+    </div>
 
-    <!-- 顶部数据概览 -->
-    <div class="row">
-      <div class="col col-3">
-        <div class="panel">
-          <div class="panel-title">接入应用总数</div>
-          <div class="stat-number">1,204</div>
-          <div class="stat-desc">较昨日新增 <span style="color: #52c41a;">+12</span></div>
+    <div class="risk-strip">
+      <div class="risk-card"><div class="label">未处置高风险</div><div class="value red">23</div><div class="hint">较昨日 +6，需优先确认</div></div>
+      <div class="risk-card"><div class="label">今日新增风险</div><div class="value orange">154</div><div class="hint">中高风险占比 31%</div></div>
+      <div class="risk-card"><div class="label">已处置风险</div><div class="value green">89</div><div class="hint">平均闭环 38 分钟</div></div>
+      <div class="risk-card"><div class="label">采集异常应用</div><div class="value red">7</div><div class="hint">含 2 个生产应用</div></div>
+      <div class="risk-card"><div class="label">规则覆盖缺口</div><div class="value blue">12</div><div class="hint">工具边界规则 5 项</div></div>
+    </div>
+
+    <div class="dashboard-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">近 7 日风险趋势</div>
+          <div><span class="tag tag-danger">高</span> <span class="tag tag-warning">中</span> <span class="tag tag-primary">低</span></div>
+        </div>
+        <div class="card-body">
+          <div class="trend-bars">
+            <div class="trend-day" data-label="04-10"><div class="bar high" style="height:26%;"></div><div class="bar mid" style="height:42%;"></div><div class="bar low" style="height:55%;"></div></div>
+            <div class="trend-day" data-label="04-11"><div class="bar high" style="height:35%;"></div><div class="bar mid" style="height:51%;"></div><div class="bar low" style="height:44%;"></div></div>
+            <div class="trend-day" data-label="04-12"><div class="bar high" style="height:20%;"></div><div class="bar mid" style="height:39%;"></div><div class="bar low" style="height:48%;"></div></div>
+            <div class="trend-day" data-label="04-13"><div class="bar high" style="height:58%;"></div><div class="bar mid" style="height:62%;"></div><div class="bar low" style="height:50%;"></div></div>
+            <div class="trend-day" data-label="04-14"><div class="bar high" style="height:44%;"></div><div class="bar mid" style="height:57%;"></div><div class="bar low" style="height:61%;"></div></div>
+            <div class="trend-day" data-label="04-15"><div class="bar high" style="height:31%;"></div><div class="bar mid" style="height:48%;"></div><div class="bar low" style="height:46%;"></div></div>
+            <div class="trend-day" data-label="今日"><div class="bar high" style="height:50%;"></div><div class="bar mid" style="height:66%;"></div><div class="bar low" style="height:54%;"></div></div>
+          </div>
         </div>
       </div>
-      <div class="col col-3">
-        <div class="panel">
-          <div class="panel-title">活跃智能体数</div>
-          <div class="stat-number">8,530</div>
-          <div class="stat-desc">较昨日新增 <span style="color: #52c41a;">+345</span></div>
-        </div>
-      </div>
-      <div class="col col-3">
-        <div class="panel">
-          <div class="panel-title">今日拦截请求</div>
-          <div class="stat-number" style="color: #f5222d;">45,912</div>
-          <div class="stat-desc">拦截率 <span style="color: #f5222d;">2.4%</span></div>
-        </div>
-      </div>
-      <div class="col col-3">
-        <div class="panel">
-          <div class="panel-title">触发策略告警</div>
-          <div class="stat-number" style="color: #fa8c16;">3,210</div>
-          <div class="stat-desc">未处理 <span style="color: #fa8c16;">128</span></div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">今日待办</div><button class="btn btn-link" onclick="goPage('../events/event-list.html','风险事件')">全部事件</button></div>
+        <div class="card-body">
+          <div class="todo-list">
+            <div class="todo-item high"><div><strong>研发代码审查助手存在高风险工具调用</strong><div class="rank-meta">关联 Trace：TRC-20260416-018</div></div><button class="btn btn-link" onclick="goPage('../monitor/trace-list.html','风险溯源')">溯源</button></div>
+            <div class="todo-item high"><div><strong>2 个应用 Trace 断链率超过阈值</strong><div class="rank-meta">影响证据完整性</div></div><button class="btn btn-link" onclick="goPage('coverage.html','监控覆盖度')">处理</button></div>
+            <div class="todo-item"><div><strong>发现 4 个未声明工具</strong><div class="rank-meta">建议完成能力边界声明</div></div><button class="btn btn-link" onclick="goPage('tool-exposure.html','工具与权限')">查看</button></div>
+            <div class="todo-item ok"><div><strong>昨日误报样本已沉淀</strong><div class="rank-meta">可进入规则干跑验证</div></div><button class="btn btn-link" onclick="goPage('../policy/alert-rules.html','规则策略')">验证</button></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 中间图表区 -->
-    <div class="row">
-      <div class="col col-6">
-        <div class="panel">
-          <div class="panel-title">近三十日请求与拦截趋势</div>
-          <div id="trendChart" class="chart-box"></div>
+    <div class="dashboard-grid" style="margin-top:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">高风险对象排行</div><div><button class="btn btn-link" onclick="toastSuccess('已切换为近 30 天')">近 30 天</button></div></div>
+        <div class="card-body">
+          <div class="rank-columns">
+            <div>
+              <div class="rank-meta" style="margin-bottom:8px;">高风险应用 TOP5</div>
+              <div class="rank-list">
+                <div class="rank-item"><span class="rank-no">1</span><div><strong>研发代码审查助手</strong><div class="rank-meta">高风险 19 | 未处置 7</div></div><span class="tag tag-danger">高</span></div>
+                <div class="rank-item"><span class="rank-no">2</span><div><strong>人事档案助理</strong><div class="rank-meta">敏感数据输出 5</div></div><span class="tag tag-warning">中</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="rank-meta" style="margin-bottom:8px;">高风险工具 TOP5</div>
+              <div class="rank-list">
+                <div class="rank-item"><span class="rank-no">1</span><div><strong>external_http_post</strong><div class="rank-meta">未声明 | 关联 6 个 Agent</div></div><span class="tag tag-danger">高</span></div>
+                <div class="rank-item"><span class="rank-no">2</span><div><strong>direct_db_write</strong><div class="rank-meta">限制名单 | 今日调用 3 次</div></div><span class="tag tag-warning">中</span></div>
+              </div>
+            </div>
+            <div>
+              <div class="rank-meta" style="margin-bottom:8px;">高风险智能体 TOP5</div>
+              <div class="rank-list">
+                <div class="rank-item"><span class="rank-no">1</span><div><strong>代码审查工作流</strong><div class="rank-meta">工具越界 8 | Trace 断链 2</div></div><span class="tag tag-danger">高</span></div>
+                <div class="rank-item"><span class="rank-no">2</span><div><strong>订单查询节点</strong><div class="rank-meta">Prompt 风险 4</div></div><span class="tag tag-warning">中</span></div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="col col-6">
-        <div class="panel">
-          <div class="panel-title">安全风险类型分布</div>
-          <div id="riskPieChart" class="chart-box"></div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">监控覆盖概况</div><button class="btn btn-link" onclick="goPage('coverage.html','监控覆盖度')">查看缺口</button></div>
+        <div class="card-body">
+          <div class="coverage-grid">
+            <div class="coverage-item"><div class="coverage-title"><span>应用接入覆盖</span><strong>94%</strong></div><div class="progress-bar"><div class="progress-fill green" style="width:94%;"></div></div></div>
+            <div class="coverage-item"><div class="coverage-title"><span>Trace 完整率</span><strong>88%</strong></div><div class="progress-bar"><div class="progress-fill orange" style="width:88%;"></div></div></div>
+            <div class="coverage-item"><div class="coverage-title"><span>工具声明覆盖</span><strong>71%</strong></div><div class="progress-bar"><div class="progress-fill orange" style="width:71%;"></div></div></div>
+            <div class="coverage-item"><div class="coverage-title"><span>处置闭环率</span><strong>82%</strong></div><div class="progress-bar"><div class="progress-fill blue" style="width:82%;"></div></div></div>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- 底部图表区 -->
-    <div class="row">
-      <div class="col col-12">
-        <div class="panel">
-          <div class="panel-title">全国节点访问热力图</div>
-          <div id="mapChart" class="chart-box-large"></div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
+  <script src="../../js/common.js"></script>
   <script>
-    // 初始化请求与拦截趋势图
-    var trendChart = echarts.init(document.getElementById('trendChart'));
-    var trendOption = {
-      tooltip: {
-        trigger: 'axis'
-      },
-      legend: {
-        data: ['总访问量', '拦截量']
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: ['1日', '5日', '10日', '15日', '20日', '25日', '30日']
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: '总访问量',
-          type: 'line',
-          smooth: true,
-          itemStyle: { color: '#1890ff' },
-          data: [12000, 13200, 10100, 13400, 9000, 23000, 21000]
-        },
-        {
-          name: '拦截量',
-          type: 'line',
-          smooth: true,
-          itemStyle: { color: '#f5222d' },
-          data: [220, 182, 191, 234, 290, 330, 310]
-        }
-      ]
-    };
-    trendChart.setOption(trendOption);
-
-    // 初始化安全风险类型分布图
-    var riskPieChart = echarts.init(document.getElementById('riskPieChart'));
-    var riskPieOption = {
-      tooltip: {
-        trigger: 'item'
-      },
-      legend: {
-        orient: 'vertical',
-        left: 'left'
-      },
-      series: [
-        {
-          name: '风险类型',
-          type: 'pie',
-          radius: '50%',
-          data: [
-            { value: 1048, name: '越权访问' },
-            { value: 735, name: '敏感信息泄露' },
-            { value: 580, name: '恶意提示词' },
-            { value: 484, name: '接口滥用' },
-            { value: 300, name: '模型幻觉异常' }
-          ],
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          }
-        }
-      ]
-    };
-    riskPieChart.setOption(riskPieOption);
-
-    // 初始化地图（占位使用柱状图代替复杂地图配置）
-    var mapChart = echarts.init(document.getElementById('mapChart'));
-    var mapOption = {
-      tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-          type: 'shadow'
-        }
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'value',
-        boundaryGap: [0, 0.01]
-      },
-      yAxis: {
-        type: 'category',
-        data: ['北京节点', '上海节点', '广州节点', '深圳节点', '杭州节点', '成都节点']
-      },
-      series: [
-        {
-          name: '访问量',
-          type: 'bar',
-          data: [18203, 23489, 29034, 104970, 131744, 630230],
-          itemStyle: { color: '#722ed1' }
-        }
-      ]
-    };
-    mapChart.setOption(mapOption);
-
-    // 监听窗口大小变化
-    window.addEventListener('resize', function() {
-      trendChart.resize();
-      riskPieChart.resize();
-      mapChart.resize();
-    });
+    function goPage(page, label) {
+      if (window.parent && window.parent.loadPage) {
+        window.parent.loadPage('pages/assets/' + page.replace('../', '../'), label, null);
+      } else {
+        window.location.href = page;
+      }
+    }
   </script>
 </body>
 </html>
