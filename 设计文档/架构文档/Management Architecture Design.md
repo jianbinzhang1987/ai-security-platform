@@ -16,7 +16,7 @@
 
 | 端 | 对应模块 | 使用者 | 核心目标 |
 | :--- | :--- | :--- | :--- |
-| **管理端 (Admin Console)** | M6 安全运营控制台 + M4 消息审计 + M5 告警响应 + M7 平台基础设施 | 平台安全运营团队 / 管理员 | 监控告警、规则管理、调用链分析、安全运营 |
+| **管理端 (Admin Console)** | M6 安全运营控制台 + M4 消息审计 + M5 告警响应 + M7 平台基础设施 | 平台安全运营团队 / 管理员 | 监控告警、规则管理、调用观测分析、安全运营 |
 
 ### 1.1 管理端职责边界
 
@@ -25,7 +25,7 @@
 - 接收、处理和存储来自所有客户端 SDK 的 span 事件数据
 - 执行多层次安全检测（Prompt 注入、工具调用审计、行为序列分析、意图对齐）
 - 管理客户的 Agent 应用、监控配置、告警规则
-- 提供安全运营控制台（实时监控大盘、调用链分析、事件处置、报告生成）
+- 提供安全运营控制台（实时监控大盘、调用观测工作台、事件处置、报告生成）
 - 提供多租户隔离、RBAC 权限管理、API 网关等平台基础能力
 
 ### 1.2 目标用户
@@ -34,7 +34,7 @@
 | :--- | :--- | :--- |
 | 平台管理员（SA） | 负责平台运营和租户管理的人员 | 租户管理、用户权限、系统配置 |
 | 安全管理员（SecAdmin） | 客户方的安全负责人，制定安全策略 | 规则配置、告警设置、Agent 配置管理、安全报告 |
-| 安全运营工程师（SOC） | 日常处理安全告警和事件的工程师 | 实时监控、告警处置、事件调查、调用链分析 |
+| 安全运营工程师（SOC） | 日常处理安全告警和事件的工程师 | 实时监控、告警处置、事件调查、调用观测分析 |
 | 只读查看员（RO） | 需要查看监控状态但无操作权限的人员 | 监控看板、报告查看 |
 
 ### 1.3 功能模块总览
@@ -132,7 +132,7 @@
 管理端作为 **安全运营工作台**，需具备：
 - **实时性**：安全事件秒级推送。
 - **数据密度**：大量监控数据的可视化呈现。
-- **复杂交互**：调用链分析、规则编辑器。
+- **复杂交互**：调用观测工作台、规则编辑器。
 | 组件 | 版本 | 用途 |
 | :--- | :--- | :--- |
 | Flyway | >= 9.x | PostgreSQL schema 版本管理，服务启动时自动 migration |
@@ -485,9 +485,13 @@ Kafka: agentsec-spans
 RiskEvent {
     id              UUID        风险事件唯一标识
     tenant_id       UUID        租户隔离
-    app_id          UUID        所属 Agent 应用
-    session_id      String      关联 Session
-    span_id         String      触发风险的具体 Span
+    app_id          UUID        所属接入应用
+    session_id      String      关联 Session（可空，跨轮聚合时使用）
+    trace_id        String      所在 Trace，默认调查入口
+    span_id         String      触发风险的具体 Span，最小证据锚点
+    span_kind       Enum        llm / tool / retriever / network / db / guardrail / internal
+    block_action    String      阻断 / 降级 / 告警放行等动作
+    block_reason    String      阻断或响应原因
     risk_type       Enum        prompt_injection / indirect_injection /
                                 jailbreak / pii_leak / toxicity /
                                 mcp_blacklist / mcp_param_injection /
@@ -527,7 +531,12 @@ CREATE TABLE agent_spans (
     app_id            String,
     instance_id       String,
     span_name         String,
-    span_kind         Enum8('llm'=1, 'tool'=2, 'network'=3, 'db'=4, 'internal'=5),
+    span_kind         Enum8('llm'=1, 'tool'=2, 'network'=3, 'db'=4, 'internal'=5, 'retriever'=6, 'guardrail'=7),
+    agentsec_span_type String,     -- SDK 原始字段，如 llm_call/tool_call
+    framework         String,      -- gen_ai.framework，如 langchain
+    node_display_name String,
+    node_class_name   String,
+    node_method_name  String,
     timestamp         DateTime64(3),    -- 分区键之一
     duration_ms       Float64,
     model             String,
@@ -541,6 +550,10 @@ CREATE TABLE agent_spans (
     tool_input_params String,
     tool_output       String,
     risk_level        Enum8('none'=0, 'low'=1, 'medium'=2, 'high'=3, 'critical'=4),
+    status            Enum8('ok'=1, 'blocked'=2, 'error'=3),
+    block_action      String,
+    block_reason      String,
+    error_type        String,
     risk_type         String,
     security_tags     Array(String),
     anomaly_score     UInt8,
@@ -576,8 +589,8 @@ GROUP BY tenant_id, app_id, window_start;
 
 | 表名 | 用途 | 关键字段 |
 | :--- | :--- | :--- |
-| `GET /agentsec/app/list` | Agent 列表（状态/心跳/SDK版本） | M1-02 |
-| `POST /agentsec/app/autoRegister` | Agent 自动注册（机器指纹） | M1-02 |
+| `GET /agentsec/assets/app/list` | 接入应用列表（状态/心跳/SDK版本） | M1-02 |
+| `POST /agentsec/assets/app/autoRegister` | 接入应用自动注册（机器指纹） | M1-02 |
 | `GET /agentsec/session/{sessionId}` | 完整 Session 调用链重建 | M4-02 |
 | `GET /agentsec/event/list` | 安全事件列表（分页/过滤） | M6-03 |
 | `POST /agentsec/rule/test/{id}` | 规则沙箱回放测试 | M5-02 |
@@ -586,7 +599,7 @@ GROUP BY tenant_id, app_id, window_start;
 | `agent_apps` | Agent 应用注册信息 | id, tenant_id, name, status |
 | `app_tokens` | App Token 管理 | id, app_id, token_hash, status, expires_at |
 | `agent_instances` | Agent 实例心跳状态 | id, app_id, instance_id, hostname, last_heartbeat |
-| `risk_events` | 检测引擎输出（风险事件） | id, session_id, risk_type, risk_level, confidence, evidence |
+| `risk_events` | 检测引擎输出（风险事件） | id, app_id, trace_id, session_id, span_id, span_kind, risk_type, risk_level, confidence, status, block_action, block_reason, evidence |
 | `alert_rules` | 告警规则定义 | id, conditions(JSONB), actions(JSONB), scope_app_ids |
 | `notification_channels` | 通知渠道配置 | id, type, config(JSONB) |
 | `block_logs` | 阻断日志（Append-Only） | id, session_id, reason, blocked_at |
@@ -716,14 +729,14 @@ SDK 侧（每次 LLM 调用前）：
 ├── 安全大盘 /agentsec/dashboard
 │     顶部指标卡（30s 刷新）+ 安全事件趋势图 + 风险分布饼图 + 告警列表
 │
-├── Agent 管理 /agentsec/agents
-│     应用列表 → 应用详情（概览/实例/配置/Token）+ 接入向导 + 设备注册
+├── 资产管理 /agentsec/assets/apps
+│     接入应用列表 → 应用详情（概览/运行实例/接入凭证/监控配置/工具资源/逻辑智能体/策略覆盖）+ 接入审批 + 基础资产拓扑
 │
-├── 安全监控 /agentsec/traces /agentsec/sessions /agentsec/prompts
-│     调用链分析（Trace 瀑布图）+ Session 列表 + Prompt 全文搜索
+├── 安全监控 /agentsec/observe /agentsec/search
+│     调用观测工作台（Trace 默认视图 + Span 证据列表 + Session 可选聚合）+ 内容检索（Prompt/Response/Tool 输入输出）
 │
-├── 安全事件 /agentsec/events /agentsec/alerts /agentsec/block-logs
-│     事件列表（状态流转）+ 告警记录 + 阻断日志
+├── 安全事件 /agentsec/events /agentsec/alerts
+│     事件处置中心 + 告警与响应记录（通知/阻断/降级/放行）
 │
 ├── 安全策略 /agentsec/policies/*
 │     告警规则（测试沙箱）+ 检测引擎配置 + Guardrail 规则 + 通知渠道
@@ -743,22 +756,23 @@ SDK 侧（每次 LLM 调用前）：
 - 按钮权限标识建议采用 `agentsec:app:list`、`agentsec:event:handle`、`agentsec:rule:add` 这类若依风格命名
 - 前端 API 建议放入 `src/api/agentsec/`，与控制器模块一一对应
 
-### 8.2 Trace 瀑布图组件架构
+### 8.2 调用观测工作台组件架构
 
-调用链可视化是控制台最复杂的交互组件：
+调用观测工作台是控制台最复杂的交互组件。MVP 默认围绕 Trace 视图和 Span 详情建设，Session 仅在存在稳定 session_id 时作为聚合视图启用：
 
 ```
 数据流：
-  SOC 工程师点击"查看调用链"
+  SOC 工程师点击"查看证据"
     │
-    ├─► GET /agentsec/session/{session_id}        → spans 列表
-    └─► GET /agentsec/event/list?sessionId=...    → 关联风险事件
+    ├─► GET /agentsec/trace/{trace_id}/spans        → Trace 内 spans 列表
+    ├─► GET /agentsec/event/list?spanId=...         → 关联风险事件
+    └─► GET /agentsec/session/{session_id}          → 可选 Session 聚合上下文
 
 渲染策略：
   1. buildSpanTree(spans) → 基于 parentSpanId 重建树状结构
   2. 时间轴比例换算：(offset / sessionDuration) × 100%
   3. 每条 Span 渲染为一行（层级缩进 = depth × 16px）
-  4. Span 颜色编码：LLM=蓝 / Tool=绿 / Network=橙 / DB=紫
+  4. Span 颜色编码：LLM=蓝 / Tool=绿 / Retriever=青 / Network=橙 / DB=紫 / Guardrail=红
   5. 风险标注层叠加（红/橙/黄告警图标）
   6. 点击 Span → 右侧展开 SpanDetailPanel
        LLM Span: prompt messages + response（PII 已脱敏）
@@ -802,7 +816,7 @@ ws.on('alert', (msg) => {
 | Agent 应用（增删改） | ✓ | ✓ | ✓ | - | - |
 | Agent 应用（只读） | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 监控配置（改） | ✓ | ✓ | ✓ | - | - |
-| 调用链分析（查看） | ✓ | ✓ | ✓ | ✓ | ✓ |
+| 调用观测工作台（查看） | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 安全事件（处置） | ✓ | ✓ | ✓ | ✓ | - |
 | 告警规则（增删改） | ✓ | ✓ | ✓ | - | - |
 | 手动阻断（执行） | ✓ | ✓ | ✓ | - | - |
@@ -1007,17 +1021,20 @@ ruoyi-framework/
 
 | API 端点 | 方法 | 功能描述 | 对应模块 |
 | :--- | :---: | :--- | :--- |
-| `/agentsec/app/list` | GET | Agent 应用列表（状态/心跳/SDK版本） | A-M1-02 |
+| `/agentsec/assets/app/list` | GET | 接入应用列表（状态/心跳/SDK版本） | A-M1-02 |
 | `/agentsec/app` | POST | 创建 Agent 应用，返回 App Token | A-M1-02 |
 | `/agentsec/app/config/{id}` | GET/PUT | 获取/更新 Agent 监控配置 | A-M1-03 |
 | `/agentsec/app/autoRegister` | POST | Agent 自动注册（设备指纹） | A-M1-04 |
-| `/agentsec/session/list` | GET | Session 列表（分页/过滤/异常分排序） | A-M4-02 |
-| `/agentsec/session/{id}` | GET | 完整 Session 调用链重建 | A-M4-02 |
+| `/agentsec/observe/traces` | GET | Trace 视图列表（分页/过滤/风险排序） | A-M4-02 |
+| `/agentsec/observe/spans` | GET | Span 证据列表（按 span_kind/status/risk 过滤） | A-M4-02 |
+| `/agentsec/session/list` | GET | Session 聚合列表（仅多轮/长任务） | A-M4-02 |
+| `/agentsec/trace/{id}/spans` | GET | 完整 Trace 调用链重建 | A-M4-02 |
+| `/agentsec/session/{id}` | GET | 完整 Session 聚合上下文 | A-M4-02 |
 | `/agentsec/dashboard/timeseries` | GET | 时序聚合查询（LLM调用量/Token/延迟） | A-M4-02 |
 | `/agentsec/dashboard/summary` | GET | 近24h/7d/30d 关键安全指标汇总 | A-M4-02 |
 | `/agentsec/event/list` | GET | 安全事件列表（分页/多维过滤） | A-M6-03 |
 | `/agentsec/event/{id}` | PUT | 更新事件状态（认领/确认/误报/关闭） | A-M6-03 |
-| `/agentsec/prompt/search` | POST | Prompt 全文检索（OpenSearch） | A-M4-02 |
+| `/agentsec/search/content` | POST | 内容检索：Prompt/Response/Tool 输入输出（OpenSearch） | A-M4-02 |
 | `/agentsec/rule/list` | GET | 告警规则列表 | A-M5-01 |
 | `/agentsec/rule` | POST | 创建告警规则 | A-M5-01 |
 | `/agentsec/rule/test/{id}` | POST | 规则沙箱回放测试（历史数据） | A-M5-01 |
@@ -1237,3 +1254,7 @@ API 层限流（Redis 滑动窗口）：
 - **前端状态管理**：基于若依 Vue3 现有 `store` 体系演进，避免脱离当前代码结构另起一套前端框架。
 - **规则引擎兼容性**：全面支持 `Sigma` 规则格式，降低安全团队迁移和编写规则的成本。
 *文档结束*
+
+
+
+

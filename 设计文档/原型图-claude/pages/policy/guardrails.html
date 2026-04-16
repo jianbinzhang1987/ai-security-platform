@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>自定义 Guardrail</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header"><div><div class="page-title">自定义 Guardrail</div><div class="page-subtitle">组合关键词、正则、LLM 评分与触发动作，形成可绑定到 app_id 的护栏。</div></div><button class="btn btn-primary" onclick="openModal('guardrailModal')">创建 Guardrail</button></div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-label">Guardrail 总数</div><div class="stat-card-value blue">46</div></div>
+      <div class="stat-card"><div class="stat-card-label">启用中</div><div class="stat-card-value green">39</div></div>
+      <div class="stat-card"><div class="stat-card-label">今日触发</div><div class="stat-card-value orange">218</div></div>
+      <div class="stat-card"><div class="stat-card-label">阻断动作</div><div class="stat-card-value red">32</div></div>
+    </div>
+    <div class="card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>名称</th><th>检测方式</th><th>触发动作</th><th>绑定应用</th><th>状态</th><th>操作</th></tr></thead><tbody>
+      <tr><td>客服隐私强保护</td><td>正则 + 关键词</td><td>脱敏后放行</td><td>app_copilot_service</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+      <tr><td>工具越权硬阻断</td><td>工具黑名单</td><td>阻断</td><td>3 个应用</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+    </tbody></table></div></div>
+  </div>
+  <div class="modal-overlay" id="guardrailModal"><div class="modal-box modal-md"><div class="modal-header"><div class="modal-title">创建 Guardrail</div><div class="modal-close" onclick="closeModal('guardrailModal')">×</div></div><div class="modal-body"><div class="form-row"><div class="form-label required">名称</div><div class="form-field"><input class="form-control"></div></div><div class="form-row"><div class="form-label">动作</div><div class="form-field"><select class="form-select"><option>阻断</option><option>告警</option><option>脱敏后放行</option></select></div></div></div><div class="modal-footer"><button class="btn btn-default" onclick="closeModal('guardrailModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('Guardrail 已保存');closeModal('guardrailModal')">保存</button></div></div></div>
+  <script src="../../js/common.js"></script>
+  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '策略中心' }, { label: '自定义 Guardrail' }]);</script>
+</body>
+</html>

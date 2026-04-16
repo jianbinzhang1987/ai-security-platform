@@ -621,13 +621,13 @@ aiwatch-sdk-java/                            # Java SDK 根目录
 
 **4.6 M6 — 安全运营控制台**
 
-面向安全运营人员的统一工作台，提供 Agent 监控、调用链分析、风险报告等核心视图。
+面向安全运营人员的统一工作台，提供接入应用监控、调用观测工作台、事件处置和风险报告等核心视图。
 
 > **[M6-01] Agent 监控大盘** 优先级: **P1**
 > 
 > 实时掌握所有被监控 Agent 的运行安全状态
 > 
-> ✦ 接入 Agent 全景视图：所有 Agent 的状态（正常/告警/阻断/离线）一览
+> ✦ 接入应用全景视图：所有接入应用的状态（正常/告警/阻断/离线）一览
 > 
 > ✦ 实时指标卡片：LLM 调用量 / Token 消耗 / 平均延迟 / 安全事件数（实时刷新）
 > 
@@ -635,21 +635,21 @@ aiwatch-sdk-java/                            # Java SDK 根目录
 > 
 > ✦ 趋势图表：近 7/30 天 LLM 调用量、安全事件、Token 费用趋势
 > 
-> ✦ 异常 Agent 排行：按异常分排序，快速定位高风险 Agent
+> ✦ 高风险接入应用排行：按异常分和高危 Trace 数排序，快速定位高风险 app_id
 
-> **[M6-02] 调用链 Trace 可视化** 优先级: **P1**
+> **[M6-02] 调用观测工作台** 优先级: **P1**
 > 
-> 直观展示单次 Agent 运行的完整行为轨迹
+> 以 Trace 为默认调查入口、Span 为最小证据单元，直观展示单次 Agent 运行的完整行为轨迹
 > 
-> ✦ Trace 瀑布图：时间轴展示 LLM 调用 → 工具调用 → 子调用的层级关系（基于 Langfuse）
+> ✦ Trace 视图：时间轴展示 LLM 调用 → 工具调用 → 子调用的层级关系（基于 trace_id / parent_span_id，可对接 Langfuse 思路）
 > 
-> ✦ 安全事件标注：在 trace 节点上直接标注安全风险（红色高亮 + 风险详情）
+> ✦ Span 证据标注：在触发风险的 span_id 上直接标注安全风险（红色高亮 + 风险详情）
 > 
-> ✦ Prompt/Response 展示：点击 LLM 调用节点查看完整的 prompt 和 response（脱敏后）
+> ✦ 内容证据展示：点击 LLM 或 Tool 节点查看 Prompt、Response、Tool 输入、Tool 输出（脱敏后）
 > 
 > ✦ 工具调用详情：展示 MCP 工具调用的参数、返回值、执行时长
 > 
-> ✦ 会话对比：将同一 Agent 的正常会话和异常会话并排对比
+> ✦ Session 聚合：仅在存在稳定 session_id 时展示多轮上下文和风险演变
 
 > **[M6-03] 安全事件管理视图** 优先级: **P1**
 > 
@@ -753,12 +753,13 @@ aiwatch-sdk-java/                            # Java SDK 根目录
 | 多租户隔离 | M7-01 | 数据行级隔离，独立配置 |
 | RBAC 认证授权 | M7-02 | 基于 Keycloak 的 OAuth2 接入 |
 | K8s Helm 部署 | M7-04 | 完整平台一键部署 |
+| 基础资产拓扑 | M6-01 | 接入应用 -> 运行实例 -> 逻辑智能体/工作流节点 -> 已观测工具/已声明资源 |
 
 **5.2 开发路线图**
 
 | **阶段** | **周期** | **目标** | **交付物** |
 |:---|:---|:---|:---|
-| Phase 1 MVP | Month 1-2 | 实现完整的"采集 → 检测 → 告警"闭环 | Python SDK + Java SDK + OTel Collector + Prompt注入检测 + 基础告警 + Helm部署 |
+| Phase 1 MVP | Month 1-2 | 实现完整的"采集 → 检测 → 告警 → 基础资产拓扑"闭环 | Python SDK + Java SDK + OTel Collector + Prompt注入检测 + 基础告警 + 基础资产拓扑 + Helm部署 |
 | Phase 2 核心功能 | Month 3-4 | 补全差异化检测能力和运营控制台 | MCP工具调用审计 + 行为序列分析 + Langfuse调用链 + 安全运营控制台 v1 |
 | Phase 3 完整产品 | Month 5-6 | 完成高级分析和商业化功能 | 意图对齐审计 + 自定义规则引擎 + 安全报告 + 多租户SaaS后台 + 私有化部署包 |
 | Phase 4 持续演进 | Month 7+ | 行为基线 AI 模型 + 生态集成 | AI 异常评分模型训练 + NVIDIA OpenShell 集成 + 社区规则库建设 |
@@ -803,3 +804,6 @@ aiwatch-sdk-java/                            # Java SDK 根目录
 | 容器编排 | Kubernetes + Helm | K8s >=1.27 | 平台部署标准方式 |
 | 后端服务 | Go / Python | Go >=1.21 | 检测引擎 Go，SDK 相关服务 Python |
 | 前端 | React + TypeScript | React >=18 | 安全运营控制台 |
+
+
+

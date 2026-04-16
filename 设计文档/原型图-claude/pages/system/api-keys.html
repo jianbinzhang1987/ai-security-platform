@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>API Key 管理</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header"><div><div class="page-title">API Key 管理</div><div class="page-subtitle">管理平台开放接口调用凭证，区别于资产接入 App Token。</div></div><button class="btn btn-primary" onclick="openModal('keyModal')">创建 API Key</button></div>
+    <div class="card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>名称</th><th>Key 前缀</th><th>权限范围</th><th>最近使用</th><th>状态</th><th>操作</th></tr></thead><tbody>
+      <tr><td>SIEM 同步</td><td class="mono">ak_live_71c...</td><td>事件只读、告警只读</td><td>2026-04-15 17:10</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link danger">吊销</button></td></tr>
+      <tr><td>报表集成</td><td class="mono">ak_live_90f...</td><td>报告读取</td><td>2026-04-14 22:01</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link danger">吊销</button></td></tr>
+    </tbody></table></div></div>
+  </div>
+  <div class="modal-overlay" id="keyModal"><div class="modal-box modal-md"><div class="modal-header"><div class="modal-title">创建 API Key</div><div class="modal-close" onclick="closeModal('keyModal')">×</div></div><div class="modal-body"><div class="form-row"><div class="form-label required">名称</div><div class="form-field"><input class="form-control"></div></div><div class="form-row"><div class="form-label">权限</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 事件只读</label><label class="checkbox-item"><input type="checkbox"> 策略管理</label><label class="checkbox-item"><input type="checkbox"> 报告读取</label></div></div></div></div><div class="modal-footer"><button class="btn btn-default" onclick="closeModal('keyModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('API Key 已创建');closeModal('keyModal')">创建</button></div></div></div>
+  <script src="../../js/common.js"></script>
+  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: 'API Key 管理' }]);</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>自定义报告</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header"><div><div class="page-title">自定义报告</div><div class="page-subtitle">选择时间范围、应用范围、风险维度和输出格式，生成可分享安全报告。</div></div><button class="btn btn-primary" onclick="toastSuccess('报告生成任务已提交')">生成报告</button></div>
+    <div class="card"><div class="card-body">
+      <div class="form-row"><div class="form-label required">报告名称</div><div class="form-field"><input class="form-control" value="智能客服 Copilot 周报"></div></div>
+      <div class="form-row"><div class="form-label">接入应用</div><div class="form-field"><select class="form-select"><option>全部应用</option><option>智能客服 Copilot</option><option>研发代码审查助手</option></select></div></div>
+      <div class="form-row"><div class="form-label">内容模块</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险趋势</label><label class="checkbox-item"><input type="checkbox" checked> 事件处置</label><label class="checkbox-item"><input type="checkbox" checked> 策略覆盖</label><label class="checkbox-item"><input type="checkbox"> 原始证据附录</label></div></div></div>
+      <div class="form-row"><div class="form-label">输出格式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="fmt" checked> PDF</label><label class="radio-item"><input type="radio" name="fmt"> HTML</label><label class="radio-item"><input type="radio" name="fmt"> Excel</label></div></div></div>
+    </div></div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);</script>
+</body>
+</html>

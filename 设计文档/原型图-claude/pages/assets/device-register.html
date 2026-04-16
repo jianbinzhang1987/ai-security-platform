@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>接入审批</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">接入审批</div>
+        <div class="page-subtitle">处理新应用或新实例的注册申请，依据设备指纹、app_id、来源网段和审批策略决定是否允许上报。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="openModal('blacklistModal')">黑名单</button>
+        <button class="btn btn-primary" onclick="openModal('strategyModal')">审批策略</button>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card"><div class="stat-card-label">注册申请</div><div class="stat-card-value blue">342</div><div class="stat-card-footer">近 7 日新增 28 个</div></div>
+      <div class="stat-card"><div class="stat-card-label">待审批</div><div class="stat-card-value orange">15</div><div class="stat-card-footer">4 个来自未知网段</div></div>
+      <div class="stat-card"><div class="stat-card-label">已通过</div><div class="stat-card-value green">320</div><div class="stat-card-footer">自动通过 72 个</div></div>
+      <div class="stat-card"><div class="stat-card-label">已拒绝</div><div class="stat-card-value red">7</div><div class="stat-card-footer">命中黑名单 3 个</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">申请对象：</span><input id="kw" class="form-control" placeholder="app_id / instance_id / hostname"></div>
+      <div class="search-item"><span class="form-label">审批状态：</span><select id="status" class="form-select"><option value="">全部</option><option>待审批</option><option>已通过</option><option>已拒绝</option></select></div>
+      <div class="search-item"><span class="form-label">来源：</span><select id="source" class="form-select"><option value="">全部</option><option>SDK 自动注册</option><option>控制台创建</option><option>批量导入</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('审批列表已刷新')">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <button class="btn btn-success" id="btnApprove" onclick="batchApprove()" disabled>批量通过</button>
+          <button class="btn btn-danger" id="btnReject" onclick="openRejectModal('批量申请')" disabled>批量拒绝</button>
+          <span class="tag tag-warning">当前模式：人工审批</span>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="registerTable">
+          <thead><tr><th style="width:40px;"><input type="checkbox" onchange="toggleAllCheckbox(this,'registerTable');checkBtnState()"></th><th>申请编号</th><th>申请对象</th><th>归属应用</th><th>设备指纹</th><th>来源地址</th><th>申请时间</th><th>状态</th><th style="width:180px;">操作</th></tr></thead>
+          <tbody>
+            <tr data-id="REG-20260415-001"><td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td><td>REG-20260415-001</td><td>inst-prod-19 / copilot-prod-19</td><td>app_copilot_service</td><td class="mono">sha256:b91c...a02f</td><td>10.16.8.39</td><td>2026-04-15 16:48:10</td><td><span class="tag tag-warning">待审批</span></td><td><div class="table-action-col"><button class="btn btn-link" onclick="approveSingle('REG-20260415-001')">通过</button><button class="btn btn-link danger" onclick="openRejectModal('REG-20260415-001')">拒绝</button><button class="btn btn-link" onclick="openModal('detailModal')">详情</button></div></td></tr>
+            <tr data-id="REG-20260415-002"><td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td><td>REG-20260415-002</td><td>app_contract_agent</td><td>待创建</td><td class="mono">console:user-zhaoning</td><td>控制台</td><td>2026-04-15 15:32:44</td><td><span class="tag tag-warning">待审批</span></td><td><div class="table-action-col"><button class="btn btn-link" onclick="approveSingle('REG-20260415-002')">通过</button><button class="btn btn-link danger" onclick="openRejectModal('REG-20260415-002')">拒绝</button><button class="btn btn-link" onclick="openModal('detailModal')">详情</button></div></td></tr>
+            <tr data-id="REG-20260414-018"><td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td><td>REG-20260414-018</td><td>inst-gray-01 / copilot-gray-01</td><td>app_copilot_service</td><td class="mono">sha256:77ab...c9e1</td><td>10.17.2.16</td><td>2026-04-14 21:12:06</td><td><span class="tag tag-success">已通过</span></td><td><button class="btn btn-link" onclick="openModal('detailModal')">详情</button></td></tr>
+            <tr data-id="REG-20260414-011"><td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td><td>REG-20260414-011</td><td>unknown-host</td><td>unknown_app</td><td class="mono">sha256:0000...ffff</td><td>172.22.9.18</td><td>2026-04-14 18:02:19</td><td><span class="tag tag-danger">已拒绝</span></td><td><button class="btn btn-link" onclick="openModal('detailModal')">详情</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper"><div class="pagination-info">共 342 条数据，第 1-4 条</div><div class="pagination"><button class="page-btn" disabled>上一页</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">...</button><button class="page-btn">35</button><button class="page-btn">下一页</button></div></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="rejectModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">拒绝接入申请</div><div class="modal-close" onclick="closeModal('rejectModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">申请编号</div><div class="form-field"><input id="rejectId" class="form-control" readonly></div></div>
+        <div class="form-row"><div class="form-label required">拒绝原因</div><div class="form-field"><textarea id="rejectReason" class="form-textarea" placeholder="请填写拒绝原因"></textarea></div></div>
+        <div class="form-row"><div class="form-label">附加操作</div><div class="form-field"><label class="checkbox-item"><input id="blacklist" type="checkbox"> 将设备指纹加入黑名单</label></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('rejectModal')">取消</button><button class="btn btn-danger" onclick="submitReject()">确认拒绝</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="strategyModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">审批策略</div><div class="modal-close" onclick="closeModal('strategyModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">审批模式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input name="mode" type="radio" checked> 人工审批</label><label class="radio-item"><input name="mode" type="radio"> 信任网段自动通过</label></div></div></div>
+        <div class="form-row"><div class="form-label">信任网段</div><div class="form-field"><input class="form-control" value="10.16.0.0/16,10.17.0.0/16"></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('strategyModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('审批策略已保存');closeModal('strategyModal')">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="blacklistModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">设备指纹黑名单</div><div class="modal-close" onclick="closeModal('blacklistModal')">×</div></div>
+      <div class="modal-body">
+        <table class="data-table"><thead><tr><th>指纹</th><th>命中次数</th><th>加入原因</th><th>加入时间</th><th>操作</th></tr></thead><tbody><tr><td class="mono">sha256:0000...ffff</td><td>3</td><td>未知来源批量注册</td><td>2026-04-14 18:05</td><td><button class="btn btn-link danger">移除</button></td></tr><tr><td class="mono">mac:00-16-3e-99-88-77</td><td>1</td><td>离职外包设备</td><td>2026-04-10 09:40</td><td><button class="btn btn-link danger">移除</button></td></tr></tbody></table>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('blacklistModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">申请详情</div><div class="modal-close" onclick="closeModal('detailModal')">×</div></div>
+      <div class="modal-body">
+        <div class="desc-list">
+          <div class="desc-item"><div class="desc-label">申请编号</div><div class="desc-value">REG-20260415-001</div></div>
+          <div class="desc-item"><div class="desc-label">app_id</div><div class="desc-value mono">app_copilot_service</div></div>
+          <div class="desc-item"><div class="desc-label">instance_id</div><div class="desc-value mono">inst-prod-19</div></div>
+          <div class="desc-item"><div class="desc-label">service.name</div><div class="desc-value">customer-copilot</div></div>
+          <div class="desc-item"><div class="desc-label">设备指纹</div><div class="desc-value mono">sha256:b91c...a02f</div></div>
+          <div class="desc-item"><div class="desc-label">SDK 版本</div><div class="desc-value">agentsec-langchain 0.8.4</div></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-success" onclick="approveSingle('REG-20260415-001');closeModal('detailModal')">通过</button><button class="btn btn-default" onclick="closeModal('detailModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (window.parent && window.parent.setBreadcrumb) {
+      window.parent.setBreadcrumb([{ label: '资产管理' }, { label: '接入审批' }]);
+    }
+
+    function resetSearch() {
+      document.getElementById('kw').value = '';
+      document.getElementById('status').value = '';
+      document.getElementById('source').value = '';
+    }
+
+    function checkBtnState() {
+      var checked = getCheckedIds('registerTable');
+      document.getElementById('btnApprove').disabled = checked.length === 0;
+      document.getElementById('btnReject').disabled = checked.length === 0;
+    }
+
+    function approveSingle(id) {
+      showConfirm('确认通过申请 [' + id + ']？系统将发放或绑定 App Token。', function(){ toastSuccess('审批通过'); });
+    }
+
+    function batchApprove() {
+      showConfirm('确认批量通过选中的申请？', function(){ toastSuccess('批量审批通过'); });
+    }
+
+    function openRejectModal(id) {
+      document.getElementById('rejectId').value = id;
+      document.getElementById('rejectReason').value = '';
+      document.getElementById('blacklist').checked = false;
+      openModal('rejectModal');
+    }
+
+    function submitReject() {
+      if (!document.getElementById('rejectReason').value) {
+        toastError('请填写拒绝原因');
+        return;
+      }
+      closeModal('rejectModal');
+      toastSuccess('已拒绝申请');
+    }
+  </script>
+</body>
+</html>

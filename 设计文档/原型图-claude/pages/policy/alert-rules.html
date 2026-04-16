@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>告警规则</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header"><div><div class="page-title">告警规则</div><div class="page-subtitle">条件树、窗口聚合、响应动作和规则测试沙箱。</div></div><button class="btn btn-primary" onclick="toastSuccess('已新建规则草稿')">新增规则</button></div>
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table"><thead><tr><th>规则名称</th><th>触发条件</th><th>聚合窗口</th><th>响应动作</th><th>状态</th><th>操作</th></tr></thead><tbody>
+          <tr><td>高危事件即时告警</td><td>risk_level=high</td><td>实时</td><td>企业微信 + 短信</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">测试</button></td></tr>
+          <tr><td>同应用注入爆发</td><td>risk_type=prompt_injection count&gt;=10</td><td>5 分钟</td><td>创建事件 + 通知 SOC</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">测试</button></td></tr>
+          <tr><td>Collector 离线</td><td>heartbeat_lost&gt;3m</td><td>3 分钟</td><td>通知平台运维</td><td><span class="tag tag-warning">灰度</span></td><td><button class="btn btn-link">测试</button></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '策略中心' }, { label: '告警规则' }]);</script>
+</body>
+</html>

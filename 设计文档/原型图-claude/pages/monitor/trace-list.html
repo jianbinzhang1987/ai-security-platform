@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>调用链分析</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .waterfall-container {
+      padding: 10px 0;
+    }
+    .waterfall-header {
+      display: flex;
+      background: #f5f7fa;
+      padding: 8px 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #e4e7ed;
+      color: #606266;
+    }
+    .waterfall-row {
+      display: flex;
+      padding: 10px;
+      border-bottom: 1px solid #ebeef5;
+      position: relative;
+    }
+    .waterfall-row:hover {
+      background: #fafafa;
+    }
+    .col-name { width: 30%; flex-shrink: 0; }
+    .col-time { width: 20%; flex-shrink: 0; color: #909399; font-size: 13px; }
+    .col-bar { flex: 1; position: relative; display: flex; align-items: center; }
+    
+    .timeline-bar {
+      height: 12px;
+      background: #409eff;
+      border-radius: 6px;
+      min-width: 5px;
+      position: absolute;
+    }
+    
+    .bar-warning { background: #e6a23c; }
+    .bar-danger { background: #f56c6c; }
+    .bar-success { background: #67c23a; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <!-- 顶层过滤 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">会话编号</span>
+        <input type="text" class="form-control" placeholder="请输入会话追踪编号">
+      </div>
+      <div class="search-item">
+        <span class="form-label">智能体名称</span>
+        <input type="text" class="form-control" placeholder="请输入名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险等级</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="极高风险">极高风险</option>
+          <option value="高风险">高风险</option>
+          <option value="中风险">中风险</option>
+          <option value="低风险">无风险</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <!-- 数据列表 -->
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>追踪编号</th>
+              <th>智能体名称</th>
+              <th>所属应用</th>
+              <th>采集节点数</th>
+              <th>总计耗时(毫秒)</th>
+              <th>风险等级</th>
+              <th>发生时间</th>
+              <th style="width: 120px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>TRC-20260414-001</td>
+              <td>智能客服助理</td>
+              <td>核心业务系统</td>
+              <td>12</td>
+              <td>1450</td>
+              <td><span class="tag tag-success">无异常</span></td>
+              <td>2026-04-14 10:22:15</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-001')">瀑布图分析</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>TRC-20260414-002</td>
+              <td>文档代码审查器</td>
+              <td>研发门户</td>
+              <td>8</td>
+              <td>3500</td>
+              <td><span class="tag tag-danger">极高风险</span></td>
+              <td>2026-04-14 10:25:33</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-002')">瀑布图分析</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>TRC-20260414-003</td>
+              <td>数据报表引擎</td>
+              <td>内网看板</td>
+              <td>15</td>
+              <td>8200</td>
+              <td><span class="tag tag-warning">中度异常</span></td>
+              <td>2026-04-14 10:28:41</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openTraceModal('TRC-20260414-003')">瀑布图分析</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- 调用链详情大弹窗 -->
+  <div class="modal-overlay" id="traceModal">
+    <div class="modal-box" style="width: 800px;">
+      <div class="modal-header">
+        <div class="modal-title">调用链瀑布图 (<span id="modalTraceId"></span>)</div>
+        <div class="modal-close" onclick="closeModal('traceModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="waterfall-container">
+          <div class="waterfall-header">
+            <div class="col-name">处理节点与方法</div>
+            <div class="col-time">响应时延(毫秒)</div>
+            <div class="col-bar">时序追踪视图</div>
+          </div>
+          <!-- 瀑布图模拟数据 -->
+          <div class="waterfall-row">
+            <div class="col-name">网关接收请求</div>
+            <div class="col-time">10</div>
+            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 0%; width: 2%;"></div></div>
+          </div>
+          <div class="waterfall-row">
+            <div class="col-name" style="padding-left: 20px;">身份认证与鉴权</div>
+            <div class="col-time">45</div>
+            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 2%; width: 8%;"></div></div>
+          </div>
+          <div class="waterfall-row">
+            <div class="col-name" style="padding-left: 20px;">拦截器预处理</div>
+            <div class="col-time">25</div>
+            <div class="col-bar"><div class="timeline-bar bar-success" style="left: 10%; width: 5%;"></div></div>
+          </div>
+          <div class="waterfall-row">
+            <div class="col-name" style="padding-left: 40px;">大模型接口调用</div>
+            <div class="col-time">1200</div>
+            <div class="col-bar"><div class="timeline-bar bar-primary" style="left: 15%; width: 50%;"></div></div>
+          </div>
+          <div class="waterfall-row">
+            <div class="col-name" style="padding-left: 60px;">内容安全检测 (发现越权)</div>
+            <div class="col-time">300</div>
+            <div class="col-bar"><div class="timeline-bar bar-danger" style="left: 65%; width: 25%;"></div></div>
+          </div>
+          <div class="waterfall-row">
+            <div class="col-name" style="padding-left: 40px;">返回阻断响应</div>
+            <div class="col-time">15</div>
+            <div class="col-bar"><div class="timeline-bar bar-warning" style="left: 90%; width: 5%;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('traceModal')">关 闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof renderPagination === 'function') {
+        renderPagination('pagination', 125, 1, 10, function(p){ console.log(p); });
+      }
+    });
+
+    function searchData() {
+      toastSuccess('查询数据更新成功');
+    }
+
+    function resetSearch() {
+      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
+      inputs.forEach(function(input) { input.value = ''; });
+    }
+
+    function openTraceModal(id) {
+      document.getElementById('modalTraceId').textContent = id;
+      openModal('traceModal');
+    }
+  </script>
+</body>
+</html>

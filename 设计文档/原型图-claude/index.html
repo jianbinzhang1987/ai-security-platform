@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>大模型安全监测平台 - 管理控制台</title>
+        <link rel="stylesheet" href="css/style.css" />
+        <style>
+            /* ---- 主框架补充样式 ---- */
+            .layout-wrapper {
+                display: flex;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            /* 侧边栏折叠态 */
+            .layout-wrapper.sidebar-collapsed .sidebar {
+                width: 0;
+            }
+            .layout-wrapper.sidebar-collapsed .content-area {
+                width: 100%;
+            }
+
+            /* 顶部栏折叠按钮 */
+            .collapse-btn {
+                width: 32px;
+                height: 32px;
+                border: 1px solid #dcdfe6;
+                border-radius: 4px;
+                background: #fff;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                gap: 4px;
+                flex-shrink: 0;
+            }
+            .collapse-btn:hover {
+                background: #f0f2f5;
+            }
+            .collapse-btn span {
+                display: block;
+                width: 16px;
+                height: 2px;
+                background: #606266;
+                border-radius: 1px;
+                transition: transform 0.2s;
+            }
+
+            /* iframe 内容区 */
+            .iframe-wrapper {
+                flex: 1;
+                overflow: hidden;
+                position: relative;
+            }
+            .content-iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                display: block;
+            }
+
+            /* 子菜单标题分隔 */
+            .nav-group-sep {
+                height: 1px;
+                background: #3d5166;
+                margin: 4px 0;
+            }
+
+            /* 徽标数字 */
+            .nav-badge {
+                background: #f56c6c;
+                color: #fff;
+                font-size: 11px;
+                font-weight: 600;
+                min-width: 18px;
+                height: 18px;
+                border-radius: 9px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 4px;
+                margin-left: auto;
+            }
+
+            /* 顶部标签页 */
+            .page-tabs {
+                display: flex;
+                background: #fff;
+                border-bottom: 1px solid #e6ebf5;
+                padding: 0 8px;
+                overflow-x: auto;
+                flex-shrink: 0;
+                gap: 2px;
+                align-items: flex-end;
+                min-height: 36px;
+            }
+            .page-tabs::-webkit-scrollbar {
+                height: 0;
+            }
+            .page-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 6px 14px;
+                font-size: 13px;
+                color: #606266;
+                cursor: pointer;
+                border: 1px solid #d8dce5;
+                border-bottom: none;
+                border-radius: 3px 3px 0 0;
+                background: #f5f7fa;
+                white-space: nowrap;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+                margin-bottom: -1px;
+                user-select: none;
+            }
+            .page-tab.active {
+                background: #fff;
+                color: #409eff;
+                border-color: #d8dce5;
+            }
+            .page-tab:hover {
+                color: #409eff;
+            }
+            .page-tab .tab-close {
+                font-size: 12px;
+                color: #c0c4cc;
+                width: 16px;
+                height: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+            }
+            .page-tab .tab-close:hover {
+                background: #f56c6c;
+                color: #fff;
+            }
+
+            /* 下拉菜单 */
+            .dropdown {
+                position: relative;
+            }
+            .dropdown-menu {
+                position: absolute;
+                top: calc(100% + 4px);
+                right: 0;
+                background: #fff;
+                border: 1px solid #ebeef5;
+                border-radius: 4px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                min-width: 140px;
+                z-index: 500;
+                display: none;
+                padding: 4px 0;
+            }
+            .dropdown-menu.show {
+                display: block;
+            }
+            .dropdown-item {
+                padding: 8px 16px;
+                font-size: 13px;
+                color: #606266;
+                cursor: pointer;
+                transition: background 0.15s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .dropdown-item:hover {
+                background: #f5f7fa;
+                color: #409eff;
+            }
+            .dropdown-item.danger:hover {
+                color: #f56c6c;
+            }
+            .dropdown-sep {
+                height: 1px;
+                background: #ebeef5;
+                margin: 4px 0;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="layout-wrapper" id="layoutWrapper">
+            <!-- ======== 侧边栏 ======== -->
+            <aside class="sidebar" id="sidebar">
+                <!-- Logo -->
+                <div class="sidebar-logo">
+                    <div class="logo-icon">安</div>
+                    <span>大模型安全监测</span>
+                </div>
+
+                <!-- 导航菜单 -->
+                <nav class="sidebar-nav" id="sidebarNav">
+                    <!-- 安全大盘 -->
+                    <div
+                        class="nav-item-top"
+                        data-page="pages/assets/dashboard.html"
+                        data-label="安全大盘"
+                        onclick="
+                            loadPage(
+                                'pages/assets/dashboard.html',
+                                '安全大盘',
+                                this,
+                            )
+                        "
+                    >
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <rect
+                                x="1"
+                                y="1"
+                                width="6"
+                                height="6"
+                                rx="1"
+                                fill="currentColor"
+                                opacity=".5"
+                            />
+                            <rect
+                                x="9"
+                                y="1"
+                                width="6"
+                                height="6"
+                                rx="1"
+                                fill="currentColor"
+                            />
+                            <rect
+                                x="1"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1"
+                                fill="currentColor"
+                            />
+                            <rect
+                                x="9"
+                                y="9"
+                                width="6"
+                                height="6"
+                                rx="1"
+                                fill="currentColor"
+                                opacity=".5"
+                            />
+                        </svg>
+                        <span class="nav-label">安全大盘</span>
+                    </div>
+
+                    <!-- 资产管理 -->
+                    <div class="nav-parent open" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <rect
+                                x="1"
+                                y="2"
+                                width="14"
+                                height="3"
+                                rx="1"
+                                fill="currentColor"
+                            />
+                            <rect
+                                x="1"
+                                y="7"
+                                width="14"
+                                height="3"
+                                rx="1"
+                                fill="currentColor"
+                                opacity=".6"
+                            />
+                            <rect
+                                x="1"
+                                y="12"
+                                width="14"
+                                height="3"
+                                rx="1"
+                                fill="currentColor"
+                                opacity=".4"
+                            />
+                        </svg>
+                        <span class="nav-label">资产管理</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children show">
+                        <div
+                            class="nav-item active"
+                            data-page="pages/assets/app-list.html"
+                            data-label="接入应用管理"
+                            onclick="
+                                loadPage(
+                                    'pages/assets/app-list.html',
+                                    '接入应用管理',
+                                    this,
+                                )
+                            "
+                        >
+                            接入应用管理
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/assets/device-register.html"
+                            data-label="接入审批"
+                            onclick="
+                                loadPage(
+                                    'pages/assets/device-register.html',
+                                    '接入审批',
+                                    this,
+                                )
+                            "
+                        >
+                            接入审批
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/assets/topology.html"
+                            data-label="资产拓扑"
+                            onclick="
+                                loadPage(
+                                    'pages/assets/topology.html',
+                                    '资产拓扑',
+                                    this,
+                                )
+                            "
+                        >
+                            资产拓扑
+                        </div>
+                    </div>
+
+                    <!-- 安全监控 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <circle
+                                cx="8"
+                                cy="8"
+                                r="6"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            />
+                            <path
+                                d="M8 4v4l3 2"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                        <span class="nav-label">安全监控</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
+                        <div
+                            class="nav-item"
+                            data-page="pages/monitor/trace-list.html"
+                            data-label="调用观测工作台"
+                            onclick="
+                                loadPage(
+                                    'pages/monitor/trace-list.html',
+                                    '调用观测工作台',
+                                    this,
+                                )
+                            "
+                        >
+                            调用观测工作台
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/monitor/prompt-search.html"
+                            data-label="内容检索"
+                            onclick="
+                                loadPage(
+                                    'pages/monitor/prompt-search.html',
+                                    '内容检索',
+                                    this,
+                                )
+                            "
+                        >
+                            内容检索
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/monitor/saved-views.html"
+                            data-label="保存的调查模板"
+                            onclick="
+                                loadPage(
+                                    'pages/monitor/saved-views.html',
+                                    '保存的调查模板',
+                                    this,
+                                )
+                            "
+                        >
+                            保存的调查模板
+                        </div>
+                    </div>
+
+                    <!-- 安全事件 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <path
+                                d="M8 1L1 14h14L8 1z"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linejoin="round"
+                            />
+                            <path
+                                d="M8 6v4"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                            />
+                            <circle
+                                cx="8"
+                                cy="12"
+                                r="0.8"
+                                fill="currentColor"
+                            />
+                        </svg>
+                        <span class="nav-label">安全事件</span>
+                        <span class="nav-badge">12</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
+                        <div
+                            class="nav-item"
+                            data-page="pages/events/event-list.html"
+                            data-label="事件处置中心"
+                            onclick="
+                                loadPage(
+                                    'pages/events/event-list.html',
+                                    '事件处置中心',
+                                    this,
+                                )
+                            "
+                        >
+                            事件处置中心
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/events/alert-log.html"
+                            data-label="告警与响应记录"
+                            onclick="
+                                loadPage(
+                                    'pages/events/alert-log.html',
+                                    '告警与响应记录',
+                                    this,
+                                )
+                            "
+                        >
+                            告警与响应记录
+                        </div>
+                    </div>
+
+                    <!-- 策略中心 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <path
+                                d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4-3-3h4z"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linejoin="round"
+                            />
+                        </svg>
+                        <span class="nav-label">策略中心</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/policy-list.html"
+                            data-label="检测规则配置"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/policy-list.html',
+                                    '检测规则配置',
+                                    this,
+                                )
+                            "
+                        >
+                            检测规则配置
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/alert-rules.html"
+                            data-label="告警规则"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/alert-rules.html',
+                                    '告警规则',
+                                    this,
+                                )
+                            "
+                        >
+                            告警规则
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/guardrails.html"
+                            data-label="自定义 Guardrail"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/guardrails.html',
+                                    '自定义 Guardrail',
+                                    this,
+                                )
+                            "
+                        >
+                            自定义 Guardrail
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/notify-channel.html"
+                            data-label="通知渠道"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/notify-channel.html',
+                                    '通知渠道',
+                                    this,
+                                )
+                            "
+                        >
+                            通知渠道
+                        </div>
+                    </div>
+
+                    <!-- 报告中心 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <rect
+                                x="2"
+                                y="1"
+                                width="12"
+                                height="14"
+                                rx="1.5"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            />
+                            <path
+                                d="M5 5h6M5 8h6M5 11h4"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                        <span class="nav-label">报告中心</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
+                        <div
+                            class="nav-item"
+                            data-page="pages/report/report-list.html"
+                            data-label="安全报告"
+                            onclick="
+                                loadPage(
+                                    'pages/report/report-list.html',
+                                    '安全报告',
+                                    this,
+                                )
+                            "
+                        >
+                            安全报告
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/report/report-new.html"
+                            data-label="自定义报告"
+                            onclick="
+                                loadPage(
+                                    'pages/report/report-new.html',
+                                    '自定义报告',
+                                    this,
+                                )
+                            "
+                        >
+                            自定义报告
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/report/subscriptions.html"
+                            data-label="报告订阅"
+                            onclick="
+                                loadPage(
+                                    'pages/report/subscriptions.html',
+                                    '报告订阅',
+                                    this,
+                                )
+                            "
+                        >
+                            报告订阅
+                        </div>
+                    </div>
+
+                    <!-- 系统管理 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <circle
+                                cx="8"
+                                cy="8"
+                                r="2.5"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            />
+                            <path
+                                d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.42 1.42M11.53 11.53l1.42 1.42M3.05 12.95l1.42-1.42M11.53 4.47l1.42-1.42"
+                                stroke="currentColor"
+                                stroke-width="1.3"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                        <span class="nav-label">系统管理</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
+                        <div
+                            class="nav-item"
+                            data-page="pages/system/tenant-list.html"
+                            data-label="租户管理"
+                            onclick="
+                                loadPage(
+                                    'pages/system/tenant-list.html',
+                                    '租户管理',
+                                    this,
+                                )
+                            "
+                        >
+                            租户管理
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/system/user-list.html"
+                            data-label="用户与权限"
+                            onclick="
+                                loadPage(
+                                    'pages/system/user-list.html',
+                                    '用户与权限',
+                                    this,
+                                )
+                            "
+                        >
+                            用户与权限
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/system/api-keys.html"
+                            data-label="API Key 管理"
+                            onclick="
+                                loadPage(
+                                    'pages/system/api-keys.html',
+                                    'API Key 管理',
+                                    this,
+                                )
+                            "
+                        >
+                            API Key 管理
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/system/audit-log.html"
+                            data-label="操作审计日志"
+                            onclick="
+                                loadPage(
+                                    'pages/system/audit-log.html',
+                                    '操作审计日志',
+                                    this,
+                                )
+                            "
+                        >
+                            操作审计日志
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/ops/service-status.html"
+                            data-label="服务运行状态"
+                            onclick="
+                                loadPage(
+                                    'pages/ops/service-status.html',
+                                    '服务运行状态',
+                                    this,
+                                )
+                            "
+                        >
+                            服务运行状态
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/ops/collector-config.html"
+                            data-label="数据采集器配置"
+                            onclick="
+                                loadPage(
+                                    'pages/ops/collector-config.html',
+                                    '数据采集器配置',
+                                    this,
+                                )
+                            "
+                        >
+                            数据采集器配置
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/ops/deploy-config.html"
+                            data-label="平台路由与部署"
+                            onclick="
+                                loadPage(
+                                    'pages/ops/deploy-config.html',
+                                    '平台路由与部署',
+                                    this,
+                                )
+                            "
+                        >
+                            平台路由与部署
+                        </div>
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- ======== 主区域 ======== -->
+            <div class="main-area">
+                <!-- 顶部栏 -->
+                <header class="top-bar">
+                    <div class="top-bar-left">
+                        <!-- 折叠按钮 -->
+                        <button
+                            class="collapse-btn"
+                            onclick="toggleSidebar()"
+                            title="折叠侧边栏"
+                        >
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </button>
+                        <!-- 面包屑 -->
+                        <nav class="breadcrumb" id="breadcrumb">
+                            <span class="breadcrumb-item">首页</span>
+                            <span class="breadcrumb-sep">›</span>
+                            <span class="breadcrumb-item">资产管理</span>
+                            <span class="breadcrumb-sep">›</span>
+                            <span
+                                class="breadcrumb-item current"
+                                id="breadcrumbCurrent"
+                                >接入应用管理</span
+                            >
+                        </nav>
+                    </div>
+                    <div class="top-bar-right">
+                        <!-- 全屏 -->
+                        <button
+                            class="btn btn-default btn-sm"
+                            onclick="toggleFullscreen()"
+                            title="全屏"
+                        >
+                            <svg
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                width="14"
+                                height="14"
+                            >
+                                <path
+                                    d="M1 1h4v2H3v2H1V1zm10 0h4v4h-2V3h-2V1zM1 11h2v2h2v2H1v-4zm12 2h-2v2h4v-4h-2v2z"
+                                    fill="currentColor"
+                                />
+                            </svg>
+                        </button>
+                        <!-- 消息通知 -->
+                        <div
+                            style="position: relative; cursor: pointer"
+                            onclick="
+                                loadPage(
+                                    'pages/events/event-list.html',
+                                    '事件列表',
+                                    null,
+                                )
+                            "
+                        >
+                            <svg
+                                viewBox="0 0 16 16"
+                                fill="none"
+                                width="20"
+                                height="20"
+                            >
+                                <path
+                                    d="M8 1a5 5 0 00-5 5v3l-1.5 2h13L13 9V6a5 5 0 00-5-5z"
+                                    stroke="#606266"
+                                    stroke-width="1.3"
+                                />
+                                <path
+                                    d="M6.5 13a1.5 1.5 0 003 0"
+                                    stroke="#606266"
+                                    stroke-width="1.3"
+                                />
+                            </svg>
+                            <span
+                                style="
+                                    position: absolute;
+                                    top: -4px;
+                                    right: -4px;
+                                    background: #f56c6c;
+                                    color: #fff;
+                                    font-size: 10px;
+                                    min-width: 16px;
+                                    height: 16px;
+                                    border-radius: 8px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    padding: 0 3px;
+                                "
+                                >12</span
+                            >
+                        </div>
+                        <!-- 用户信息 -->
+                        <div class="dropdown" id="userDropdown">
+                            <div
+                                class="top-user"
+                                onclick="toggleDropdown('userDropdownMenu')"
+                            >
+                                <div class="user-avatar">管</div>
+                                <span>平台管理员</span>
+                                <svg
+                                    viewBox="0 0 16 16"
+                                    fill="none"
+                                    width="12"
+                                    height="12"
+                                    style="margin-left: 2px"
+                                >
+                                    <path
+                                        d="M4 6l4 4 4-4"
+                                        stroke="#606266"
+                                        stroke-width="1.5"
+                                        stroke-linecap="round"
+                                    />
+                                </svg>
+                            </div>
+                            <div class="dropdown-menu" id="userDropdownMenu">
+                                <div
+                                    class="dropdown-item"
+                                    onclick="hideDropdown('userDropdownMenu')"
+                                >
+                                    <svg
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        width="14"
+                                        height="14"
+                                    >
+                                        <circle
+                                            cx="8"
+                                            cy="5"
+                                            r="3"
+                                            stroke="currentColor"
+                                            stroke-width="1.3"
+                                        />
+                                        <path
+                                            d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"
+                                            stroke="currentColor"
+                                            stroke-width="1.3"
+                                        />
+                                    </svg>
+                                    个人中心
+                                </div>
+                                <div
+                                    class="dropdown-item"
+                                    onclick="hideDropdown('userDropdownMenu')"
+                                >
+                                    <svg
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        width="14"
+                                        height="14"
+                                    >
+                                        <rect
+                                            x="1"
+                                            y="1"
+                                            width="14"
+                                            height="14"
+                                            rx="2"
+                                            stroke="currentColor"
+                                            stroke-width="1.3"
+                                        />
+                                        <path
+                                            d="M5 8h6M8 5v6"
+                                            stroke="currentColor"
+                                            stroke-width="1.3"
+                                            stroke-linecap="round"
+                                        />
+                                    </svg>
+                                    修改密码
+                                </div>
+                                <div class="dropdown-sep"></div>
+                                <div
+                                    class="dropdown-item danger"
+                                    onclick="confirmLogout()"
+                                >
+                                    <svg
+                                        viewBox="0 0 16 16"
+                                        fill="none"
+                                        width="14"
+                                        height="14"
+                                    >
+                                        <path
+                                            d="M6 2H2v12h4M11 5l3 3-3 3M7 8h7"
+                                            stroke="currentColor"
+                                            stroke-width="1.3"
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                        />
+                                    </svg>
+                                    退出登录
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- 页面标签栏 -->
+                <div class="page-tabs" id="pageTabs">
+                    <div
+                        class="page-tab active"
+                        data-page="pages/assets/app-list.html"
+                        id="tab_app-list"
+                    >
+                        接入应用管理
+                        <span
+                            class="tab-close"
+                            onclick="closeTab(event, 'tab_app-list')"
+                            >×</span
+                        >
+                    </div>
+                </div>
+
+                <!-- iframe 内容区 -->
+                <div class="iframe-wrapper">
+                    <iframe
+                        class="content-iframe"
+                        id="mainFrame"
+                        src="pages/assets/app-list.html"
+                        title="内容区域"
+                        onload="onFrameLoad(this)"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+
+        <!-- 退出确认弹窗 -->
+        <div class="confirm-overlay" id="logoutConfirm">
+            <div class="confirm-box">
+                <div class="confirm-header">
+                    <span
+                        class="confirm-icon"
+                        style="color: #e6a23c; font-size: 20px"
+                        >!</span
+                    >
+                    <span class="confirm-title">退出确认</span>
+                </div>
+                <div class="confirm-message">确定要退出登录吗？</div>
+                <div class="confirm-footer">
+                    <button
+                        class="btn btn-default"
+                        onclick="closeLogoutConfirm()"
+                    >
+                        取 消
+                    </button>
+                    <button class="btn btn-danger" onclick="doLogout()">
+                        确认退出
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 全局提示容器 -->
+        <div class="toast-container" id="__toast_container__"></div>
+
+        <script src="js/common.js"></script>
+        <script>
+            /* ============================================================
+     状态管理
+     ============================================================ */
+            var _currentPage = "pages/assets/app-list.html";
+            var _openTabs = [
+                {
+                    page: "pages/assets/app-list.html",
+                    label: "接入应用管理",
+                    id: "tab_app-list",
+                },
+            ];
+
+            /* ============================================================
+     页面加载
+     ============================================================ */
+            function loadPage(path, label, navEl) {
+                if (_currentPage === path) return;
+                _currentPage = path;
+
+                // 更新 iframe
+                document.getElementById("mainFrame").src = path;
+
+                // 更新面包屑
+                var current = document.getElementById("breadcrumbCurrent");
+                if (current) current.textContent = label || "";
+
+                // 更新导航激活状态
+                if (navEl) {
+                    document
+                        .querySelectorAll(".nav-item")
+                        .forEach(function (el) {
+                            el.classList.remove("active");
+                        });
+                    document
+                        .querySelectorAll(".nav-item-top")
+                        .forEach(function (el) {
+                            el.classList.remove("active");
+                        });
+                    navEl.classList.add("active");
+                }
+
+                // 更新或添加标签页
+                addOrActivateTab(path, label);
+            }
+
+            /* ============================================================
+     标签页管理
+     ============================================================ */
+            function addOrActivateTab(path, label) {
+                var tabsEl = document.getElementById("pageTabs");
+                var tabId = "tab_" + path.replace(/[^a-zA-Z0-9]/g, "_");
+
+                // 检查是否已存在
+                var existing = document.getElementById(tabId);
+                if (existing) {
+                    // 激活已有标签
+                    document
+                        .querySelectorAll(".page-tab")
+                        .forEach(function (t) {
+                            t.classList.remove("active");
+                        });
+                    existing.classList.add("active");
+                    return;
+                }
+
+                // 去激活所有
+                document.querySelectorAll(".page-tab").forEach(function (t) {
+                    t.classList.remove("active");
+                });
+
+                // 新增标签
+                var tab = document.createElement("div");
+                tab.className = "page-tab active";
+                tab.id = tabId;
+                tab.dataset.page = path;
+                tab.innerHTML =
+                    label +
+                    '<span class="tab-close" onclick="closeTab(event,\'' +
+                    tabId +
+                    "')\">×</span>";
+                tab.onclick = function (e) {
+                    if (e.target.classList.contains("tab-close")) return;
+                    loadPage(path, label, null);
+                    document
+                        .querySelectorAll(".page-tab")
+                        .forEach(function (t) {
+                            t.classList.remove("active");
+                        });
+                    tab.classList.add("active");
+                    // 同步激活导航
+                    document
+                        .querySelectorAll(".nav-item, .nav-item-top")
+                        .forEach(function (el) {
+                            if (el.dataset.page === path) {
+                                el.classList.add("active");
+                            } else {
+                                el.classList.remove("active");
+                            }
+                        });
+                };
+
+                tabsEl.appendChild(tab);
+                _openTabs.push({ page: path, label: label, id: tabId });
+            }
+
+            function closeTab(event, tabId) {
+                event.stopPropagation();
+                var tab = document.getElementById(tabId);
+                if (!tab) return;
+
+                // 不能关闭最后一个标签
+                var allTabs = document.querySelectorAll(".page-tab");
+                if (allTabs.length <= 1) {
+                    showToast("warning", "提示", "至少保留一个标签页");
+                    return;
+                }
+
+                var wasActive = tab.classList.contains("active");
+                tab.parentNode.removeChild(tab);
+                _openTabs = _openTabs.filter(function (t) {
+                    return t.id !== tabId;
+                });
+
+                // 如果关闭的是当前激活标签，则激活最后一个
+                if (wasActive && _openTabs.length > 0) {
+                    var last = _openTabs[_openTabs.length - 1];
+                    var lastTab = document.getElementById(last.id);
+                    if (lastTab) {
+                        lastTab.classList.add("active");
+                        document.getElementById("mainFrame").src = last.page;
+                        _currentPage = last.page;
+                        var current =
+                            document.getElementById("breadcrumbCurrent");
+                        if (current) current.textContent = last.label;
+                    }
+                }
+            }
+
+            /* ============================================================
+     侧边栏子菜单展开/折叠
+     ============================================================ */
+            function toggleNav(parentEl) {
+                parentEl.classList.toggle("open");
+                var children = parentEl.nextElementSibling;
+                if (children && children.classList.contains("nav-children")) {
+                    children.classList.toggle("show");
+                }
+            }
+
+            /* ============================================================
+     侧边栏整体折叠
+     ============================================================ */
+            function toggleSidebar() {
+                var wrapper = document.getElementById("layoutWrapper");
+                wrapper.classList.toggle("sidebar-collapsed");
+            }
+
+            /* ============================================================
+     面包屑从 iframe 更新（子页面回调）
+     ============================================================ */
+            function setBreadcrumb(items) {
+                var bc = document.getElementById("breadcrumb");
+                if (!bc) return;
+                var html = "";
+                items.forEach(function (item, idx) {
+                    if (idx > 0)
+                        html += '<span class="breadcrumb-sep">›</span>';
+                    if (item.page) {
+                        html +=
+                            '<span class="breadcrumb-item" style="cursor:pointer;color:#409EFF;" onclick="loadPage(\'' +
+                            item.page +
+                            "','" +
+                            item.label +
+                            "',null)\">" +
+                            item.label +
+                            "</span>";
+                    } else {
+                        html +=
+                            '<span class="breadcrumb-item' +
+                            (idx === items.length - 1 ? " current" : "") +
+                            '">' +
+                            item.label +
+                            "</span>";
+                    }
+                });
+                bc.innerHTML = html;
+                // 更新当前页面标题
+                var currentEl = document.getElementById("breadcrumbCurrent");
+                if (!currentEl && items.length > 0) {
+                    var lastItem = items[items.length - 1].label;
+                    bc.lastElementChild &&
+                        (bc.lastElementChild.id = "breadcrumbCurrent");
+                }
+            }
+
+            /* ============================================================
+     iframe 加载完成
+     ============================================================ */
+            function onFrameLoad(frame) {
+                // 可在此做进一步处理
+            }
+
+            /* ============================================================
+     全屏
+     ============================================================ */
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen &&
+                        document.documentElement.requestFullscreen();
+                } else {
+                    document.exitFullscreen && document.exitFullscreen();
+                }
+            }
+
+            /* ============================================================
+     下拉菜单
+     ============================================================ */
+            function toggleDropdown(id) {
+                var menu = document.getElementById(id);
+                if (!menu) return;
+                menu.classList.toggle("show");
+            }
+
+            function hideDropdown(id) {
+                var menu = document.getElementById(id);
+                if (menu) menu.classList.remove("show");
+            }
+
+            // 点击外部关闭下拉
+            document.addEventListener("click", function (e) {
+                if (!e.target.closest(".dropdown")) {
+                    document
+                        .querySelectorAll(".dropdown-menu")
+                        .forEach(function (m) {
+                            m.classList.remove("show");
+                        });
+                }
+            });
+
+            /* ============================================================
+     退出登录
+     ============================================================ */
+            function confirmLogout() {
+                hideDropdown("userDropdownMenu");
+                document.getElementById("logoutConfirm").classList.add("show");
+            }
+
+            function closeLogoutConfirm() {
+                document
+                    .getElementById("logoutConfirm")
+                    .classList.remove("show");
+            }
+
+            function doLogout() {
+                closeLogoutConfirm();
+                showToast("success", "已退出登录", "正在跳转到登录页面...");
+                setTimeout(function () {
+                    // 模拟跳转
+                    showToast("info", "提示", "原型图演示模式，无需实际登录");
+                }, 1500);
+            }
+
+            /* ============================================================
+     初始化：展开当前激活的菜单
+     ============================================================ */
+            document.addEventListener("DOMContentLoaded", function () {
+                // 确保第一个激活项的父级菜单已展开（已在 HTML 中设置 show）
+            });
+        </script>
+    </body>
+</html>

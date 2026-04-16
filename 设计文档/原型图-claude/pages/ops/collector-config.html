@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>数据采集器配置</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .conf-panel {
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    .conf-title {
+      background: #f5f7fa;
+      padding: 10px 15px;
+      font-weight: bold;
+      color: #303133;
+      border-bottom: 1px solid #dcdfe6;
+    }
+    .conf-body {
+      padding: 15px;
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    
+    <div class="card">
+      <div class="table-toolbar">
+         <div class="table-toolbar-left" style="font-weight: bold; color:#409eff;">采集器引擎探针全局参数矩阵中控台</div>
+         <div class="table-toolbar-right">
+           <button class="btn btn-primary" onclick="saveConfig()">热同步这套预设规则给全网采集器</button>
+           <button class="btn btn-default" onclick="revertConfig()">一键倒退回厂原装数据</button>
+         </div>
+      </div>
+      
+      <div class="card-body">
+        <form id="collectorForm">
+          
+          <div class="conf-panel">
+            <div class="conf-title">无用垃圾噪音声波剔除屏障</div>
+            <div class="conf-body">
+              <div class="form-row">
+                <div class="form-label">探针自己存活跳动心率剔除</div>
+                <div class="form-field">
+                  <label><input type="radio" name="heartbeat" checked> 是的，不要把探针自己的呼吸发给我</label> &nbsp;&nbsp;
+                  <label><input type="radio" name="heartbeat"> 不，我也要监控探针自己的死活请求图谱</label>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">开发内部巡检探针地址过滤墙</div>
+                <div class="form-field">
+                  <input type="text" class="form-control" value="192.168.1.0/24, 10.0.0.1" style="width: 400px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="conf-panel">
+            <div class="conf-title">极简二次抽检漏斗配置 (尾部防洪)</div>
+            <div class="conf-body">
+              <div class="form-row">
+                <div class="form-label">风声鹤唳：只抓高危</div>
+                <div class="form-field">
+                  <label><input type="checkbox" checked> 即便触碰了日常采样抛弃率，只要是带血（高风险）事件坚决抓取到底</label>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">平凡岁月：普通抽样落网率</div>
+                <div class="form-field">
+                  <input type="range" min="1" max="100" value="30" oninput="document.getElementById('rangeVal').innerText = this.value + '%'"> 
+                  <span id="rangeVal" style="display:inline-block; width: 40px; text-align:right; color:#409eff; font-weight:bold;">30%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="conf-panel">
+            <div class="conf-title">底层报文捆绑组装器</div>
+            <div class="conf-body">
+              <div class="form-row">
+                <div class="form-label">聚合多少垃圾才发车 (封口数量)</div>
+                <div class="form-field">
+                  <input type="number" class="form-control" value="500"> 条
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-label">多久没人装车也强行拉走 (封口倒数)</div>
+                <div class="form-field">
+                  <input type="number" class="form-control" value="5"> 读秒
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    function saveConfig() {
+      toastSuccess('强硬指令已广播，所有节点采集包将在30秒呼吸周期内更替新法令。');
+    }
+
+    function revertConfig() {
+      confirmDelete('清洗掉您辛苦调参的结果，退回出厂原始懵懂状态', function() {
+        toastSuccess('已将配置打回原形。');
+      })
+    }
+  </script>
+</body>
+</html>

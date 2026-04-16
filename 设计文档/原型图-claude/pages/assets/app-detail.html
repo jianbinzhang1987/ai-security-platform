@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>应用详情</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .header-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    .metric-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .mini-card { border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; background: #fff; }
+    .mini-card .k { color: #909399; font-size: 12px; margin-bottom: 6px; }
+    .mini-card .v { color: #303133; font-size: 20px; font-weight: 700; }
+    .trend-bars { display: flex; align-items: flex-end; height: 120px; gap: 8px; padding-top: 16px; }
+    .trend-bar { flex: 1; background: #409EFF; border-radius: 3px 3px 0 0; min-width: 18px; position: relative; }
+    .trend-bar.risk { background: #F56C6C; }
+    .trend-bar::after { content: attr(data-label); position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); color: #909399; font-size: 12px; }
+    .relation-map { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; align-items: stretch; }
+    .relation-node { border: 1px solid #DCDFE6; border-radius: 4px; padding: 12px; background: #fff; min-height: 78px; }
+    .relation-node strong { display: block; margin-bottom: 6px; color: #303133; }
+    .relation-node span { display: block; color: #606266; font-size: 12px; line-height: 1.7; }
+    .coverage-list { display: grid; gap: 12px; }
+    .coverage-item { border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr auto; gap: 12px; align-items: center; }
+    .token-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr auto; gap: 12px; align-items: center; border-bottom: 1px solid #F0F0F0; padding: 10px 0; }
+    .token-row:last-child { border-bottom: none; }
+    .switch-line { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #F0F0F0; }
+    .switch-line:last-child { border-bottom: none; }
+    .resource-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .config-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .config-panel { border: 1px solid #EBEEF5; border-radius: 4px; padding: 14px; background: #fff; }
+    .config-panel-title { font-weight: 600; margin-bottom: 12px; color: #303133; }
+    .diff-block { background: #f5f7fa; border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px 12px; font-family: Consolas, monospace; font-size: 12px; line-height: 1.8; color: #606266; }
+    .diff-del { color: #F56C6C; }
+    .diff-add { color: #67C23A; }
+    .health-pill { display: inline-flex; align-items: center; gap: 6px; }
+    .health-dot { width: 7px; height: 7px; border-radius: 50%; background: #67C23A; }
+    .health-dot.warn { background: #E6A23C; }
+    .health-dot.danger { background: #F56C6C; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title header-title">
+          智能客服 Copilot
+          <span class="tag tag-success">正常</span>
+          <span class="tag tag-primary mono">app_copilot_service</span>
+        </div>
+        <div class="page-subtitle">业务线：智能客服 | 负责人：周敏 | Collector 在线率：98.7% | 最后上报：2026-04-15 17:21:09</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="window.parent.loadPage('pages/assets/app-list.html','接入应用管理',null)">返回列表</button>
+        <button class="btn btn-danger" onclick="openModal('blockModal')">应用级阻断</button>
+        <button class="btn btn-warning" onclick="openModal('tokenModal')">轮换凭证</button>
+        <button class="btn btn-default" onclick="openModal('archiveModal')">归档应用</button>
+        <button class="btn btn-primary" onclick="openModal('editModal')">编辑应用</button>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-card-label">运行状态</div>
+        <div class="stat-card-value green">18</div>
+        <div class="stat-card-footer">18 个实例在线，0 个离线</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">近 24h 调用量</div>
+        <div class="stat-card-value blue">386.2万</div>
+        <div class="stat-card-footer">Trace 42.1万，Span 1,842万</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Token 消耗</div>
+        <div class="stat-card-value orange">1.6亿</div>
+        <div class="stat-card-footer">预算使用 67%，峰值 14:00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">平均延迟</div>
+        <div class="stat-card-value">842ms</div>
+        <div class="stat-card-footer">P95 1.9s，P99 3.4s</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">活跃告警</div>
+        <div class="stat-card-value orange">5</div>
+        <div class="stat-card-footer">2 个待认领，3 个处理中</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">策略覆盖</div>
+        <div class="stat-card-value green">92%</div>
+        <div class="stat-card-footer">1 项规则版本滞后</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="tab-nav" id="appTabNav">
+          <div class="tab-item active" data-tab="overview">概览</div>
+          <div class="tab-item" data-tab="instances">运行实例</div>
+          <div class="tab-item" data-tab="tokens">接入凭证</div>
+          <div class="tab-item" data-tab="config">监控配置</div>
+          <div class="tab-item" data-tab="resources">工具与资源声明</div>
+          <div class="tab-item" data-tab="agents">逻辑智能体 / 工作流节点</div>
+          <div class="tab-item" data-tab="coverage">策略覆盖检查</div>
+        </div>
+
+        <div id="appTabContent">
+          <div class="tab-pane show" data-tab="overview">
+            <div class="metric-row" style="margin-bottom:16px;">
+              <div class="mini-card"><div class="k">应用状态</div><div class="v" style="color:#67C23A;">健康</div></div>
+              <div class="mini-card"><div class="k">近 7 日风险</div><div class="v" style="color:#F56C6C;">61</div></div>
+              <div class="mini-card"><div class="k">阻断次数</div><div class="v">18</div></div>
+              <div class="mini-card"><div class="k">误报率</div><div class="v">1.8%</div></div>
+            </div>
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>当前配置版本 v18，18 个在线实例中 17 个已同步，灰度实例将在下次 60s 轮询内拉取。</span></div>
+            <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
+              <div class="card-header"><div class="card-title">近 7 日风险趋势</div><button class="btn btn-link" onclick="goObserve()">下钻调用观测工作台</button></div>
+              <div class="card-body">
+                <div class="trend-bars">
+                  <div class="trend-bar" data-label="04-09" style="height:42%;"></div>
+                  <div class="trend-bar" data-label="04-10" style="height:58%;"></div>
+                  <div class="trend-bar risk" data-label="04-11" style="height:70%;"></div>
+                  <div class="trend-bar" data-label="04-12" style="height:35%;"></div>
+                  <div class="trend-bar risk" data-label="04-13" style="height:86%;"></div>
+                  <div class="trend-bar" data-label="04-14" style="height:48%;"></div>
+                  <div class="trend-bar risk" data-label="今日" style="height:62%;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
+              <div class="card-header"><div class="card-title">资产关系快照</div><button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/topology.html','资产拓扑',null)">查看资产拓扑</button></div>
+              <div class="card-body">
+                <div class="relation-map">
+                  <div class="relation-node"><strong>接入应用</strong><span>app_copilot_service</span><span>智能客服 Copilot</span></div>
+                  <div class="relation-node"><strong>运行实例</strong><span>18 个在线实例</span><span>service.name: customer-copilot</span></div>
+                  <div class="relation-node"><strong>工作流节点</strong><span>7 个 LangChain 节点</span><span>强/中识别混合</span></div>
+                  <div class="relation-node"><strong>工具与资源</strong><span>12 个工具，4 个知识库</span><span>2 个外部 API</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="instances">
+            <div class="table-toolbar" style="padding-left:0;padding-right:0;">
+              <div class="table-toolbar-left"><input class="form-control" placeholder="hostname / IP / service.name"><button class="btn btn-primary">查询</button></div>
+              <div class="table-toolbar-right"><span class="tag tag-success">SDK 版本健康</span></div>
+            </div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th>instance_id</th><th>hostname</th><th>IP</th><th>容器 / 进程</th><th>service.name</th><th>SDK</th><th>Token</th><th>Session Token</th><th>配置版本</th><th>注册时间</th><th>心跳</th><th>最后上报</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">inst-prod-01</td><td>copilot-prod-01</td><td>10.16.8.21</td><td>pod/copilot-api-7c9 / pid 2481</td><td>customer-copilot</td><td>Python 0.8.4</td><td>prod-primary</td><td><span class="tag tag-success">有效 28m</span></td><td><span class="tag tag-success">v18</span></td><td>2026-04-01 10:15</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:09</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td class="mono">inst-prod-02</td><td>copilot-prod-02</td><td>10.16.8.22</td><td>pod/copilot-api-8f2 / pid 2516</td><td>customer-copilot</td><td>Python 0.8.4</td><td>prod-primary</td><td><span class="tag tag-success">有效 26m</span></td><td><span class="tag tag-success">v18</span></td><td>2026-04-01 10:17</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:04</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td class="mono">inst-gray-01</td><td>copilot-gray-01</td><td>10.17.2.16</td><td>container/copilot-gray / pid 1880</td><td>customer-copilot-gray</td><td>Python 0.8.2</td><td>gray-release</td><td><span class="tag tag-warning">12m 后过期</span></td><td><span class="tag tag-warning">v17</span></td><td>2026-04-09 14:06</td><td><span class="tag tag-warning">版本滞后</span></td><td>2026-04-15 17:20:48</td><td><button class="btn btn-link" onclick="toastSuccess('升级任务已创建')">升级 SDK</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="tokens">
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>接入凭证仅用于 SDK 上报鉴权。轮换 Token 后，旧 Token 可保留 24 小时宽限期。</span></div>
+            <div class="token-row" style="font-weight:600;color:#909399;grid-template-columns:1.1fr .8fr .8fr .9fr .9fr auto;"><div>Token 名称</div><div>环境</div><div>状态</div><div>过期时间</div><div>最后使用</div><div>操作</div></div>
+            <div class="token-row" style="grid-template-columns:1.1fr .8fr .8fr .9fr .9fr auto;"><div><span class="mono">prod-primary</span><div class="form-hint">agt_live_sk_6b8c...9e21</div></div><div>prod</div><div><span class="tag tag-success">启用</span></div><div>2027-04-01</div><div>2026-04-15 17:21</div><div class="table-action-col"><button class="btn btn-link" onclick="openModal('tokenModal')">轮换</button><button class="btn btn-link danger" onclick="revokeToken()">吊销</button></div></div>
+            <div class="token-row" style="grid-template-columns:1.1fr .8fr .8fr .9fr .9fr auto;"><div><span class="mono">gray-release</span><div class="form-hint">agt_live_sk_a12f...67d0</div></div><div>staging</div><div><span class="tag tag-success">启用</span></div><div>2026-05-09</div><div>2026-04-15 16:48</div><div class="table-action-col"><button class="btn btn-link" onclick="openModal('tokenModal')">轮换</button><button class="btn btn-link danger" onclick="revokeToken()">吊销</button></div></div>
+            <div class="token-row" style="grid-template-columns:1.1fr .8fr .8fr .9fr .9fr auto;"><div><span class="mono">old-prod</span><div class="form-hint">agt_live_sk_19fa...22be</div></div><div>prod</div><div><span class="tag tag-danger">已吊销</span></div><div>2026-04-10</div><div>2026-04-10 21:06</div><div><button class="btn btn-link" onclick="toastSuccess('审计记录已打开')">审计</button></div></div>
+            <div style="margin-top:16px;"><button class="btn btn-primary" onclick="openModal('createTokenModal')">创建 Token</button></div>
+          </div>
+
+          <div class="tab-pane" data-tab="config">
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>保存配置后 config_version +1，并在 60s 内由 SDK 轮询拉取。当前版本 v18，待同步实例 1 个。</span></div>
+            <div class="config-grid">
+              <div class="config-panel">
+                <div class="config-panel-title">采集与记录模式</div>
+                <div class="switch-line"><div><strong>采集开关</strong><div class="form-hint">Trace、Span、Prompt、Response、Tool I/O。</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span><span class="toggle-label">启用</span></label></div>
+                <div class="form-row" style="margin-top:12px;"><div class="form-label">LLM 采样率</div><div class="form-field"><input id="llmSample" class="form-control" value="100%" style="width:120px;"></div></div>
+                <div class="form-row"><div class="form-label">Tool 采样率</div><div class="form-field"><input id="toolSample" class="form-control" value="100%" style="width:120px;"></div></div>
+                <div class="form-row"><div class="form-label">Prompt 记录</div><div class="form-field"><select class="form-select"><option>完整记录</option><option>仅记录摘要（前 200 字）</option><option>仅记录 token 统计</option></select></div></div>
+              </div>
+              <div class="config-panel">
+                <div class="config-panel-title">端侧安全策略</div>
+                <div class="switch-line"><div><strong>凭证扫描</strong><div class="form-hint">在端侧拦截疑似密钥、Token、私钥。</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span><span class="toggle-label">启用</span></label></div>
+                <div class="switch-line"><div><strong>轻量 Prompt 注入防护</strong><div class="form-hint">命中 Jailbreak 样式直接阻断。</div></div><label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span><span class="toggle-label">启用</span></label></div>
+                <div class="form-row" style="margin-top:12px;"><div class="form-label">阻断文案</div><div class="form-field"><textarea class="form-textarea" style="min-height:54px;">请求触发企业智能体安全策略，已被拦截。</textarea></div></div>
+              </div>
+              <div class="config-panel">
+                <div class="config-panel-title">工具白黑名单</div>
+                <div class="form-row"><div class="form-label">工具白名单</div><div class="form-field"><textarea class="form-textarea">crm_search
+ticket_create
+order_lookup</textarea></div></div>
+                <div class="form-row"><div class="form-label">工具黑名单</div><div class="form-field"><textarea class="form-textarea">shell_exec
+direct_db_write
+external_http_post</textarea></div></div>
+              </div>
+              <div class="config-panel">
+                <div class="config-panel-title">配额熔断与告警绑定</div>
+                <div class="form-row"><div class="form-label">请求频率</div><div class="form-field"><input class="form-control" value="1200 / min"></div></div>
+                <div class="form-row"><div class="form-label">Token 预算</div><div class="form-field"><input class="form-control" value="2.4 亿 / day"></div></div>
+                <div class="form-row"><div class="form-label">告警规则</div><div class="form-field"><select class="form-select"><option>高危即时告警 + 5 分钟聚合</option><option>仅高危即时告警</option><option>仅记录不通知</option></select></div></div>
+              </div>
+            </div>
+            <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;margin-top:16px;">
+              <div class="card-header"><div class="card-title">自定义 PII 规则</div><button class="btn btn-link" onclick="toastSuccess('已新增规则行')">新增规则</button></div>
+              <div class="card-body">
+                <table class="data-table"><thead><tr><th>规则名</th><th>正则表达式</th><th>动作</th><th>状态</th></tr></thead><tbody><tr><td>员工工号</td><td class="mono">EMP-[0-9]{6}</td><td>替换为 [EMP_ID]</td><td><span class="tag tag-success">启用</span></td></tr><tr><td>内部工单号</td><td class="mono">INC-[0-9]{8}</td><td>哈希化</td><td><span class="tag tag-success">启用</span></td></tr></tbody></table>
+              </div>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:8px;"><button class="btn btn-primary" onclick="publishConfig()">保存并发布 v19</button><button class="btn btn-default" onclick="toastSuccess('配置草稿已保存')">保存草稿</button></div>
+            <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;margin-top:16px;">
+              <div class="card-header"><div class="card-title">配置变更历史</div></div>
+              <div class="card-body">
+                <div class="table-wrapper"><table class="data-table"><thead><tr><th>版本</th><th>操作人</th><th>时间</th><th>同步状态</th><th>Diff</th><th>操作</th></tr></thead><tbody>
+                  <tr><td>v18</td><td>安全管理员</td><td>2026-04-15 16:40</td><td><span class="health-pill"><span class="health-dot warn"></span>17/18 已同步</span></td><td><div class="diff-block"><div class="diff-del">- LLM 采样率: 30%</div><div class="diff-add">+ LLM 采样率: 100%</div></div></td><td><button class="btn btn-link" onclick="toastSuccess('已重新推送 v18')">重推</button></td></tr>
+                  <tr><td>v17</td><td>周敏</td><td>2026-04-12 10:15</td><td><span class="health-pill"><span class="health-dot"></span>18/18 已同步</span></td><td><div class="diff-block"><div class="diff-add">+ 工具黑名单: external_http_post</div></div></td><td><button class="btn btn-link warning" onclick="rollbackConfig('v17')">回滚</button></td></tr>
+                </tbody></table></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="resources">
+            <div class="resource-grid">
+              <div class="mini-card"><div class="k">已观测工具</div><div class="v">12</div><div class="form-hint">crm_search、order_lookup、ticket_create 等</div></div>
+              <div class="mini-card"><div class="k">MCP 工具</div><div class="v">4</div><div class="form-hint">mcp.crm、mcp.knowledge、mcp.ticket</div></div>
+              <div class="mini-card"><div class="k">声明资源</div><div class="v">8</div><div class="form-hint">2 个外部 API，4 个知识库，2 个数据库</div></div>
+            </div>
+            <div class="table-wrapper" style="margin-top:16px;">
+              <table class="data-table">
+                <thead><tr><th>名称</th><th>类型</th><th>来源</th><th>权限范围</th><th>声明状态</th><th>最后观测</th><th>风险</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td>crm_search</td><td>Tool</td><td>LangChain 元数据</td><td>客户资料只读</td><td><span class="tag tag-warning">已观测未声明</span></td><td>2026-04-15 17:20</td><td><span class="tag tag-warning">中</span></td><td><button class="btn btn-link" onclick="toastSuccess('已转为资源声明草稿')">声明</button></td></tr>
+                  <tr><td>ticket_create</td><td>MCP Tool</td><td>工具声明</td><td>创建工单</td><td><span class="tag tag-success">已声明</span></td><td>2026-04-15 17:18</td><td><span class="tag tag-success">低</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+                  <tr><td>kb_customer_policy</td><td>知识库</td><td>资源声明</td><td>客服政策问答</td><td><span class="tag tag-success">已声明</span></td><td>2026-04-15 16:59</td><td><span class="tag tag-success">低</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+                  <tr><td>external_refund_api</td><td>外部 API</td><td>人工声明</td><td>退款状态查询</td><td><span class="tag tag-success">已声明</span></td><td>2026-04-15 15:44</td><td><span class="tag tag-danger">高</span></td><td><button class="btn btn-link danger" onclick="toastSuccess('已加入工具黑名单草稿')">加入黑名单</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="agents">
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>强识别对象来自平台注册；中识别对象来自 LangChain node、tool、class、method 等遥测字段；弱识别仅在 Trace 中展示。</span></div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th>节点名称</th><th>识别等级</th><th>来源字段</th><th>class / method</th><th>策略主体</th><th>今日调用</th><th>风险</th><th>置信度</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td>售前咨询智能体</td><td><span class="tag tag-success">强识别</span></td><td>平台注册 agent_id</td><td>SalesAgent.run</td><td><span class="tag tag-success">可绑定</span></td><td>82,361</td><td>4</td><td>100%</td><td><button class="btn btn-link">绑定策略</button></td></tr>
+                  <tr><td>订单查询节点</td><td><span class="tag tag-primary">中识别</span></td><td>agentsec.node.display_name</td><td>OrderLookup.invoke</td><td><span class="tag tag-info">只读标签</span></td><td>64,110</td><td>1</td><td>92%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td>客服总结工作流</td><td><span class="tag tag-primary">中识别</span></td><td>LangChain runnable name</td><td>SummaryChain.invoke</td><td><span class="tag tag-info">只读标签</span></td><td>25,440</td><td>0</td><td>88%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td>疑似导出链路</td><td><span class="tag tag-warning">弱识别</span></td><td>Prompt hash + 工具集合聚类</td><td>-</td><td><span class="tag tag-danger">不可绑定</span></td><td>19</td><td>2</td><td>61%</td><td><button class="btn btn-link" onclick="goObserve()">Trace 内查看</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="coverage">
+            <div class="coverage-list">
+              <div class="coverage-item"><div><strong>Prompt 注入检测</strong><div class="form-hint">v3.4.2，覆盖 LLM 输入</div></div><div><span class="tag tag-success">已生效</span></div><div>覆盖 18/18 实例</div><div>无冲突</div><button class="btn btn-link">查看</button></div>
+              <div class="coverage-item"><div><strong>敏感信息脱敏</strong><div class="form-hint">v2.8.0，Prompt / Response / Tool Output</div></div><div><span class="tag tag-success">已生效</span></div><div>覆盖 18/18 实例</div><div>无冲突</div><button class="btn btn-link">查看</button></div>
+              <div class="coverage-item"><div><strong>高危工具阻断</strong><div class="form-hint">v1.9.1，工具黑名单与响应动作</div></div><div><span class="tag tag-warning">版本滞后</span></div><div>覆盖 15/18 实例</div><div>灰度实例未升级</div><button class="btn btn-warning btn-sm" onclick="toastSuccess('已创建覆盖修复任务')">修复</button></div>
+              <div class="coverage-item"><div><strong>告警通知规则</strong><div class="form-hint">高危事件短信 + 企业微信</div></div><div><span class="tag tag-danger">冲突</span></div><div>覆盖 18/18 实例</div><div>两个窗口聚合规则重复</div><button class="btn btn-danger btn-sm" onclick="toastSuccess('已进入冲突处理')">处理</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">编辑接入应用</div><div class="modal-close" onclick="closeModal('editModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">app_id</div><div class="form-field"><input class="form-control mono" value="app_copilot_service" readonly></div></div>
+        <div class="form-row"><div class="form-label required">应用名称</div><div class="form-field"><input id="editName" class="form-control" value="智能客服 Copilot"></div></div>
+        <div class="form-row"><div class="form-label required">负责人</div><div class="form-field"><input id="editOwner" class="form-control" value="周敏"></div></div>
+        <div class="form-row"><div class="form-label">说明</div><div class="form-field"><textarea class="form-textarea">面向客服坐席提供多轮问答、工单生成和客户资料检索。</textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('editModal')">取消</button><button class="btn btn-primary" onclick="saveEdit()">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="tokenModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">轮换 prod-primary Token</div><div class="modal-close" onclick="closeModal('tokenModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>轮换后旧 Token 进入 24 小时宽限期，需尽快更新生产环境密钥。</span></div>
+        <div class="form-row"><div class="form-label">宽限期</div><div class="form-field"><select class="form-select"><option>24 小时</option><option>12 小时</option><option>立即失效</option></select></div></div>
+        <div class="form-row"><div class="form-label">通知对象</div><div class="form-field"><input class="form-control" value="周敏, secops@example.com"></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('tokenModal')">取消</button><button class="btn btn-warning" onclick="rotateToken()">确认轮换</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">应用级阻断</div><div class="modal-close" onclick="closeModal('blockModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-danger"><span class="alert-icon">!</span><span>阻断粒度为 block:{tenant_id}:{app_id}:*，会影响该应用所有在线实例。</span></div>
+        <div class="form-row"><div class="form-label">目标 app_id</div><div class="form-field"><input class="form-control mono" value="app_copilot_service" readonly></div></div>
+        <div class="form-row"><div class="form-label required">阻断原因</div><div class="form-field"><textarea id="detailBlockReason" class="form-textarea" placeholder="如：确认发生高危工具越权，临时阻断全部调用"></textarea></div></div>
+        <div class="form-row"><div class="form-label">阻断 TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option><option>手动恢复</option></select></div></div>
+        <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 企业微信</label><label class="checkbox-item"><input type="checkbox" checked> 短信</label><label class="checkbox-item"><input type="checkbox"> PagerDuty</label></div></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('blockModal')">取消</button><button class="btn btn-danger" onclick="submitDetailBlock()">确认阻断</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="archiveModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">归档应用</div><div class="modal-close" onclick="closeModal('archiveModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>归档后停止接收新上报，历史 Trace、Span、事件在 TTL 到期前仍可查询。</span></div>
+        <div class="form-row"><div class="form-label">归档原因</div><div class="form-field"><select class="form-select"><option>业务下线</option><option>迁移到新 app_id</option><option>测试应用清理</option><option>其他</option></select></div></div>
+        <div class="form-row"><div class="form-label">Token 处理</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="archiveToken" checked> 同步吊销全部 Token</label><label class="radio-item"><input type="radio" name="archiveToken"> 保留 24 小时宽限期</label></div></div></div>
+        <div class="form-row"><div class="form-label">历史保留</div><div class="form-field"><select class="form-select"><option>按租户 TTL：90 天</option><option>延长至 180 天</option><option>延长至 365 天</option></select></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('archiveModal')">取消</button><button class="btn btn-warning" onclick="submitArchive()">确认归档</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createTokenModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">创建 App Token</div><div class="modal-close" onclick="closeModal('createTokenModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label required">Token 名称</div><div class="form-field"><input id="newTokenName" class="form-control" placeholder="如 prod-secondary"></div></div>
+        <div class="form-row"><div class="form-label">用途</div><div class="form-field"><textarea class="form-textarea" placeholder="说明使用环境和负责人"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('createTokenModal')">取消</button><button class="btn btn-primary" onclick="createToken()">创建</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    initTabs('appTabNav', 'appTabContent', 'overview');
+
+    if (window.parent && window.parent.setBreadcrumb) {
+      window.parent.setBreadcrumb([
+        { label: '资产管理' },
+        { label: '接入应用管理', page: 'pages/assets/app-list.html' },
+        { label: '应用详情' }
+      ]);
+    }
+
+    function goObserve() {
+      window.parent.loadPage('pages/monitor/trace-list.html', '调用观测工作台', null);
+    }
+
+    function saveEdit() {
+      if (!document.getElementById('editName').value || !document.getElementById('editOwner').value) {
+        toastError('请填写必填项');
+        return;
+      }
+      closeModal('editModal');
+      toastSuccess('应用信息已保存');
+    }
+
+    function rotateToken() {
+      closeModal('tokenModal');
+      toastSuccess('新 Token 已生成，旧 Token 已进入宽限期');
+    }
+
+    function revokeToken() {
+      showConfirm('确认吊销该 Token？吊销后对应 SDK 上报将失败。', function(){ toastSuccess('Token 已吊销'); }, '吊销确认', 'danger');
+    }
+
+    function publishConfig() {
+      toastSuccess('配置 v19 已发布，SDK 将在 60s 内拉取生效');
+    }
+
+    function rollbackConfig(version) {
+      showConfirm('确认回滚到 ' + version + '？系统会生成新的配置版本并下发。', function(){
+        toastSuccess('已回滚并发布新配置版本');
+      }, '配置回滚');
+    }
+
+    function submitDetailBlock() {
+      if (!document.getElementById('detailBlockReason').value) {
+        toastError('请填写阻断原因');
+        return;
+      }
+      closeModal('blockModal');
+      toastSuccess('应用级阻断指令已写入并推送在线 SDK');
+    }
+
+    function submitArchive() {
+      closeModal('archiveModal');
+      toastSuccess('应用已归档，Token 处理与数据 TTL 已记录到审计日志');
+    }
+
+    function createToken() {
+      if (!document.getElementById('newTokenName').value) {
+        toastError('请填写 Token 名称');
+        return;
+      }
+      closeModal('createTokenModal');
+      toastSuccess('Token 已创建');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>事件处置中心</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .status-badge {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+    .status-todo { background-color: #f56c6c; }
+    .status-doing { background-color: #e6a23c; }
+    .status-done { background-color: #67c23a; }
+    .status-ignore { background-color: #909399; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-card-label">待处理事件</div>
+        <div class="stat-card-value" style="color: #f5222d;">154</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">处理中</div>
+        <div class="stat-card-value" style="color: #fa8c16;">42</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">已闭环</div>
+        <div class="stat-card-value" style="color: #52c41a;">8,432</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">昨日误报率</div>
+        <div class="stat-card-value" style="color: #1890ff;">3.2%</div>
+      </div>
+    </div>
+
+    <!-- 搜索 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">流转阶段</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="待处理" selected>待处理</option>
+          <option value="处理中">处理中</option>
+          <option value="真实威胁">真实威胁 (关闭)</option>
+          <option value="标记误报">标记误报 (关闭)</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="指令注入">指令注入</option>
+          <option value="工具越权">工具越权</option>
+          <option value="敏感泄露">敏感泄露</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">统计过滤</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置条件</button>
+      </div>
+    </div>
+
+    <!-- 列表 -->
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <button class="btn btn-warning btn-sm" id="btnBatchClaim" onclick="batchClaim()" disabled>批量认领</button>
+          <button class="btn btn-info btn-sm" id="btnBatchIgnore" onclick="batchIgnore()" disabled>批量标记误报</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="eventTable">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="checkAll" onchange="toggleAllCheckbox(this, 'eventTable');checkBtnState()"></th>
+              <th>告警编号</th>
+              <th>涉及智能体名称</th>
+              <th>风险定级</th>
+              <th>风险分类映射</th>
+              <th>发现时间</th>
+              <th>当前阶段</th>
+              <th>处理专员</th>
+              <th style="width: 160px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="EVT_1001">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>EVT-2026-A001</td>
+              <td>人事档案助理</td>
+              <td><span class="tag tag-danger">极高风险</span></td>
+              <td>敏感指令越权利用</td>
+              <td>2026-04-14 10:10:22</td>
+              <td><span class="status-badge status-todo"></span>待处理</td>
+              <td>--</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="claimEvent('EVT-2026-A001')">认领处置</button>
+                  <button class="btn btn-link" onclick="openDetail('EVT-2026-A001')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="EVT_1002">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>EVT-2026-A002</td>
+              <td>开发环境Copilot</td>
+              <td><span class="tag tag-warning">中风险</span></td>
+              <td>发现外网异常访问目标</td>
+              <td>2026-04-14 10:05:11</td>
+              <td><span class="status-badge status-doing"></span>处理中</td>
+              <td>李运营</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openCloseModal('EVT-2026-A002')">归档闭环</button>
+                  <button class="btn btn-link" onclick="openDetail('EVT-2026-A002')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="EVT_1003">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>EVT-2026-A003</td>
+              <td>智能搜索代理</td>
+              <td><span class="tag tag-primary">低风险</span></td>
+              <td>关键词告警</td>
+              <td>2026-04-14 09:50:00</td>
+              <td><span class="status-badge status-done"></span>真实威胁归档</td>
+              <td>自动防护</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openDetail('EVT-2026-A003')">工单详情</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- 归档闭环弹窗 -->
+  <div class="modal-overlay" id="closeModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">归档事件闭环 (<span id="closeEvtId"></span>)</div>
+        <div class="modal-close" onclick="closeModal('closeModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="closeForm">
+          <div class="form-row">
+            <div class="form-label required">闭环定性分类</div>
+            <div class="form-field">
+              <select class="form-select" id="f_result" required>
+                <option value="">请选择最终定性结果</option>
+                <option value="true_positive">真实攻击/泄漏</option>
+                <option value="false_positive">误报告警</option>
+                <option value="test_data">内部安全测试产生的数据</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">事件分析排查备案</div>
+            <div class="form-field">
+              <textarea class="form-textarea" id="f_reason" placeholder="重点描述是否已修补加固漏洞，或者如果是误报补充提供优化特征以反哺策略中心"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('closeModal')">取 消</button>
+        <button class="btn btn-primary" onclick="submitCloseForm()">完成归档</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof renderPagination === 'function') {
+        renderPagination('pagination', 154, 1, 10, function(p){ });
+      }
+    });
+
+    function searchData() {
+      toastSuccess('过滤成功');
+    }
+
+    function resetSearch() {
+      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
+      inputs.forEach(function(input) { input.value = ''; });
+    }
+
+    function checkBtnState() {
+      var checked = getCheckedIds('eventTable');
+      document.getElementById('btnBatchClaim').disabled = checked.length === 0;
+      document.getElementById('btnBatchIgnore').disabled = checked.length === 0;
+    }
+
+    function batchClaim() {
+      toastSuccess('您已批量接手处理这些工单');
+      document.getElementById('checkAll').checked = false;
+      checkBtnState();
+    }
+    
+    function batchIgnore() {
+      toastSuccess('已批量按照误报丢弃进入归档库');
+      document.getElementById('checkAll').checked = false;
+      checkBtnState();
+    }
+
+    function claimEvent(id) {
+      toastSuccess('进入处理过程：' + id);
+    }
+    
+    function openDetail(id) {
+      toastSuccess('打开详情报表视图...' + id);
+    }
+
+    function openCloseModal(id) {
+      document.getElementById('closeEvtId').textContent = id;
+      document.getElementById('closeForm').reset();
+      openModal('closeModal');
+    }
+
+    function submitCloseForm() {
+      if (validateForm('closeForm')) {
+        toastSuccess('已经成功提交处理回溯记录');
+        closeModal('closeModal');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -86,11 +86,15 @@ CREATE TABLE risk_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id       UUID NOT NULL REFERENCES tenants(id),
     app_id          UUID NOT NULL REFERENCES agent_apps(id),
-    session_id      VARCHAR(200) NOT NULL,
-    span_id         VARCHAR(32),
+    session_id      VARCHAR(200),
+    trace_id        VARCHAR(32) NOT NULL,
+    span_id         VARCHAR(32) NOT NULL,
+    span_kind       VARCHAR(30) NOT NULL,
     risk_type       VARCHAR(50) NOT NULL,
     risk_level      VARCHAR(20) NOT NULL,
     confidence      FLOAT NOT NULL CHECK (confidence BETWEEN 0 AND 1),
+    block_action    VARCHAR(50),
+    block_reason    TEXT,
     evidence        JSONB,
     explanation     TEXT,
     anomaly_score   INTEGER,
@@ -105,6 +109,9 @@ CREATE TABLE risk_events (
 CREATE INDEX idx_risk_events_tenant_time ON risk_events(tenant_id, detected_at DESC);
 CREATE INDEX idx_risk_events_app_status ON risk_events(app_id, status);
 CREATE INDEX idx_risk_events_session ON risk_events(session_id);
+CREATE INDEX idx_risk_events_trace ON risk_events(trace_id);
+CREATE INDEX idx_risk_events_span ON risk_events(span_id);
+CREATE INDEX idx_risk_events_span_kind ON risk_events(span_kind);
 
 -- 告警规则表
 CREATE TABLE alert_rules (
@@ -154,7 +161,12 @@ CREATE TABLE agent_spans (
     app_id          String,
     instance_id     String,
     span_name       String,
-    span_kind       Enum8('llm'=1, 'tool'=2, 'network'=3, 'db'=4, 'internal'=5),
+    span_kind       Enum8('llm'=1, 'tool'=2, 'network'=3, 'db'=4, 'internal'=5, 'retriever'=6, 'guardrail'=7),
+    agentsec_span_type String,
+    framework       String,
+    node_display_name String,
+    node_class_name String,
+    node_method_name String,
     timestamp       DateTime64(3),
     duration_ms     Float64,
     model           String,
@@ -168,6 +180,10 @@ CREATE TABLE agent_spans (
     tool_input_params String,
     tool_output     String,
     risk_level      Enum8('none'=0, 'low'=1, 'medium'=2, 'high'=3, 'critical'=4),
+    status          Enum8('ok'=1, 'blocked'=2, 'error'=3),
+    block_action    String,
+    block_reason    String,
+    error_type      String,
     risk_type       String,
     security_tags   Array(String),
     anomaly_score   UInt8,
@@ -327,10 +343,14 @@ class PromptDetectionPipeline:
         
         return RiskEvent(
             session_id=span.session_id,
+            trace_id=span.trace_id,
             span_id=span.span_id,
+            span_kind=span.span_kind,
             risk_type=best.risk_type,
             risk_level=best.risk_level_name,
             confidence=best.confidence,
+            block_action=span.block_action,
+            block_reason=span.block_reason,
             evidence=best.evidence
         )
 ```
@@ -535,7 +555,7 @@ class ToolCallFrequencyMonitor:
 
 ### 4.3 行为序列分析子引擎
 
-#### 4.3.1 Session 调用链重建
+#### 4.3.1 Trace / Session 调用链重建
 
 ```python
 class BehaviorSequenceAnalyzer:
@@ -771,16 +791,17 @@ func (h *WebSocketHub) BroadcastToApp(appID string, cmd interface{}) {
 
 ### 6.1 API 接口规范
 
-#### 6.1.1 Session 调用链查询
+#### 6.1.1 Trace / Session 调用观测查询
 
 ```
-GET /api/v1/sessions/{session_id}/spans
+GET /api/v1/traces/{trace_id}/spans
 Authorization: Bearer {jwt_token}
 Headers: X-Tenant-ID: {tenant_id}  （由 auth 中间件自动注入）
 
 Response 200:
 {
-  "session_id": "abc123",
+  "trace_id": "trace-abc123",
+  "session_id": "sess-abc123",
   "app_id": "uuid-...",
   "total_spans": 15,
   "duration_ms": 3421,
@@ -854,6 +875,10 @@ Authorization: Bearer {jwt_token}
 
 Query Parameters:
   risk_level: low | medium | high | critical (可多选，逗号分隔)
+  trace_id: String (可选)
+  span_id: String (可选)
+  span_kind: llm | tool | retriever | network | db | guardrail | internal (可选)
+  status: ok | blocked | error (可选)
   risk_type: prompt_injection | mcp_violation | ... (可多选)
   app_id: UUID (可选)
   status: new | in_progress | confirmed | false_positive | closed
@@ -870,7 +895,8 @@ Response 200:
   "items": [
     {
       "id": "uuid",
-      "session_id": "abc123",
+      "trace_id": "trace-abc123",
+  "session_id": "sess-abc123",
       "risk_type": "prompt_injection",
       "risk_level": "high",
       "confidence": 0.92,
@@ -929,26 +955,26 @@ func (r *SpanRepository) GetSessionSpans(
 #### 7.1.1 组件数据流
 
 ```
-SOC 工程师点击告警 "查看调用链"
+SOC 工程师点击告警 "查看证据"
   │
-  ├─ 调用 useSessionTrace(session_id) Hook
-  │     → GET /api/v1/sessions/{session_id}/spans
+  ├─ 调用 useTraceSpans(trace_id) Hook
+  │     → GET /api/v1/traces/{trace_id}/spans
   │     → SWR 缓存（不超过 5min 保鲜期）
   │
-  ├─ 调用 useRiskEvents(session_id) Hook
-  │     → GET /api/v1/risk-events?session_id={id}
+  ├─ 调用 useRiskEvents(span_id / trace_id) Hook
+  │     → GET /api/v1/risk-events?span_id={id} 或 trace_id={id}
   │
-  └─ 将 spans + risk_events 传入 TraceWaterfall 组件
+  └─ 将 spans + risk_events 传入 ObserveWaterfall 组件
 ```
 
-#### 7.1.2 TraceWaterfall 组件核心逻辑
+#### 7.1.2 ObserveWaterfall 组件核心逻辑
 
 ```typescript
 interface TraceSpan {
   span_id: string;
   parent_span_id: string | null;
   span_name: string;
-  span_kind: 'llm' | 'tool' | 'network' | 'db';
+  span_kind: 'llm' | 'tool' | 'retriever' | 'network' | 'db' | 'guardrail' | 'internal';
   timestamp: string;
   duration_ms: number;
   risk_level?: 'low' | 'medium' | 'high' | 'critical';
@@ -1279,3 +1305,5 @@ kubectl exec -n agentsec redis-0 -- redis-cli KEYS "block:*" | wc -l
 ---
 
 *文档结束*
+
+

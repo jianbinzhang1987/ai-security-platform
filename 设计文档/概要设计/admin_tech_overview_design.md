@@ -187,7 +187,7 @@ Kafka: agentsec-spans
        │                     ────► 调用频率异常检测
        │                     └──► risk_events 写入 PostgreSQL
        │
-       ├─► [行为序列消费者] ─────► session 调用链重建
+       ├─► [行为序列消费者] ─────► Trace / Session 调用链重建
        │   （session 级触发）  ────► 威胁模式库匹配（已知攻击链）
        │                     ────► 统计异常检测（P99 阈值）
        │                     ────► 综合异常分计算（0-100）
@@ -446,10 +446,10 @@ API 层限流：
   OTel Collector
     → Kafka（持久化，RF=3）
     → ClickHouse 写入服务（批量写入，失败重试 + 死信队列）
-    → ClickHouse（ReplacingMergeTree，span_id 去重）
+    → ClickHouse（ReplacingMergeTree，span_id 去重；同时保留 trace_id / parent_span_id 用于还原 Trace）
 
 风险事件可靠性：
-  检测引擎 → PostgreSQL（事务写入）
+  检测引擎 → PostgreSQL（事务写入，risk_events 以 span_id 为最小证据锚点，并冗余 trace_id / span_kind / block_action / block_reason）
   PostgreSQL → 告警引擎（polling 或 CDC）
   告警引擎 → Redis/WebSocket（阻断）+ 通知服务
 
@@ -510,3 +510,4 @@ API 层限流：
 ---
 
 *文档结束*
+
