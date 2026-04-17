@@ -72,19 +72,9 @@
         <div class="stat-card-footer">2 个待确认，3 个处理中</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">工具声明覆盖</div>
-        <div class="stat-card-value">78%</div>
-        <div class="stat-card-footer">3 个工具未完成声明</div>
-      </div>
-        <div class="stat-card">
-          <div class="stat-card-label">活跃告警</div>
-          <div class="stat-card-value orange">3</div>
-          <div class="stat-card-footer">1 条未应答，2 条已通知</div>
-        </div>
-      <div class="stat-card">
-        <div class="stat-card-label">策略覆盖</div>
-        <div class="stat-card-value green">92%</div>
-        <div class="stat-card-footer">1 项规则版本滞后</div>
+        <div class="stat-card-label">活跃告警</div>
+        <div class="stat-card-value orange">3</div>
+        <div class="stat-card-footer">1 条未应答，2 条已通知</div>
       </div>
     </div>
 
@@ -95,10 +85,7 @@
           <div class="tab-item" data-tab="agents">智能体 / 节点</div>
           <div class="tab-item" data-tab="resources">工具与资源</div>
           <div class="tab-item" data-tab="risks">风险事件</div>
-          <div class="tab-item" data-tab="access">接入配置</div>
-          <div class="tab-item" data-tab="config">监控配置</div>
           <div class="tab-item" data-tab="instances">运行实例</div>
-          <div class="tab-item" data-tab="coverage">策略覆盖检查</div>
         </div>
 
         <div id="appTabContent">
@@ -157,16 +144,16 @@
           <div class="tab-pane" data-tab="risks">
             <div class="table-wrapper">
               <table class="data-table">
-                <thead><tr><th>事件编号</th><th>风险类型</th><th>等级</th><th>关联 Agent / 节点</th><th>工具 / 资源</th><th>Trace / Span</th><th>状态</th><th>操作</th></tr></thead>
+                <thead><tr><th>事件编号</th><th>风险类型</th><th>等级</th><th>关联 Agent / 节点</th><th>工具 / 资源</th><th>状态</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td class="mono">EVT-2026-A018</td><td>工具能力边界越界</td><td><span class="tag tag-danger">高</span></td><td>代码审查工作流</td><td>external_http_post</td><td><span class="mono">TRC-20260416-018</span><br><span class="form-hint mono">sp_04_tool</span></td><td><span class="tag tag-warning">In Progress</span></td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-A018','风险事件详情',null)">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
-                  <tr><td class="mono">EVT-2026-A009</td><td>Prompt 风险</td><td><span class="tag tag-primary">低</span></td><td>订单查询节点</td><td>crm_search</td><td><span class="mono">TRC-20260416-009</span><br><span class="form-hint mono">sp_02_llm</span></td><td><span class="tag tag-info">False Positive</span></td><td><button class="btn btn-link">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
+                  <tr><td class="mono">EVT-2026-00018</td><td>工具能力边界越界</td><td><span class="tag tag-danger">高</span></td><td>代码审查工作流</td><td>external_http_post</td><td><span class="tag tag-warning">In Progress</span></td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-00018','风险事件详情',null)">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
+                  <tr><td class="mono">EVT-2026-00009</td><td>Prompt 风险</td><td><span class="tag tag-primary">低</span></td><td>订单查询节点</td><td>crm_search</td><td><span class="tag tag-info">False Positive</span></td><td><button class="btn btn-link">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
                 </tbody>
               </table>
             </div>
           </div>
 
-          <div class="tab-pane" data-tab="access">
+          <!--<div class="tab-pane" data-tab="access">
             <div class="alert-box alert-info"><span class="alert-icon">i</span><span>探针通过 app_id 与 Collector Endpoint 自动注册。平台以首次 Span 上报作为接入激活信号。</span></div>
             <div class="desc-list">
               <div class="desc-item"><div class="desc-label">app_id</div><div class="desc-value mono">app_copilot_service</div></div>
@@ -230,7 +217,7 @@ external_http_post</textarea></div></div>
                 </tbody></table></div>
               </div>
             </div>
-          </div>
+          </div>-->
 
           <div class="tab-pane" data-tab="resources">
             <div class="resource-grid">

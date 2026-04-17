@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(xargs ls:*)",
-      "Bash(find /e/code/大模型安全监测平台/client/agentsec-python-sdk -name *.py)"
+      "Bash(find /e/code/大模型安全监测平台/client/agentsec-python-sdk -name *.py)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review *)"
     ]
   }
 }

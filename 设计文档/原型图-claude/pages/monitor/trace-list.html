@@ -135,24 +135,15 @@
 
     <div class="investigation-layout">
       <div class="trace-list-panel">
-        <div class="panel-head"><span>Trace 列表</span><span class="tag tag-primary">风险优先</span></div>
+        <div class="panel-head">
+          <span>Trace 调查</span>
+          <button class="btn btn-link" onclick="history.back()">返回列表</button>
+        </div>
         <div class="panel-body">
           <div class="trace-list">
             <div class="trace-card active" onclick="selectTrace(this,'TRC-20260416-018')">
               <div class="trace-card-title"><strong class="mono">TRC-20260416-018</strong><span class="tag tag-danger">高</span></div>
               <div class="trace-meta">研发代码审查助手 | 7 个 Span<br>工具外联数据流需确认 | 10:25:33</div>
-            </div>
-            <div class="trace-card" onclick="selectTrace(this,'TRC-20260416-012')">
-              <div class="trace-card-title"><strong class="mono">TRC-20260416-012</strong><span class="tag tag-warning">中</span></div>
-              <div class="trace-meta">人事档案助理 | 5 个 Span<br>敏感字段输出过多 | 09:48:11</div>
-            </div>
-            <div class="trace-card" onclick="selectTrace(this,'TRC-20260416-009')">
-              <div class="trace-card-title"><strong class="mono">TRC-20260416-009</strong><span class="tag tag-primary">低</span></div>
-              <div class="trace-meta">智能客服 Copilot | 12 个 Span<br>疑似规则误报 | 09:12:04</div>
-            </div>
-            <div class="trace-card" onclick="selectTrace(this,'TRC-20260416-006')">
-              <div class="trace-card-title"><strong class="mono">TRC-20260416-006</strong><span class="tag tag-warning">中</span></div>
-              <div class="trace-meta">财务票据审计助手 | 6 个 Span<br>数据库写入工具待复核 | 08:52:27</div>
             </div>
           </div>
         </div>
@@ -161,7 +152,7 @@
       <div class="script-panel">
         <div class="panel-head">
           <span>风险链路：<span class="mono" id="traceIdTitle">TRC-20260416-018</span></span>
-          <span class="tag tag-danger">已生成风险事件 EVT-2026-A018</span>
+          <span class="tag tag-danger">已生成风险事件 EVT-2026-00018</span>
         </div>
         <div class="panel-body">
           <div class="script-flow">
@@ -197,7 +188,7 @@
         <div class="panel-head"><span>证据工作区</span><span class="tag tag-success">当前 Span：<span class="mono" id="selectedSpan">sp_04_tool</span></span></div>
         <div class="panel-body">
           <div class="evidence-summary">
-            <div class="kv"><div class="k">事件编号</div><div class="mono" id="evidenceEventId">EVT-2026-A018</div></div>
+            <div class="kv"><div class="k">事件编号</div><div class="mono" id="evidenceEventId">EVT-2026-00018</div></div>
             <div class="kv"><div class="k">风险阶段</div><div id="evidenceStage">工具能力边界确认</div></div>
             <div class="kv"><div class="k">风险等级</div><div><span class="tag tag-danger">高风险</span></div></div>
             <div class="kv"><div class="k">置信度</div><div id="evidenceConfidence">0.91</div></div>

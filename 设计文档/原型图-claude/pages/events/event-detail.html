@@ -29,7 +29,7 @@
     <div class="page-header">
       <div>
         <div class="page-title">风险事件详情 <span id="riskLevelTag" class="tag tag-danger">高风险</span> <span id="statusTag" class="tag tag-warning">处理中</span></div>
-        <div class="page-subtitle" id="pageSubtitle">EVT-2026-A018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
+        <div class="page-subtitle" id="pageSubtitle">EVT-2026-00018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-default" onclick="backToList()">返回列表</button>
@@ -43,7 +43,7 @@
           <div class="card-header"><div class="card-title">事件概况</div></div>
           <div class="card-body">
             <div class="desc-list">
-              <div class="desc-item"><div class="desc-label">事件编号</div><div class="desc-value mono" id="eventId">EVT-2026-A018</div></div>
+              <div class="desc-item"><div class="desc-label">事件编号</div><div class="desc-value mono" id="eventId">EVT-2026-00018</div></div>
               <div class="desc-item"><div class="desc-label">发生时间</div><div class="desc-value" id="eventTime">2026-04-16 10:25:33</div></div>
               <div class="desc-item"><div class="desc-label">风险类型</div><div class="desc-value" id="riskType">工具能力边界越界</div></div>
               <div class="desc-item"><div class="desc-label">置信度</div><div class="desc-value" id="confidence">0.91</div></div>
@@ -54,7 +54,7 @@
               <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value" id="agentName">代码审查工作流 / ReviewChain.invoke</div></div>
               <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
               <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value" id="resourceName">external.example/upload</div></div>
-              <div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>
+              <!--<div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>-->
               <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value" id="detectorName">tool-boundary-detector</div></div>
               <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value mono" id="ruleVersion">tool-boundary-v1.8.2</div></div>
             </div>
@@ -89,11 +89,10 @@
         </div>
 
         <div class="card">
-          <div class="card-header"><div class="card-title">复核结论</div></div>
+          <div class="card-header"><div class="card-title">处置结论</div></div>
           <div class="card-body">
             <div class="desc-list">
-              <div class="desc-item"><div class="desc-label">误报原因</div><div class="desc-value" id="fpReason">暂无，当前事件已确认进入处理中。</div></div>
-              <div class="desc-item"><div class="desc-label">接受风险原因</div><div class="desc-value" id="acceptReason">暂无，如业务确认接受风险需关联审批编号。</div></div>
+              <div class="desc-item"><div class="desc-label">处置说明</div><div class="desc-value" id="fpReason">暂无，当前事件已确认进入处理中。</div></div>
             </div>
           </div>
         </div>
@@ -104,11 +103,7 @@
           <div class="card-header"><div class="card-title">处置动作</div></div>
           <div class="card-body">
             <div class="action-grid">
-              <button class="btn btn-primary" onclick="openModal('progressModal')">更新进度</button>
-              <button class="btn btn-default" onclick="openModal('assignModal')">指派负责人</button>
-              <button class="btn btn-warning" onclick="openModal('actionModal')">下发限制</button>
-              <button class="btn btn-default" onclick="openModal('falsePositiveModal')">标记误报</button>
-              <button class="btn btn-default" onclick="openModal('acceptRiskModal')">接受风险</button>
+              <button class="btn btn-primary" onclick="openModal('progressModal')">处置登记</button>
               <button class="btn btn-default" onclick="toastSuccess('事件摘要已生成')">生成摘要</button>
             </div>
             <hr class="divider">
@@ -131,12 +126,20 @@
 
   <div class="modal-overlay" id="progressModal">
     <div class="modal-box modal-md">
-      <div class="modal-header"><div class="modal-title">更新处置进度</div><div class="modal-close" onclick="closeModal('progressModal')">×</div></div>
+      <div class="modal-header"><div class="modal-title">事件处置登记</div><div class="modal-close" onclick="closeModal('progressModal')">×</div></div>
       <div class="modal-body"><form id="progressForm">
-        <div class="form-row"><div class="form-label required">目标状态</div><div class="form-field"><select class="form-select" required><option>处理中</option><option>待关闭</option><option>已关闭</option></select></div></div>
-        <div class="form-row"><div class="form-label required">进度说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明当前处置进度、证据判断和下一步动作"></textarea></div></div>
+        <div class="form-row"><div class="form-label required">处置状态</div><div class="form-field">
+          <select class="form-select" required>
+            <option value="">请选择处置状态</option>
+            <option value="resolved">已处置</option>
+            <option value="false_positive">误报</option>
+            <option value="accepted_risk">接受风险</option>
+            <option value="closed">已关闭</option>
+          </select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">处置备注</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明处置过程、判断依据等"></textarea></div></div>
       </form></div>
-      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('progressModal')">取消</button><button class="btn btn-primary" onclick="submitModal('progressForm','progressModal','处置进度已更新并写入审计')">保存</button></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('progressModal')">取消</button><button class="btn btn-primary" onclick="submitModal('progressForm','progressModal','处置进度已更新并写入审计')">提交登记</button></div>
     </div>
   </div>
 
@@ -193,8 +196,8 @@
     var activeEvidenceTab = 'summary';
     var currentEvent = null;
     var eventProfiles = {
-      'EVT-2026-A018': {
-        id: 'EVT-2026-A018',
+      'EVT-2026-00018': {
+        id: 'EVT-2026-00018',
         time: '2026-04-16 10:25:33',
         traceId: 'TRC-20260416-018',
         spanId: 'sp_04_tool',
@@ -225,8 +228,8 @@
         acceptReason: '暂无，如业务确认接受风险需关联审批编号。',
         hint: '当前建议优先限制 Tool 范围，避免直接影响整个应用。'
       },
-      'EVT-2026-A012': {
-        id: 'EVT-2026-A012',
+      'EVT-2026-00012': {
+        id: 'EVT-2026-00012',
         time: '2026-04-16 09:48:11',
         traceId: 'TRC-20260416-012',
         spanId: 'sp_06_output',
@@ -257,8 +260,8 @@
         acceptReason: '暂无。',
         hint: '建议先通知应用负责人确认最小输出字段，必要时调整脱敏策略。'
       },
-      'EVT-2026-A009': {
-        id: 'EVT-2026-A009',
+      'EVT-2026-00009': {
+        id: 'EVT-2026-00009',
         time: '2026-04-16 09:12:04',
         traceId: 'TRC-20260416-009',
         spanId: 'sp_02_llm',
@@ -295,8 +298,8 @@
       if (typeof updateBreadcrumb === 'function') {
         updateBreadcrumb([{ label: '风险事件' }, { label: '风险事件详情' }]);
       }
-      var id = new URLSearchParams(window.location.search).get('id') || 'EVT-2026-A018';
-      renderEvent(eventProfiles[id] || eventProfiles['EVT-2026-A018']);
+      var id = new URLSearchParams(window.location.search).get('id') || 'EVT-2026-00018';
+      renderEvent(eventProfiles[id] || eventProfiles['EVT-2026-00018']);
     });
 
     function renderEvent(profile) {
