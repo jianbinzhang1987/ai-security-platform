@@ -499,6 +499,11 @@
                             data-page="pages/events/alert-log.html"
                             data-label="告警与响应记录"
                             onclick="
+                        <div
+                            class="nav-item"
+                            data-page="pages/events/alert-log.html"
+                            data-label="告警与响应记录"
+                            onclick="
                                 loadPage(
                                     'pages/events/alert-log.html',
                                     '告警与响应记录',
@@ -526,56 +531,98 @@
                                 stroke-linejoin="round"
                             />
                         </svg>
-                        <span class="nav-label">规则策略</span>
+                        <span class="nav-label">统一策略中心</span>
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
                         <div
                             class="nav-item"
-                            data-page="pages/policy/policy-list.html"
-                            data-label="检测规则配置"
+                            data-page="pages/policy/gateway-policies.html"
+                            data-label="网关防护策略"
                             onclick="
                                 loadPage(
-                                    'pages/policy/policy-list.html',
-                                    '检测规则配置',
+                                    'pages/policy/gateway-policies.html',
+                                    '网关防护策略',
                                     this,
                                 )
                             "
                         >
-                            检测规则配置
+                            网关防护策略
                         </div>
                         <div
                             class="nav-item"
-                            data-page="pages/policy/alert-rules.html"
-                            data-label="告警规则"
+                            data-page="pages/policy/probe-policies.html"
+                            data-label="探针运行时策略"
                             onclick="
                                 loadPage(
-                                    'pages/policy/alert-rules.html',
-                                    '告警规则',
+                                    'pages/policy/probe-policies.html',
+                                    '探针运行时策略',
                                     this,
                                 )
                             "
                         >
-                            告警规则
+                            探针运行时策略
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/distribution-status.html"
+                            data-label="策略发布与下发"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/distribution-status.html',
+                                    '策略发布与下发',
+                                    this,
+                                )
+                            "
+                        >
+                            策略发布与下发
+                        </div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/hit-analysis.html"
+                            data-label="策略命中分析"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/hit-analysis.html',
+                                    '策略命中分析',
+                                    this,
+                                )
+                            "
+                        >
+                            策略命中分析
+                        </div>
+                        <div class="nav-group-sep"></div>
+                        <div
+                            class="nav-item"
+                            data-page="pages/policy/alert-rules.html"
+                            data-label="告警规则与响应"
+                            onclick="
+                                loadPage(
+                                    'pages/policy/alert-rules.html',
+                                    '告警规则与响应',
+                                    this,
+                                )
+                            "
+                        >
+                            告警规则与响应
                         </div>
                         <div
                             class="nav-item nav-hidden-p0"
                             data-page="pages/policy/guardrails.html"
-                            data-label="自定义 Guardrail"
+                            data-label="Guardrails 模块"
                             onclick="
                                 loadPage(
                                     'pages/policy/guardrails.html',
-                                    '自定义 Guardrail',
+                                    'Guardrails 模块',
                                     this,
                                 )
                             "
                         >
-                            自定义 Guardrail
+                            Guardrails 模块
                         </div>
                         <div
                             class="nav-item nav-hidden-p0"
                             data-page="pages/policy/notify-channel.html"
-                            data-label="通知渠道"
                             onclick="
                                 loadPage(
                                     'pages/policy/notify-channel.html',
