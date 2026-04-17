@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>策略发布与下发</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .rule-meta { color:#909399; font-size:12px; margin-top:4px; display: flex; gap: 8px; align-items: center;}
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .sync-status { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+    .sync-status:hover { opacity: 0.8; }
+    .sync-progress { height: 6px; width: 80px; background: #EBEEF5; border-radius: 4px; overflow: hidden; }
+    .sync-bar { height: 100%; transition: width 0.3s; }
+    .sync-bar.success { background: #67c23a; }
+    .sync-bar.warning { background: #e6a23c; }
+    .sync-bar.danger { background: #f56c6c; }
+    
+    .target-badge-gateway { background:#e1f3d8; color:#67c23a; padding:1px 6px; border-radius:12px; font-size:11px; }
+    .target-badge-probe { background:#e6f1fc; color:#409eff; padding:1px 6px; border-radius:12px; font-size:11px; }
+    
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+    .dot-draft { background: #909399; }
+    .dot-canary { background: #e6a23c; }
+    .dot-pub { background: #67c23a; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">策略发布与下发管理</div>
+        <div class="page-subtitle">管理安全防护策略的生命周期组装，以及实时监控期望策略版本在网关与各业务探针端的真实触达状态。</div>
+      </div>
+      <button class="btn btn-default" onclick="toastSuccess('正在从所有节点刷新心跳配置')">手动强制刷新回执</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">待发布草稿 (Draft)</div><div class="v">3</div></div>
+      <div class="stat-lite"><div class="k">分批灰度中 (Canary)</div><div class="v" style="color:#E6A23C;">2</div></div>
+      <div class="stat-lite"><div class="k">全量保护中 (Published)</div><div class="v" style="color:#67C23A;">24</div></div>
+      <div class="stat-lite"><div class="k">包含同步异常探针</div><div class="v" style="color:#F56C6C;">1 条策略</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略名称</span><input type="text" class="form-control" placeholder="规则 ID / 名称"></div>
+      <div class="search-item">
+        <span class="form-label">发布状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>草稿待发布</option>
+          <option>灰度发布中</option>
+          <option>已全量发布</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">下发同步状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>100% 已同步</option>
+          <option>持续下发分发中</option>
+          <option>包含异常掉线节点</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table" id="ruleTable">
+          <thead>
+            <tr>
+              <th>策略名称</th>
+              <th>生效靶点</th>
+              <th>控制面期望版本</th>
+              <th>发布生命周期</th>
+              <th style="width:250px;">实例节点同步进度</th>
+              <th>最新版本时间</th>
+              <th style="width:240px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 网关全量策略 -->
+            <tr>
+              <td>
+                <strong>高危越狱(Jailbreak)拦截</strong>
+              </td>
+              <td><span class="target-badge-gateway">网关集群 (Gateway)</span></td>
+              <td><span style="font-family: monospace; background: #f0f2f5; padding: 2px 6px; border-radius: 4px;">v5</span></td>
+              <td><span class="status-dot dot-pub"></span>已全量发布</td>
+              <td>
+                <div class="sync-status" onclick="openTargetModal('jb')">
+                  <div class="sync-progress"><div class="sync-bar success" style="width: 100%;"></div></div>
+                  <span style="color: #67c23a;">极速下发完成 (4/4)</span>
+                </div>
+              </td>
+              <td>2026-04-16 14:22:10</td>
+              <td>
+                <button class="btn btn-link" onclick="toastSuccess('策略发布时间线已读取')">发布历史</button>
+                <button class="btn btn-link warning">紧急回滚 (v4)</button>
+              </td>
+            </tr>
+            <!-- 探针异常策略 -->
+            <tr>
+              <td>
+                <strong>高危工具执行审批控制</strong>
+              </td>
+              <td><span class="target-badge-probe">探针组 (Probe)</span></td>
+              <td><span style="font-family: monospace; background: #f0f2f5; padding: 2px 6px; border-radius: 4px;">v2</span></td>
+              <td><span class="status-dot dot-pub"></span>已全量发布</td>
+              <td>
+                <div class="sync-status" onclick="openTargetModal('tool')">
+                  <div class="sync-progress"><div class="sync-bar danger" style="width: 90%;"></div></div>
+                  <span style="color: #f56c6c;">部分探针未响应 (45/50)</span>
+                </div>
+              </td>
+              <td>2026-04-16 09:12:00</td>
+              <td>
+                <button class="btn btn-link" onclick="openTargetModal('tool')">检视异常</button>
+                <button class="btn btn-link">向离线节点重发</button>
+              </td>
+            </tr>
+            <!-- 探针灰度策略 -->
+            <tr>
+              <td>
+                <strong>探针遥测数据采集节流</strong>
+              </td>
+              <td><span class="target-badge-probe">探针组 (Probe)</span></td>
+              <td><span style="font-family: monospace; background: #f0f2f5; padding: 2px 6px; border-radius: 4px;">v1</span></td>
+              <td><span class="status-dot dot-canary"></span>灰度分批中</td>
+              <td>
+                <div class="sync-status">
+                  <div class="sync-progress"><div class="sync-bar warning" style="width: 25%;"></div></div>
+                  <span style="color: #e6a23c;">灰度集群触达 (2/8)</span>
+                </div>
+              </td>
+              <td>2026-04-17 08:30:00</td>
+              <td>
+                <button class="btn btn-link">推进全量发布</button>
+                <button class="btn btn-link warning">终止灰度并回撤</button>
+              </td>
+            </tr>
+            <!-- 草稿 -->
+            <tr>
+              <td>
+                <strong>内部 API 调用防劫持</strong>
+              </td>
+              <td><span class="target-badge-gateway">网关集群 (Gateway)</span> / <span class="target-badge-probe">探针端 (Probe)</span></td>
+              <td><span style="font-family: monospace; background: #f0f2f5; padding: 2px 6px; border-radius: 4px;">Draft</span></td>
+              <td><span class="status-dot dot-draft"></span>草稿配置中</td>
+              <td>
+                <div style="color: #909399; font-size: 12px; margin-left: 12px;">待平台发布调度</div>
+              </td>
+              <td>2026-04-17 09:10:20</td>
+              <td>
+                <button class="btn btn-link">启动仿真干跑</button>
+                <button class="btn btn-link">进入发布</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 同步异常节点详情弹窗 -->
+  <div class="modal-overlay" id="targetModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">节点同步回执详情</div><div class="modal-close" onclick="closeModal('targetModal')">×</div></div>
+      <div class="modal-body">
+        
+        <div style="margin-bottom: 12px;">
+          策略: <strong id="modalPolName">高危工具执行审批控制</strong> &nbsp;&nbsp;
+          期望版本: <span style="font-family: monospace; background: #f0f2f5; padding: 2px 6px; border-radius: 4px;">v2</span>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>实例/归属环境</th>
+                <th>实例 IP (探针上报)</th>
+                <th>当前加载策略版本</th>
+                <th>同步状态</th>
+                <th>最后心跳时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>HR知识库 Agent (prod-a)</td>
+                <td><span style="font-family: monospace;">10.42.1.18</span></td>
+                <td><span style="font-family: monospace; color: #67c23a;">v2</span></td>
+                <td><span class="tag tag-success">已同步并生效</span></td>
+                <td>10秒前</td>
+              </tr>
+              <tr>
+                <td>金融客服 Agent (prod-b)</td>
+                <td><span style="font-family: monospace;">10.42.3.99</span></td>
+                <td><span style="font-family: monospace; color: #67c23a;">v2</span></td>
+                <td><span class="tag tag-success">已同步并生效</span></td>
+                <td>12秒前</td>
+              </tr>
+              <tr style="background:#fffcf9;">
+                <td>遗留内部助手 Agent (legacy-1)</td>
+                <td><span style="font-family: monospace;">10.88.24.11</span></td>
+                <td><span style="font-family: monospace; color: #f56c6c; text-decoration: line-through;">v1</span></td>
+                <td><span class="tag" style="background:#fde2e2; color:#f56c6c;">脱机 / 无法通信</span></td>
+                <td>2小时前</td>
+              </tr>
+              <tr style="background:#fffcf9;">
+                <td>IT 服务工单 Agent (testing-2)</td>
+                <td><span style="font-family: monospace;">10.88.24.18</span></td>
+                <td><span style="font-family: monospace; color: #e6a23c;">v1</span></td>
+                <td><span class="tag" style="background:#fdf6ec; color:#e6a23c;">旧版运行中 / 策略拉取超时</span></td>
+                <td>4分钟前</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('targetModal')">关闭</button>
+        <button class="btn btn-primary" onclick="toastSuccess('已向异常节点发起重试指令 (RPC_Strategy_Push)')">一键重试异常节点</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '统一策略中心' }, { label: '策略发布与下发' }]);
+    });
+    
+    function openTargetModal(type) {
+      if(type === 'jb') {
+        document.getElementById('modalPolName').innerText = '高危越狱(Jailbreak)拦截 (API网关组)';
+      }
+      openModal('targetModal');
+    }
+  </script>
+</body>
+</html>
