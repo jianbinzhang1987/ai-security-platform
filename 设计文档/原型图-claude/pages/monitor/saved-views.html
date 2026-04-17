@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -42,8 +42,8 @@ status=blocked</textarea></div></div>
   </div>
   <script src="../../js/common.js"></script>
   <script>
-    if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '安全监控' }, { label: '保存的调查模板' }]);
-    function goObserve() { window.parent.loadPage('pages/monitor/trace-list.html', '风险溯源工作台', null); }
+    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '安全监控' }, { label: '保存的调查模板' }]);
+    function goObserve() { navigateTo('pages/monitor/trace-list.html', '风险溯源工作台', null); }
   </script>
 </body>
 </html>

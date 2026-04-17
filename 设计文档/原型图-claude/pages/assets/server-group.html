@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -119,7 +119,7 @@
   <div class="page-header">
     <div>
       <div class="page-title">服务器分组管理</div>
-      <div class="page-subtitle">按部门、业务线或自定义分类管理服务器集群</div>
+      <div class="page-subtitle">按部门或自定义分类管理服务器集群</div>
     </div>
   </div>
 
@@ -152,20 +152,6 @@
             <div class="tree-node-actions">
               <button class="btn-link" title="编辑" onclick="event.stopPropagation();openModal('groupModal')">编辑</button>
               <button class="btn-link danger" title="删除" onclick="event.stopPropagation();confirmDelete('产品部服务器组', function(){toastSuccess('删除成功')})">删除</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="tree-folder">
-          <div class="tree-folder-title">按业务线分组</div>
-          <div class="tree-node" onclick="switchGroup(this, '核心业务服务器组', '按业务线分组', '承载公司核心交易和主链路的服务器集群。')">
-            <div class="tree-node-info">
-              <span>核心业务服务器组</span>
-              <span class="tree-node-count">28</span>
-            </div>
-            <div class="tree-node-actions">
-              <button class="btn-link" title="编辑" onclick="event.stopPropagation();openModal('groupModal')">编辑</button>
-              <button class="btn-link danger" title="删除" onclick="event.stopPropagation();confirmDelete('核心业务服务器组', function(){toastSuccess('删除成功')})">删除</button>
             </div>
           </div>
         </div>
@@ -222,7 +208,7 @@
           <tbody>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">生产服务器-01</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-01</a></td>
               <td>10.0.1.101</td>
               <td>研发部</td>
               <td><span class="tag tag-success">在线</span></td>
@@ -232,7 +218,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">生产服务器-02</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-02</a></td>
               <td>10.0.1.102</td>
               <td>研发部</td>
               <td><span class="tag tag-success">在线</span></td>
@@ -242,7 +228,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">研发测试服务器-01</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">研发测试服务器-01</a></td>
               <td>10.0.2.201</td>
               <td>研发部</td>
               <td><span class="tag tag-warning">告警</span></td>
@@ -252,7 +238,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">数据库主节点-01</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">数据库主节点-01</a></td>
               <td>10.0.3.50</td>
               <td>研发部</td>
               <td><span class="tag tag-success">在线</span></td>
@@ -262,7 +248,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">日志分析服务器</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">日志分析服务器</a></td>
               <td>10.0.4.15</td>
               <td>研发部</td>
               <td><span class="tag tag-info">离线</span></td>
@@ -272,7 +258,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">模型训练节点-A</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">模型训练节点-A</a></td>
               <td>10.0.5.11</td>
               <td>研发部</td>
               <td><span class="tag tag-success">在线</span></td>
@@ -308,7 +294,6 @@
             <div class="form-field">
               <select class="form-select" required>
                 <option value="dept">按部门分组</option>
-                <option value="biz">按业务线分组</option>
                 <option value="custom">自定义分组</option>
               </select>
             </div>

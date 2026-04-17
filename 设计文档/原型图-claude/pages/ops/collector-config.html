@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -81,7 +81,7 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: '数据采集器配置' }]);
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '系统管理' }, { label: '数据采集器配置' }]);
     });
     function saveConfig() { toastSuccess('采集器配置已发布，在线实例将在 30 秒内拉取新版本'); }
     function revertConfig() { showConfirm('确认恢复默认采集配置？系统会生成新的配置版本。', function(){ toastSuccess('已恢复默认配置'); }, '恢复默认'); }

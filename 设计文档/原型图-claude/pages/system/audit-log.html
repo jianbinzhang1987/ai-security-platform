@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -100,7 +100,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof renderPagination === 'function') renderPagination('pagination', 569800, 1, 10, function(p){});
-      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: '操作审计日志' }]);
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '系统管理' }, { label: '操作审计日志' }]);
     });
     function searchData() { toastSuccess('审计日志已刷新'); }
     function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }

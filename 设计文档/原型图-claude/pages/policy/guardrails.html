@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -21,6 +21,6 @@
   </div>
   <div class="modal-overlay" id="guardrailModal"><div class="modal-box modal-md"><div class="modal-header"><div class="modal-title">创建 Guardrail</div><div class="modal-close" onclick="closeModal('guardrailModal')">×</div></div><div class="modal-body"><div class="form-row"><div class="form-label required">名称</div><div class="form-field"><input class="form-control"></div></div><div class="form-row"><div class="form-label">动作</div><div class="form-field"><select class="form-select"><option>阻断</option><option>告警</option><option>脱敏后放行</option></select></div></div></div><div class="modal-footer"><button class="btn btn-default" onclick="closeModal('guardrailModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('Guardrail 已保存');closeModal('guardrailModal')">保存</button></div></div></div>
   <script src="../../js/common.js"></script>
-  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '策略中心' }, { label: '自定义 Guardrail' }]);</script>
+  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '策略中心' }, { label: '自定义 Guardrail' }]);</script>
 </body>
 </html>

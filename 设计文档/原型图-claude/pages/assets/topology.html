@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -84,8 +84,8 @@
   </div>
   <script src="../../js/common.js"></script>
   <script>
-    if (window.parent && window.parent.setBreadcrumb) {
-      window.parent.setBreadcrumb([{ label: '资产管理' }, { label: '资产拓扑' }]);
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([{ label: '资产管理' }, { label: '资产拓扑' }]);
     }
   </script>
 </body>

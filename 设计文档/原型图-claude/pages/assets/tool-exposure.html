@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -117,23 +117,23 @@
           <div class="side-section">
             <div class="desc-list" style="grid-template-columns:1fr;">
               <div class="desc-item"><div class="desc-label">当前工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
-              <div class="desc-item"><div class="desc-label">能力边界</div><div class="desc-value">网络访问 / 外部 HTTP POST</div></div>
-              <div class="desc-item"><div class="desc-label">建议状态</div><div class="desc-value"><span class="tag tag-danger">限制名单</span></div></div>
+              <div class="desc-item"><div class="desc-label">能力边界</div><div class="desc-value" id="toolBoundary">网络访问 / 外部 HTTP POST</div></div>
+              <div class="desc-item"><div class="desc-label">建议状态</div><div class="desc-value" id="toolSuggestedStatus"><span class="tag tag-danger">限制名单</span></div></div>
             </div>
           </div>
           <div class="side-section">
             <div class="boundary-grid">
-              <div class="boundary-card"><strong>调用主体</strong><span>6 个 Agent</span></div>
-              <div class="boundary-card"><strong>关联资源</strong><span>外部域名 3 个</span></div>
-              <div class="boundary-card"><strong>高风险参数</strong><span>url, payload</span></div>
-              <div class="boundary-card"><strong>近 7 日风险</strong><span>9 个事件</span></div>
+              <div class="boundary-card"><strong>调用主体</strong><span id="toolAgents">6 个 Agent</span></div>
+              <div class="boundary-card"><strong>关联资源</strong><span id="toolResources">外部域名 3 个</span></div>
+              <div class="boundary-card"><strong>高风险参数</strong><span id="toolParams">url, payload</span></div>
+              <div class="boundary-card"><strong>近 7 日风险</strong><span id="toolRiskEvents">9 个事件</span></div>
             </div>
           </div>
           <div class="side-section">
             <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
               <div class="card-header"><div class="card-title">关联风险事件</div></div>
               <div class="card-body">
-                <div class="timeline">
+                <div class="timeline" id="toolTimeline">
                   <div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">10:25</div><div class="timeline-text">EVT-2026-A018 工具能力边界越界</div><div class="timeline-detail">TRC-20260416-018</div></div></div>
                   <div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">09:44</div><div class="timeline-text">EVT-2026-A011 外联数据流待确认</div></div></div>
                 </div>
@@ -151,8 +151,78 @@
   </div>
   <script src="../../js/common.js"></script>
   <script>
+    var toolProfiles = {
+      external_http_post: {
+        boundary: '网络访问 / 外部 HTTP POST',
+        status: '<span class="tag tag-danger">限制名单</span>',
+        agents: '6 个 Agent',
+        resources: '外部域名 3 个',
+        params: 'url, payload',
+        risks: '9 个事件',
+        timeline: [
+          { level: 'red', time: '10:25', text: 'EVT-2026-A018 工具能力边界越界', detail: 'TRC-20260416-018' },
+          { level: 'orange', time: '09:44', text: 'EVT-2026-A011 外联数据流待确认', detail: 'app_rd_code_review' }
+        ]
+      },
+      direct_db_write: {
+        boundary: '数据库写入 / 财务数据变更',
+        status: '<span class="tag tag-warning">需复核授权</span>',
+        agents: '2 个 Agent',
+        resources: 'finance.write 2 张表',
+        params: 'sql, table, row_id',
+        risks: '4 个事件',
+        timeline: [
+          { level: 'red', time: '11:02', text: 'EVT-2026-A021 写入权限复核待确认', detail: 'mcp.finance.write' },
+          { level: 'orange', time: '08:37', text: 'EVT-2026-A007 高敏参数缺少审批编号', detail: 'sp_05_tool' }
+        ]
+      },
+      crm_search: {
+        boundary: '业务查询 / 客户资料检索',
+        status: '<span class="tag tag-warning">补充声明</span>',
+        agents: '12 个 Agent',
+        resources: 'CRM 索引 4 类',
+        params: 'keyword, customer_id',
+        risks: '3 个事件',
+        timeline: [
+          { level: 'orange', time: '09:12', text: 'EVT-2026-A009 Prompt 风险待复核', detail: 'TRC-20260416-009' },
+          { level: 'gray', time: '昨日', text: 'EVT-2026-A003 查询范围说明不完整', detail: 'app_copilot_service' }
+        ]
+      },
+      ticket_create: {
+        boundary: '工单创建 / 内部流程流转',
+        status: '<span class="tag tag-success">已声明</span>',
+        agents: '5 个 Agent',
+        resources: 'ITSM 工单系统',
+        params: 'title, priority, assignee',
+        risks: '0 个事件',
+        timeline: [
+          { level: 'green', time: '今日', text: '暂无关联风险事件', detail: '近 7 日调用正常' },
+          { level: 'gray', time: '昨日', text: '声明版本已完成复核', detail: 'policy-tool-v1.8.2' }
+        ]
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([
+          { label: '资产中心' },
+          { label: '工具与权限' }
+        ]);
+      }
+    });
+
     function selectTool(name) {
+      var profile = toolProfiles[name] || toolProfiles.external_http_post;
       document.getElementById('toolName').textContent = name;
+      document.getElementById('toolBoundary').textContent = profile.boundary;
+      document.getElementById('toolSuggestedStatus').innerHTML = profile.status;
+      document.getElementById('toolAgents').textContent = profile.agents;
+      document.getElementById('toolResources').textContent = profile.resources;
+      document.getElementById('toolParams').textContent = profile.params;
+      document.getElementById('toolRiskEvents').textContent = profile.risks;
+      document.getElementById('toolTimeline').innerHTML = profile.timeline.map(function(item) {
+        return '<div class="timeline-item"><div class="timeline-dot ' + item.level + '"></div><div class="timeline-content"><div class="timeline-time">' + item.time + '</div><div class="timeline-text">' + item.text + '</div><div class="timeline-detail">' + item.detail + '</div></div></div>';
+      }).join('');
       toastSuccess('已切换工具：' + name);
     }
   </script>

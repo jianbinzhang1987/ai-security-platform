@@ -389,15 +389,41 @@ function getCheckedIds(tableId) {
    ============================================= */
 
 /**
+ * 向父页面发送消息桥事件，兼容 file:// + iframe 场景
+ * @param {string} action - 动作类型
+ * @param {Object} payload - 负载
+ * @returns {boolean} 是否已发送给父页面
+ */
+function postShellMessage(action, payload) {
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        __prototypeBridge: true,
+        action: action,
+        payload: payload || {}
+      }, '*');
+      return true;
+    }
+  } catch (error) {
+    console.warn('[prototype] parent bridge unavailable:', error);
+  }
+
+  return false;
+}
+
+/**
  * 从 iframe 内部触发父页面导航
  * @param {string} path - 相对路径，如 'pages/assets/server-detail.html'
  */
-function navigateTo(path) {
-  if (window.parent && window.parent !== window && typeof window.parent.loadPage === 'function') {
-    window.parent.loadPage(path);
-  } else {
-    window.location.href = path;
+function navigateTo(path, label, fallbackPath) {
+  if (postShellMessage('loadPage', {
+    path: path,
+    label: label || ''
+  })) {
+    return;
   }
+
+  window.location.href = fallbackPath || path;
 }
 
 /**
@@ -405,9 +431,7 @@ function navigateTo(path) {
  * @param {Array} items - [{label, path?}]
  */
 function updateBreadcrumb(items) {
-  if (window.parent && window.parent !== window && typeof window.parent.setBreadcrumb === 'function') {
-    window.parent.setBreadcrumb(items);
-  }
+  postShellMessage('setBreadcrumb', { items: items });
 }
 
 /* =============================================

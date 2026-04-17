@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -138,9 +138,18 @@
 
   <script src="../../js/common.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '安全总览' }]);
+      }
+    });
+
     function goPage(page, label) {
-      if (window.parent && window.parent.loadPage) {
-        window.parent.loadPage('pages/assets/' + page.replace('../', '../'), label, null);
+      if (typeof navigateTo === 'function') {
+        var path = page.indexOf('../') === 0
+          ? 'pages/' + page.slice(3)
+          : 'pages/assets/' + page;
+        navigateTo(path, label, null);
       } else {
         window.location.href = page;
       }

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -66,15 +66,25 @@
           <thead><tr><th>缺口类型</th><th>对象</th><th>影响</th><th>建议动作</th><th>负责人</th><th>状态</th><th>操作</th></tr></thead>
           <tbody>
             <tr><td>Trace 断链</td><td>app_rd_code_review</td><td>风险溯源不完整</td><td>升级 SDK 到 0.8.4，检查 parent_span_id</td><td>李航</td><td><span class="tag tag-warning">待处理</span></td><td><button class="btn btn-link" onclick="toastSuccess('已创建修复任务')">创建任务</button></td></tr>
-            <tr><td>未声明工具</td><td>external_http_post</td><td>能力边界不清</td><td>补充工具声明或加入限制名单</td><td>张安全</td><td><span class="tag tag-danger">高优先级</span></td><td><button class="btn btn-link" onclick="window.location.href='tool-exposure.html'">查看工具</button></td></tr>
+            <tr><td>未声明工具</td><td>external_http_post</td><td>能力边界不清</td><td>补充工具声明或加入限制名单</td><td>张安全</td><td><span class="tag tag-danger">高优先级</span></td><td><button class="btn btn-link" onclick="navigateTo('pages/assets/tool-exposure.html','工具与权限',null)">查看工具</button></td></tr>
             <tr><td>长期零触发</td><td>response_pii_rule</td><td>可能存在规则未绑定或采集字段缺失</td><td>检查规则绑定范围和 source_field</td><td>安全管理员</td><td><span class="tag tag-warning">待确认</span></td><td><button class="btn btn-link">查看规则</button></td></tr>
             <tr><td>规则缺口</td><td>app_finance_audit</td><td>数据库写入工具未配置规则</td><td>绑定工具边界规则 v1.8.2</td><td>赵宁</td><td><span class="tag tag-warning">待处理</span></td><td><button class="btn btn-link">绑定规则</button></td></tr>
-            <tr><td>处置未闭环</td><td>EVT-2026-A012</td><td>事件长期停留处理中</td><td>补充处置说明并关闭或接受风险</td><td>李运营</td><td><span class="tag tag-warning">超时</span></td><td><button class="btn btn-link" onclick="window.parent.loadPage('pages/events/event-detail.html?id=EVT-2026-A012','风险事件详情',null)">查看事件</button></td></tr>
+            <tr><td>处置未闭环</td><td>EVT-2026-A012</td><td>事件长期停留处理中</td><td>补充处置说明并关闭或接受风险</td><td>李运营</td><td><span class="tag tag-warning">超时</span></td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-A012','风险事件详情',null)">查看事件</button></td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
   <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([
+          { label: '资产中心' },
+          { label: '监控覆盖度' }
+        ]);
+      }
+    });
+  </script>
 </body>
 </html>

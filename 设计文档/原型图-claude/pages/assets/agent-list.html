@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="zh-CN">
     <head>
         <meta charset="UTF-8" />
@@ -476,7 +476,7 @@
                     tr.innerHTML =
                         '<td><input type="checkbox" class="row-checkbox" data-id="' + row.id + '" onchange="checkBtnState()"></td>' +
                         "<td>" + row.id + "</td>" +
-                        '<td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/agent-detail.html','智能体详情',null); //\'' + row.id + '\')">' + row.name + "</a></td>" +
+                        '<td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null); //\'' + row.id + '\')">' + row.name + "</a></td>" +
                         "<td>" + row.type + "</td>" +
                         "<td>" + row.server + "</td>" +
                         "<td>" + row.app + "</td>" +
@@ -484,7 +484,7 @@
                         '<td>' + renderStatusTag(row.status) + "</td>" +
                         "<td>" + row.owner + "</td>" +
                         '<td><div class="table-action-col">' +
-                        '<button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/agent-detail.html','智能体详情',null); //\'' + row.id + '\')">查看</button>' +
+                        '<button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null); //\'' + row.id + '\')">查看</button>' +
                         '<button class="btn btn-link" onclick="openAgentModal(\'edit\', \'' + row.id + '\')">编辑</button>' +
                         '<button class="btn btn-link" onclick="toggleSingleStatus(\'' + row.id + '\')">' + (row.status === "已停用" ? "启用" : "停用") + "</button>" +
                         '<button class="btn btn-link danger" onclick="deleteAgent(\'' + row.id + '\')">删除</button>' +

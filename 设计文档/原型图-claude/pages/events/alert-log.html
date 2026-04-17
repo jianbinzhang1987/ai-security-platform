@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -16,6 +16,15 @@
     </div>
 
     <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">时间范围</span>
+        <select class="form-select">
+          <option>今日</option>
+          <option>昨日</option>
+          <option selected>近 7 天</option>
+          <option>自定义</option>
+        </select>
+      </div>
       <div class="search-item"><span class="form-label">关联对象</span><input type="text" class="form-control" placeholder="应用 / Agent / Tool"></div>
       <div class="search-item">
         <span class="form-label">动作类型</span>
@@ -25,6 +34,33 @@
           <option>限制</option>
           <option>降级</option>
           <option>恢复</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">操作人</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>系统</option>
+          <option>张安全</option>
+          <option>李运营</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">审批状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>无需审批</option>
+          <option>已审批</option>
+          <option>待补充</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">回滚状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>可回滚</option>
+          <option>已完成</option>
+          <option>无需回滚</option>
         </select>
       </div>
       <div class="search-item"><span class="form-label">事件 / Trace</span><input type="text" class="form-control" placeholder="event_id / trace_id"></div>
@@ -66,7 +102,7 @@
               <td>张安全</td>
               <td>APR-20260416-003</td>
               <td><span class="tag tag-success">可回滚</span></td>
-              <td><button class="btn btn-link" onclick="goTrace()">溯源</button><button class="btn btn-link warning" onclick="toastSuccess('回滚申请已提交')">回滚</button></td>
+              <td><button class="btn btn-link" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button><button class="btn btn-link warning" onclick="toastSuccess('回滚申请已提交')">回滚</button></td>
             </tr>
             <tr>
               <td>ACT-20260416-012</td>
@@ -79,7 +115,7 @@
               <td>系统</td>
               <td>-</td>
               <td><span class="tag tag-info">无需回滚</span></td>
-              <td><button class="btn btn-link" onclick="goTrace()">溯源</button></td>
+              <td><button class="btn btn-link" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></td>
             </tr>
             <tr>
               <td>ACT-20260415-041</td>
@@ -92,7 +128,7 @@
               <td>李运营</td>
               <td>APR-20260415-011</td>
               <td><span class="tag tag-info">已完成</span></td>
-              <td><button class="btn btn-link" onclick="goTrace()">溯源</button></td>
+              <td><button class="btn btn-link" onclick="goTrace('TRC-20260415-041','sp_03_llm')">溯源</button></td>
             </tr>
           </tbody>
         </table>
@@ -105,12 +141,19 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof renderPagination === 'function') renderPagination('pagination', 50123, 1, 10, function(p){});
-      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '风险事件' }, { label: '告警与处置记录' }]);
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '风险事件' }, { label: '告警与处置记录' }]);
+      }
     });
     function searchData() { toastSuccess('处置记录已刷新'); }
     function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
-    function goTrace() { window.parent.loadPage('pages/monitor/trace-list.html', '风险溯源工作台', null); }
-    function goEvent(id) { window.parent.loadPage('pages/events/event-detail.html?id=' + encodeURIComponent(id), '风险事件详情', null); }
+    function goTrace(traceId, spanId) {
+      var url = 'pages/monitor/trace-list.html?trace_id=' + encodeURIComponent(traceId || '') + '&span_id=' + encodeURIComponent(spanId || '');
+      navigateTo(url, '风险溯源工作台', '../monitor/trace-list.html?trace_id=' + encodeURIComponent(traceId || '') + '&span_id=' + encodeURIComponent(spanId || ''));
+    }
+    function goEvent(id) {
+      navigateTo('pages/events/event-detail.html?id=' + encodeURIComponent(id), '风险事件详情', 'event-detail.html?id=' + encodeURIComponent(id));
+    }
   </script>
 </body>
 </html>

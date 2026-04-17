@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><title>自定义报告</title><link rel="stylesheet" href="../../css/style.css"></head>
 <body class="page-content">
@@ -12,6 +12,6 @@
     </div></div>
   </div>
   <script src="../../js/common.js"></script>
-  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);</script>
+  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);</script>
 </body>
 </html>

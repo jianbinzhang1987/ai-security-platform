@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><title>API Key 管理</title><link rel="stylesheet" href="../../css/style.css"></head>
 <body class="page-content">
@@ -11,6 +11,6 @@
   </div>
   <div class="modal-overlay" id="keyModal"><div class="modal-box modal-md"><div class="modal-header"><div class="modal-title">创建 API Key</div><div class="modal-close" onclick="closeModal('keyModal')">×</div></div><div class="modal-body"><div class="form-row"><div class="form-label required">名称</div><div class="form-field"><input class="form-control"></div></div><div class="form-row"><div class="form-label">权限</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 事件只读</label><label class="checkbox-item"><input type="checkbox"> 策略管理</label><label class="checkbox-item"><input type="checkbox"> 报告读取</label></div></div></div></div><div class="modal-footer"><button class="btn btn-default" onclick="closeModal('keyModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('API Key 已创建');closeModal('keyModal')">创建</button></div></div></div>
   <script src="../../js/common.js"></script>
-  <script>if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '系统管理' }, { label: 'API Key 管理' }]);</script>
+  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '系统管理' }, { label: 'API Key 管理' }]);</script>
 </body>
 </html>

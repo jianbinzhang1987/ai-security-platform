@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -147,7 +147,7 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '规则策略' }, { label: '检测规则配置' }]);
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '规则策略' }, { label: '检测规则配置' }]);
     });
     function searchData() { toastSuccess('检测规则列表已刷新'); }
     function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }

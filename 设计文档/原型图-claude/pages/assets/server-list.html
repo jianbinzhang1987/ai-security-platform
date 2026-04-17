@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -55,12 +55,14 @@
         </select>
       </div>
       <div class="search-item">
-        <span class="form-label">业务线</span>
+        <span class="form-label">部门</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option value="核心业务">核心业务</option>
-          <option value="支撑业务">支撑业务</option>
-          <option value="测试环境">测试环境</option>
+          <option value="客服中心">客服中心</option>
+          <option value="研发部">研发部</option>
+          <option value="运营中心">运营中心</option>
+          <option value="财务部">财务部</option>
+          <option value="法务部">法务部</option>
         </select>
       </div>
       <div class="search-btns">
@@ -100,7 +102,7 @@
           <tbody>
             <tr data-id="1">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">生产服务器-01</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-01</a></td>
               <td>10.0.1.12</td>
               <td>研发部</td>
               <td>Linux CentOS 7</td>
@@ -111,7 +113,7 @@
               <td>2026-01-10 10:23:45</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('生产服务器-01')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('生产服务器-01')">删除</button>
                 </div>
@@ -119,7 +121,7 @@
             </tr>
             <tr data-id="2">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">生产服务器-02</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-02</a></td>
               <td>10.0.1.13</td>
               <td>产品部</td>
               <td>Linux Ubuntu 22.04</td>
@@ -130,7 +132,7 @@
               <td>2026-01-12 14:15:22</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('生产服务器-02')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('生产服务器-02')">删除</button>
                 </div>
@@ -138,7 +140,7 @@
             </tr>
             <tr data-id="3">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">核心调度节点-A</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">核心调度节点-A</a></td>
               <td>10.0.2.55</td>
               <td>研发部</td>
               <td>Linux CentOS 7</td>
@@ -149,7 +151,7 @@
               <td>2026-01-15 09:30:00</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('核心调度节点-A')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('核心调度节点-A')">删除</button>
                 </div>
@@ -157,7 +159,7 @@
             </tr>
             <tr data-id="4">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">数据分析集群-01</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">数据分析集群-01</a></td>
               <td>10.0.3.11</td>
               <td>数据部</td>
               <td>Linux Ubuntu 22.04</td>
@@ -168,7 +170,7 @@
               <td>2026-02-01 11:20:30</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('数据分析集群-01')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('数据分析集群-01')">删除</button>
                 </div>
@@ -176,7 +178,7 @@
             </tr>
             <tr data-id="5">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">客服系统专属服务器</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">客服系统专属服务器</a></td>
               <td>10.0.4.88</td>
               <td>运营部</td>
               <td>Windows Server 2019</td>
@@ -187,7 +189,7 @@
               <td>2026-02-10 16:45:10</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('客服系统专属服务器')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('客服系统专属服务器')">删除</button>
                 </div>
@@ -195,7 +197,7 @@
             </tr>
             <tr data-id="6">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">研发测试服务器-02</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">研发测试服务器-02</a></td>
               <td>192.168.1.102</td>
               <td>研发部</td>
               <td>Linux CentOS 7</td>
@@ -206,7 +208,7 @@
               <td>2026-03-01 10:00:00</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('研发测试服务器-02')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('研发测试服务器-02')">删除</button>
                 </div>
@@ -214,7 +216,7 @@
             </tr>
             <tr data-id="7">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">北京数据中心节点-03</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">北京数据中心节点-03</a></td>
               <td>10.10.1.33</td>
               <td>安全部</td>
               <td>Linux Ubuntu 22.04</td>
@@ -225,7 +227,7 @@
               <td>2026-03-05 13:15:45</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('北京数据中心节点-03')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('北京数据中心节点-03')">删除</button>
                 </div>
@@ -233,7 +235,7 @@
             </tr>
             <tr data-id="8">
               <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
-              <td><a href="javascript:void(0)" class="btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">文档审查处理服务器</a></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">文档审查处理服务器</a></td>
               <td>10.0.5.21</td>
               <td>产品部</td>
               <td>Linux CentOS 7</td>
@@ -244,7 +246,7 @@
               <td>2026-03-10 09:20:10</td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="window.parent.loadPage('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
                   <button class="btn btn-link" onclick="openEditModal('文档审查处理服务器')">编辑</button>
                   <button class="btn btn-link danger" onclick="deleteServer('文档审查处理服务器')">删除</button>
                 </div>
@@ -305,17 +307,6 @@
                 <option value="安全部">安全部</option>
                 <option value="运营部">运营部</option>
                 <option value="数据部">数据部</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-label">所属业务线</div>
-            <div class="form-field">
-              <select class="form-select" id="f_biz">
-                <option value="">请选择业务线（选填）</option>
-                <option value="核心业务">核心业务</option>
-                <option value="支撑业务">支撑业务</option>
-                <option value="测试环境">测试环境</option>
               </select>
             </div>
           </div>
@@ -431,8 +422,8 @@
     }
 
     function viewDetail(name) {
-      if(window.parent && typeof window.parent.loadPage === 'function') {
-        window.parent.loadPage('pages/assets/server-detail.html', '服务器详情', null);
+      if (typeof navigateTo === 'function') {
+        navigateTo('pages/assets/server-detail.html', '服务器详情', null);
       } else {
         window.location.href = 'server-detail.html';
       }

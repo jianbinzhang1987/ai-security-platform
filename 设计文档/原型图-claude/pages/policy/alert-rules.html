@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -63,7 +63,7 @@
   <script src="../../js/common.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      if (window.parent && window.parent.setBreadcrumb) window.parent.setBreadcrumb([{ label: '规则策略' }, { label: '告警规则' }]);
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '规则策略' }, { label: '告警规则' }]);
     });
     function openAlertRuleModal() { openModal('alertRuleModal'); }
     function submitAlertRule() { closeModal('alertRuleModal'); toastSuccess('告警规则已保存'); }
