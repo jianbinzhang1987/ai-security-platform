@@ -72,7 +72,7 @@
 | **组件名称** | **功能定位** | **核心能力** | **GitHub / 官网** |
 |:---|:---|:---|:---|
 | OpenTelemetry Collector | 统一数据枢纽 | Receiver 接收多源数据；Processor 实时过滤/PII脱敏/安全规则；Exporter 输出多目标 | open-telemetry/opentelemetry-collector-contrib |
-| LiteLLM Proxy | LLM API 透明代理（层2） | 拦截所有 LLM 调用，内置 logging / guardrails 集成，支持 50+ 模型 | BerriAI/litellm |
+| LiteLLM Proxy / API Gateway | LLM API 透明代理（层2） | 集网关路由与安全护栏于一体，支持 50+ 模型，实时执行 Guardrail 策略 | BerriAI/litellm |
 | Apache Kafka | 异步事件流总线 | 解耦采集与检测，支持高吞吐 span 事件缓冲与回放 | apache/kafka |
 
 **2.3 安全检测组件**
@@ -106,8 +106,8 @@
 |:---|:---|:---|:---|
 | L0 | Agent 侧（客户环境） | 运行中的 AI Agent，被监控对象 | Python/Java/容器 Agent |
 | L1 | 插桩采集层 | SDK 自动捕获 LLM 调用、工具调用的完整语义数据 | openllmetry / OTel JavaAgent / LiteLLM Proxy |
-| L2 | 数据管道层 | 统一接收、过滤、脱敏、路由 span 事件流 | OTel Collector / Kafka |
-| L3 | 安全检测层 | 实时规则匹配、Prompt 注入检测、行为序列分析、意图对齐评分 | NeMo / LlamaFirewall / 自研检测引擎 |
+| L2 | 管道与防护层 | 接收、过滤、脱敏，并实时执行网关层 Guardrail 安全策略 | OTel Collector / LiteLLM Proxy / Kafka |
+| L3 | 深度检测引擎层 | 异步规则匹配、行为序列分析、意图对齐评分等复杂深度审计 | LlamaFirewall / 自研检测引擎 |
 | L4 | 存储分析层 | 持久化 span 事件，支撑时序查询、全文检索、行为建模 | ClickHouse / OpenSearch / PostgreSQL |
 | L5 | 响应执行层 | 实时阻断、告警通知、规则下发、安全运营看板 | Vigil SOC / Grafana / 自研控制台 |
 
@@ -124,8 +124,8 @@ graph TD
 
     L5["L5: 响应与安全运营层 <br/>(实时阻断拦截 / 安全告警流转 / 运营指标大盘)"]:::l5
     L4["L4: 聚合存储分发层 <br/>(ClickHouse 时序宽表 / ES 语义检索 / PG 配置库)"]:::l4
-    L3["L3: AI安全检测核心引擎层 <br/>(Prompt 防护 / MCP 越界审计 / 行为序列基线 / 意图对齐)"]:::l3
-    L2["L2: 管道缓冲与路由层 <br/>(API 网关 LB / OTel Collector 过滤与脱敏 / Kafka 数据流缓冲)"]:::l2
+    L3["L3: AI安全检测核心引擎层 <br/>(MCP 越界审计 / 行为序列分析 / 意图对齐评分)"]:::l3
+    L2["L2: 管道与网关防护层 <br/>(API 网关 LB / 安全护栏 Guardrails / OTel Collector 过滤与脱敏)"]:::l2
     L1["L1: 采集与接入层 <br/>(Python OTel SDK / OPenTelemetry JavaAgent / 透明代理)"]:::l1
     L0["L0: 监控目标环境层 <br/>(客户企业私有部署的业务大模型应用与 AI Agent)"]:::l0
 
@@ -161,23 +161,26 @@ graph TD
     subgraph DataPipe_L2
         LB["负载均衡 / API Gateway"]
         Collector["OTel Collector 集群<br/>脱敏/过滤聚合/分流路由"]
+        Guardrails["Guardrail 护栏动态引擎<br/>(输入拦截/输出洗白)"]
         Kafka["Kafka 消息流总线<br/>异步缓冲与回放"]
     end
     
     Exporter -- 加密 OTLP gRPC 流 --> LB
     LB --> Collector
+    LB -- 同步检测 --> Guardrails
+    Guardrails -- 决策结果 --> LB
     Collector --> Kafka
     
     subgraph SecLayer_L3
-        SecEngine["聚合安全评估调度器"]
-        Prop["Prompt 安全审计<br/>(注入/越狱/有害内容)"]
+        SecEngine["异步安全评估调度器"]
+        DeepAudit["深度审计引擎<br/>(越狱分析/有害内容/意图偏离)"]
         MCP["MCP 工具管控<br/>(权限违规/传参异常)"]
         Behavior["行为序列分析<br/>(基线偏离/图谱异常)"]
-        Align["意图对齐判断<br/>(任务劫持/CoT推理验证)"]
+        Align["任务劫持检测<br/>(CoT推理验证)"]
     end
 
     Kafka --> SecEngine
-    SecEngine --> Prop
+    SecEngine --> DeepAudit
     SecEngine --> MCP
     SecEngine --> Behavior
     SecEngine --> Align
