@@ -34,6 +34,11 @@
     .health-dot { width: 7px; height: 7px; border-radius: 50%; background: #67C23A; }
     .health-dot.warn { background: #E6A23C; }
     .health-dot.danger { background: #F56C6C; }
+    .policy-overview-grid { display:grid; grid-template-columns: 1.2fr 1fr; gap:12px; margin-top:16px; }
+    .policy-info-list { display:grid; gap:8px; }
+    .policy-info-row { display:flex; justify-content:space-between; gap:10px; padding-bottom:8px; border-bottom:1px solid #F5F7FA; }
+    .policy-info-row:last-child { border-bottom:none; padding-bottom:0; }
+    .policy-info-row .k { color:#909399; }
   </style>
 </head>
 <body class="page-content">
@@ -96,7 +101,41 @@
               <div class="mini-card"><div class="k">限制处置次数</div><div class="v">18</div></div>
               <div class="mini-card"><div class="k">误报率</div><div class="v">1.8%</div></div>
             </div>
-            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>当前配置版本 v18，18 个在线实例中 17 个已同步，灰度实例将在下次 60s 轮询内拉取。</span></div>
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>当前接入应用已绑定策略包“基础安全包 v3”。18 个在线实例中 17 个已同步，灰度实例将在下次轮询时拉取最新版本。</span></div>
+            <div class="policy-overview-grid">
+              <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
+                <div class="card-header"><div class="card-title">当前生效策略</div><div style="display:flex; gap:8px;"><button class="btn btn-link" onclick="navigateTo('pages/policy/unified-protection.html','策略包管理',null)">查看策略包</button><button class="btn btn-link" onclick="navigateTo('pages/policy/distribution-status.html','绑定与下发',null)">查看绑定</button></div></div>
+                <div class="card-body">
+                  <div class="policy-info-list">
+                    <div class="policy-info-row"><span class="k">当前策略包</span><span><strong>基础安全包</strong></span></div>
+                    <div class="policy-info-row"><span class="k">当前版本</span><span><span class="tag tag-success">v3</span></span></div>
+                    <div class="policy-info-row"><span class="k">发布状态</span><span><span class="tag tag-success">已发布</span></span></div>
+                    <div class="policy-info-row"><span class="k">下发状态</span><span><span class="tag tag-warning">17 / 18 已同步</span></span></div>
+                    <div class="policy-info-row"><span class="k">最近同步时间</span><span>2026-04-15 17:21:09</span></div>
+                    <div class="policy-info-row"><span class="k">最近变更</span><span>新增 1 条工具管控规则，调整手机号脱敏动作</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
+                <div class="card-header"><div class="card-title">规则概览</div><button class="btn btn-link" onclick="navigateTo('pages/policy/shared-rules.html','高级规则项',null)">查看高级规则项</button></div>
+                <div class="card-body">
+                  <div class="metric-row" style="grid-template-columns:repeat(2, 1fr); gap:10px; margin-bottom:12px;">
+                    <div class="mini-card"><div class="k">包含规则类型</div><div class="v" style="font-size:16px;">3</div><div class="form-hint">内容安全 / 数据防泄露 / 工具管控</div></div>
+                    <div class="mini-card"><div class="k">规则总数</div><div class="v" style="font-size:16px;">8</div><div class="form-hint">网关 5 条，探针 3 条</div></div>
+                  </div>
+                  <div class="table-wrapper">
+                    <table class="data-table">
+                      <thead><tr><th>规则项</th><th>类型</th><th>执行面</th><th>动作</th></tr></thead>
+                      <tbody>
+                        <tr><td>Prompt 注入检测</td><td>内容安全</td><td><span class="tag tag-success">网关</span></td><td>阻断 + 告警</td></tr>
+                        <tr><td>手机号脱敏</td><td>数据防泄露</td><td><span class="tag tag-success">网关</span></td><td>脱敏 + 告警</td></tr>
+                        <tr><td>高危工具审批</td><td>工具管控</td><td><span class="tag tag-primary">探针</span></td><td>审批 + 告警</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="card" style="box-shadow:none;border:1px solid #EBEEF5;">
               <div class="card-header"><div class="card-title">近 7 日风险趋势</div><button class="btn btn-link" onclick="goObserve()">下钻风险溯源工作台</button></div>
               <div class="card-body">
@@ -131,11 +170,11 @@
             </div>
             <div class="table-wrapper">
               <table class="data-table">
-                <thead><tr><th>instance_id</th><th>hostname</th><th>IP</th><th>容器 / 进程</th><th>service.name</th><th>SDK 版本</th><th>配置版本</th><th>注册时间</th><th>心跳</th><th>最后上报</th><th>操作</th></tr></thead>
+                <thead><tr><th>instance_id</th><th>hostname</th><th>IP</th><th>容器 / 进程</th><th>service.name</th><th>SDK 版本</th><th>策略包版本</th><th>注册时间</th><th>心跳</th><th>最后上报</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td class="mono">inst-prod-01</td><td>copilot-prod-01</td><td>10.16.8.21</td><td>pod/copilot-api-7c9 / pid 2481</td><td>customer-copilot</td><td>Python 0.8.4</td><td><span class="tag tag-success">v18</span></td><td>2026-04-01 10:15</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:09</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
-                  <tr><td class="mono">inst-prod-02</td><td>copilot-prod-02</td><td>10.16.8.22</td><td>pod/copilot-api-8f2 / pid 2516</td><td>customer-copilot</td><td>Python 0.8.4</td><td><span class="tag tag-success">v18</span></td><td>2026-04-01 10:17</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:04</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
-                  <tr><td class="mono">inst-gray-01</td><td>copilot-gray-01</td><td>10.17.2.16</td><td>container/copilot-gray / pid 1880</td><td>customer-copilot-gray</td><td>Python 0.8.2</td><td><span class="tag tag-warning">v17</span></td><td>2026-04-09 14:06</td><td><span class="tag tag-warning">版本滞后</span></td><td>2026-04-15 17:20:48</td><td><button class="btn btn-link" onclick="toastSuccess('升级任务已创建')">升级 SDK</button></td></tr>
+                  <tr><td class="mono">inst-prod-01</td><td>copilot-prod-01</td><td>10.16.8.21</td><td>pod/copilot-api-7c9 / pid 2481</td><td>customer-copilot</td><td>Python 0.8.4</td><td><span class="tag tag-success">基础安全包 v3</span></td><td>2026-04-01 10:15</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:09</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td class="mono">inst-prod-02</td><td>copilot-prod-02</td><td>10.16.8.22</td><td>pod/copilot-api-8f2 / pid 2516</td><td>customer-copilot</td><td>Python 0.8.4</td><td><span class="tag tag-success">基础安全包 v3</span></td><td>2026-04-01 10:17</td><td><span class="tag tag-success">在线</span></td><td>2026-04-15 17:21:04</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td class="mono">inst-gray-01</td><td>copilot-gray-01</td><td>10.17.2.16</td><td>container/copilot-gray / pid 1880</td><td>customer-copilot-gray</td><td>Python 0.8.2</td><td><span class="tag tag-warning">基础安全包 v2</span></td><td>2026-04-09 14:06</td><td><span class="tag tag-warning">版本滞后</span></td><td>2026-04-15 17:20:48</td><td><button class="btn btn-link" onclick="toastSuccess('升级任务已创建')">升级 SDK</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -171,7 +210,7 @@ agentsec-langchain run --service-name customer-copilot</pre>
           </div>
 
           <div class="tab-pane" data-tab="config">
-            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>保存配置后 config_version +1，并在 60s 内由 SDK 轮询拉取。当前版本 v18，待同步实例 1 个。</span></div>
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>保存绑定后策略包版本会递增，并在 60s 内由 SDK 轮询拉取。当前版本 v3，待同步实例 1 个。</span></div>
             <div class="config-grid">
               <div class="config-panel">
                 <div class="config-panel-title">采集与记录模式</div>
@@ -242,12 +281,12 @@ external_http_post</textarea></div></div>
             <div class="alert-box alert-info"><span class="alert-icon">i</span><span>强识别对象来自平台注册；中识别对象来自 LangChain node、tool、class、method 等遥测字段；弱识别仅在 Trace 中展示。</span></div>
             <div class="table-wrapper">
               <table class="data-table">
-                <thead><tr><th>节点名称</th><th>识别等级</th><th>来源字段</th><th>class / method</th><th>策略主体</th><th>今日调用</th><th>风险</th><th>置信度</th><th>操作</th></tr></thead>
+                <thead><tr><th>节点名称</th><th>识别等级</th><th>来源字段</th><th>class / method</th><th>策略关系</th><th>今日调用</th><th>风险</th><th>置信度</th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td>售前咨询智能体</td><td><span class="tag tag-success">强识别</span></td><td>平台注册 agent_id</td><td>SalesAgent.run</td><td><span class="tag tag-success">可绑定</span></td><td>82,361</td><td>4</td><td>100%</td><td><button class="btn btn-link">绑定策略</button></td></tr>
-                  <tr><td>订单查询节点</td><td><span class="tag tag-primary">中识别</span></td><td>agentsec.node.display_name</td><td>OrderLookup.invoke</td><td><span class="tag tag-info">只读标签</span></td><td>64,110</td><td>1</td><td>92%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
-                  <tr><td>客服总结工作流</td><td><span class="tag tag-primary">中识别</span></td><td>LangChain runnable name</td><td>SummaryChain.invoke</td><td><span class="tag tag-info">只读标签</span></td><td>25,440</td><td>0</td><td>88%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
-                  <tr><td>疑似导出链路</td><td><span class="tag tag-warning">弱识别</span></td><td>Prompt hash + 工具集合聚类</td><td>-</td><td><span class="tag tag-danger">不可绑定</span></td><td>19</td><td>2</td><td>61%</td><td><button class="btn btn-link" onclick="goObserve()">Trace 内查看</button></td></tr>
+                  <tr><td>售前咨询智能体</td><td><span class="tag tag-success">强识别</span></td><td>平台注册 agent_id</td><td>SalesAgent.run</td><td><span class="tag tag-success">继承应用策略</span></td><td>82,361</td><td>4</td><td>100%</td><td><button class="btn btn-link" onclick="navigateTo('pages/policy/unified-protection.html','策略包管理',null)">查看策略包</button></td></tr>
+                  <tr><td>订单查询节点</td><td><span class="tag tag-primary">中识别</span></td><td>agentsec.node.display_name</td><td>OrderLookup.invoke</td><td><span class="tag tag-info">仅查看应用策略</span></td><td>64,110</td><td>1</td><td>92%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td>客服总结工作流</td><td><span class="tag tag-primary">中识别</span></td><td>LangChain runnable name</td><td>SummaryChain.invoke</td><td><span class="tag tag-info">仅查看应用策略</span></td><td>25,440</td><td>0</td><td>88%</td><td><button class="btn btn-link" onclick="goObserve()">查看 Trace</button></td></tr>
+                  <tr><td>疑似导出链路</td><td><span class="tag tag-warning">弱识别</span></td><td>Prompt hash + 工具集合聚类</td><td>-</td><td><span class="tag tag-danger">不作为绑定对象</span></td><td>19</td><td>2</td><td>61%</td><td><button class="btn btn-link" onclick="goObserve()">Trace 内查看</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -333,13 +372,13 @@ external_http_post</textarea></div></div>
     }
 
     function publishConfig() {
-      toastSuccess('配置 v19 已发布，SDK 将在 60s 内拉取生效');
+      toastSuccess('策略包新版本已发布，实例将在 60s 内拉取生效');
     }
 
     function rollbackConfig(version) {
-      showConfirm('确认回滚到 ' + version + '？系统会生成新的配置版本并下发。', function(){
-        toastSuccess('已回滚并发布新配置版本');
-      }, '配置回滚');
+      showConfirm('确认回滚到 ' + version + '？系统会生成新的策略包版本并下发。', function(){
+        toastSuccess('已回滚并发布新的策略包版本');
+      }, '版本回滚');
     }
 
     function submitDetailBlock() {

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>策略包管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .type-tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f4f4f5; color:#606266; }
+    .status-wrap { display:flex; align-items:center; gap:8px; }
+    .sync-progress { width:88px; height:6px; background:#EBEEF5; border-radius:4px; overflow:hidden; }
+    .sync-bar { height:100%; }
+    .sync-bar.success { background:#67c23a; }
+    .sync-bar.warning { background:#e6a23c; }
+    .sync-bar.danger { background:#f56c6c; }
+    .section-block { border:1px solid #EBEEF5; border-radius:6px; background:#fff; padding:16px; margin-bottom:14px; }
+    .section-block:last-child { margin-bottom:0; }
+    .section-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+    .section-desc { font-size:12px; color:#909399; margin-top:-4px; margin-bottom:12px; }
+    .wizard-steps { display:grid; grid-template-columns:repeat(5, 1fr); gap:10px; margin-bottom:16px; }
+    .wizard-step { border:1px solid #E4E7ED; border-radius:6px; padding:10px 12px; background:#fff; }
+    .wizard-step.active { border-color:#409EFF; background:#f5faff; }
+    .wizard-step.done { border-color:#67C23A; background:#f0f9eb; }
+    .wizard-step .idx { font-size:11px; color:#909399; margin-bottom:4px; }
+    .wizard-step .txt { font-size:13px; font-weight:600; color:#303133; }
+    .step-pane { display:none; }
+    .step-pane.active { display:block; }
+    .choice-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+    .choice-card { border:1px solid #E4E7ED; border-radius:8px; padding:14px; background:#fff; cursor:pointer; }
+    .choice-card.active { border-color:#409EFF; background:#f5faff; }
+    .choice-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:4px; }
+    .choice-desc { font-size:12px; color:#909399; line-height:1.7; }
+    .simple-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:14px; }
+    .preview-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .preview-card { border:1px dashed #E4E7ED; border-radius:6px; background:#fafafa; padding:14px; }
+    .preview-title { font-size:13px; font-weight:600; color:#606266; margin-bottom:10px; }
+    .preview-list { margin:0; padding-left:18px; color:#606266; line-height:1.8; }
+    .advanced-box { border:1px dashed #DCDFE6; border-radius:6px; background:#fafafa; padding:14px; margin-top:12px; }
+    .advanced-box .table-wrapper { margin-top:10px; }
+    .version-card { border:1px solid #EBEEF5; border-radius:6px; padding:12px; margin-bottom:10px; background:#fff; }
+    .version-card:last-child { margin-bottom:0; }
+    .bind-list { display:grid; gap:10px; }
+    .bind-item { border:1px solid #EBEEF5; border-radius:6px; padding:12px; background:#fff; display:flex; justify-content:space-between; gap:12px; }
+    .modal-box.modal-xl { width: 1120px; max-width: calc(100vw - 60px); }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">策略包管理</div>
+        <div class="page-subtitle">以策略包为主入口，优先通过场景模板生成策略，并将复杂规则项与高级配置后置给专家用户。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="openDistributionPage()">查看绑定与下发</button>
+        <button class="btn btn-default" type="button" onclick="openVersionModal('pkg-001')">查看版本历史</button>
+        <button class="btn btn-primary" type="button" onclick="openPackageWizard()">新建策略包</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">策略包总数</div><div class="v">12</div></div>
+      <div class="stat-lite"><div class="k">已发布策略包</div><div class="v" style="color:#67C23A;">8</div></div>
+      <div class="stat-lite"><div class="k">已绑定应用数</div><div class="v" style="color:#409EFF;">14</div></div>
+      <div class="stat-lite"><div class="k">同步异常策略包</div><div class="v" style="color:#F56C6C;">2</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略包名称</span><input class="form-control" placeholder="策略包名称 / package_id"></div>
+      <div class="search-item">
+        <span class="form-label">发布状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>草稿</option>
+          <option>灰度</option>
+          <option>已发布</option>
+          <option>已废弃</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">模板来源</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>客服安全模板</option>
+          <option>研发审计模板</option>
+          <option>知识问答模板</option>
+          <option>高危工具审批模板</option>
+          <option>数据脱敏模板</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">包含规则类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>内容安全</option>
+          <option>数据防泄露</option>
+          <option>工具管控</option>
+          <option>访问控制</option>
+          <option>采集控制</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('策略包列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>策略包名称</th>
+              <th>模板来源</th>
+              <th>包含规则类型</th>
+              <th>规则数</th>
+              <th>当前版本</th>
+              <th>绑定应用数</th>
+              <th>发布状态</th>
+              <th>下发状态</th>
+              <th>最近更新时间</th>
+              <th style="width:250px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>基础安全包</strong><div class="meta-sub">pkg-001</div></td>
+              <td>客服安全模板</td>
+              <td><div class="type-tags"><span class="type-tag">内容安全</span><span class="type-tag">数据防泄露</span><span class="type-tag">工具管控</span></div></td>
+              <td>8</td>
+              <td><span class="tag tag-success">v3</span></td>
+              <td>6</td>
+              <td><span class="tag tag-success">已发布</span></td>
+              <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
+              <td>2026-04-20 10:40</td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-001')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-001')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-001')">查看绑定</button></td>
+            </tr>
+            <tr>
+              <td><strong>增强审计包</strong><div class="meta-sub">pkg-002</div></td>
+              <td>研发审计模板</td>
+              <td><div class="type-tags"><span class="type-tag">工具管控</span><span class="type-tag">访问控制</span><span class="type-tag">采集控制</span></div></td>
+              <td>5</td>
+              <td><span class="tag tag-warning">v2</span></td>
+              <td>4</td>
+              <td><span class="tag tag-warning">灰度</span></td>
+              <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></td>
+              <td>2026-04-20 09:15</td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-002')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-002')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-002')">查看绑定</button></td>
+            </tr>
+            <tr>
+              <td><strong>客服只读防护包</strong><div class="meta-sub">pkg-003</div></td>
+              <td>知识问答模板</td>
+              <td><div class="type-tags"><span class="type-tag">访问控制</span><span class="type-tag">工具管控</span></div></td>
+              <td>4</td>
+              <td><span class="tag">v1</span></td>
+              <td>0</td>
+              <td><span class="tag">草稿</span></td>
+              <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar warning" style="width:0%;"></div></div><span>未下发</span></div></td>
+              <td>2026-04-20 11:05</td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-003')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-003')">查看版本</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略包已进入发布流程')">发布</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="packageWizardModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header">
+        <div class="modal-title" id="packageModalTitle">新建策略包</div>
+        <div class="modal-close" onclick="closeModal('packageWizardModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="wizard-steps">
+          <div class="wizard-step active" id="wizardStep1"><div class="idx">STEP 1</div><div class="txt">选择场景模板</div></div>
+          <div class="wizard-step" id="wizardStep2"><div class="idx">STEP 2</div><div class="txt">选择策略强度</div></div>
+          <div class="wizard-step" id="wizardStep3"><div class="idx">STEP 3</div><div class="txt">设置通知与审批</div></div>
+          <div class="wizard-step" id="wizardStep4"><div class="idx">STEP 4</div><div class="txt">预览生成内容</div></div>
+          <div class="wizard-step" id="wizardStep5"><div class="idx">STEP 5</div><div class="txt">高级配置</div></div>
+        </div>
+
+        <form id="packageForm">
+          <div class="step-pane active" id="stepPane1">
+            <div class="section-block">
+              <div class="section-title">选择场景模板</div>
+              <div class="section-desc">普通用户先选场景模板，再由系统自动生成推荐规则组合和默认参数。</div>
+              <div class="choice-grid">
+                <div class="choice-card active" data-template="customer" onclick="selectTemplate('customer', this)">
+                  <div class="choice-title">客服安全模板</div>
+                  <div class="choice-desc">覆盖 Prompt 注入检测、手机号脱敏、常见高危工具限制，适用于客服类接入应用。</div>
+                </div>
+                <div class="choice-card" data-template="rd" onclick="selectTemplate('rd', this)">
+                  <div class="choice-title">研发审计模板</div>
+                  <div class="choice-desc">覆盖高危工具审批、命令执行审计、外联约束与敏感参数检查。</div>
+                </div>
+                <div class="choice-card" data-template="rag" onclick="selectTemplate('rag', this)">
+                  <div class="choice-title">知识问答模板</div>
+                  <div class="choice-desc">覆盖知识源访问控制、输出风险检测与 RAG 结果校验。</div>
+                </div>
+              </div>
+              <div class="form-grid-2" style="margin-top:14px;">
+                <div class="form-row"><div class="form-label required">策略包名称</div><div class="form-field"><input id="packageName" class="form-control" value="基础安全包" required></div></div>
+                <div class="form-row"><div class="form-label">默认适用环境</div><div class="form-field"><select class="form-select"><option>生产</option><option>测试</option><option>全部</option></select></div></div>
+              </div>
+              <div class="form-row"><div class="form-label">策略包说明</div><div class="form-field"><textarea id="packageDesc" class="form-textarea">用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。</textarea></div></div>
+            </div>
+          </div>
+
+          <div class="step-pane" id="stepPane2">
+            <div class="section-block">
+              <div class="section-title">选择策略强度</div>
+              <div class="section-desc">通过策略强度快速决定阻断、告警和审批的默认组合。</div>
+              <div class="choice-grid">
+                <div class="choice-card active" data-level="standard" onclick="selectLevel('standard', this)">
+                  <div class="choice-title">标准</div>
+                  <div class="choice-desc">平衡误报与拦截，默认开启高风险阻断和中高风险告警。</div>
+                </div>
+                <div class="choice-card" data-level="strict" onclick="selectLevel('strict', this)">
+                  <div class="choice-title">严格</div>
+                  <div class="choice-desc">默认扩大阻断面，高危工具强制审批，适合生产核心场景。</div>
+                </div>
+                <div class="choice-card" data-level="observe" onclick="selectLevel('observe', this)">
+                  <div class="choice-title">观察</div>
+                  <div class="choice-desc">优先记录与告警，不默认阻断，适合灰度与测试阶段。</div>
+                </div>
+              </div>
+              <div class="simple-grid" style="margin-top:14px;">
+                <div class="form-row"><div class="form-label">阻断策略</div><div class="form-field"><select id="decisionBlock" class="form-select"><option>高风险阻断</option><option>高风险 + 中风险阻断</option><option>仅告警不阻断</option></select></div></div>
+                <div class="form-row"><div class="form-label">脱敏强度</div><div class="form-field"><select id="decisionMask" class="form-select"><option>标准脱敏</option><option>严格脱敏</option><option>仅标记不脱敏</option></select></div></div>
+                <div class="form-row"><div class="form-label">通知级别</div><div class="form-field"><select id="decisionAlert" class="form-select"><option>高风险即时通知</option><option>中高风险通知</option><option>仅聚合通知</option></select></div></div>
+                <div class="form-row"><div class="form-label">审批策略</div><div class="form-field"><select id="decisionApproval" class="form-select"><option>高危工具需审批</option><option>所有工具无需审批</option><option>外联工具需审批</option></select></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-pane" id="stepPane3">
+            <div class="section-block">
+              <div class="section-title">设置通知与审批</div>
+              <div class="section-desc">普通用户只需要调整关键开关和绑定范围，不直接配置复杂规则实现。</div>
+              <div class="simple-grid">
+                <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div>
+                <div class="form-row"><div class="form-label">审批流</div><div class="form-field"><select class="form-select"><option>high-risk-tool-approval</option><option>prod-content-review</option><option>none</option></select></div></div>
+                <div class="form-row"><div class="form-label">绑定范围</div><div class="form-field"><input class="form-control" placeholder="如：客服类接入应用 / prod 环境"></div></div>
+                <div class="form-row"><div class="form-label">灰度比例</div><div class="form-field"><select class="form-select"><option>100%</option><option>50%</option><option>10%</option></select></div></div>
+              </div>
+              <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="说明策略包用途、绑定范围和本次变更原因"></textarea></div></div>
+            </div>
+          </div>
+
+          <div class="step-pane" id="stepPane4">
+            <div class="section-block">
+              <div class="section-title">预览生成内容</div>
+              <div class="section-desc">系统根据场景模板和关键开关生成推荐规则组合，用户在保存前确认即可。</div>
+              <div class="preview-grid">
+                <div class="preview-card">
+                  <div class="preview-title">策略包摘要</div>
+                  <table class="kv-table">
+                    <tr><td>场景模板</td><td id="previewTemplate">客服安全模板</td></tr>
+                    <tr><td>策略强度</td><td id="previewLevel">标准</td></tr>
+                    <tr><td>阻断策略</td><td id="previewBlock">高风险阻断</td></tr>
+                    <tr><td>通知级别</td><td id="previewAlert">高风险即时通知</td></tr>
+                    <tr><td>审批策略</td><td id="previewApproval">高危工具需审批</td></tr>
+                  </table>
+                </div>
+                <div class="preview-card">
+                  <div class="preview-title">系统将生成的推荐规则</div>
+                  <ul class="preview-list" id="previewRules">
+                    <li>Prompt 注入检测</li>
+                    <li>手机号脱敏</li>
+                    <li>高危工具审批</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="step-pane" id="stepPane5">
+            <div class="section-block">
+              <div class="section-title">高级配置</div>
+              <div class="section-desc">仅面向专家用户开放。普通用户可跳过，不影响模板生成策略包。</div>
+              <div class="advanced-box">
+                <div class="section-title" style="margin-bottom:8px;">可选规则项</div>
+                <div class="table-wrapper">
+                  <table class="data-table select-table">
+                    <thead><tr><th></th><th>规则项</th><th>类型</th><th>执行面</th><th>实现方式</th></tr></thead>
+                    <tbody>
+                      <tr><td><input type="checkbox" checked></td><td>Prompt 注入检测</td><td>内容安全</td><td>网关</td><td>显式规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>手机号脱敏</td><td>数据防泄露</td><td>网关</td><td>阈值规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>高危工具审批</td><td>工具管控</td><td>探针</td><td>模型规则</td></tr>
+                      <tr><td><input type="checkbox"></td><td>未备案域名外联拦截</td><td>访问控制</td><td>探针</td><td>外部服务规则</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="field-note">规则项由“高级规则项”统一维护，此处仅允许选择或移除，不建议普通用户调整实现细节。</div>
+              </div>
+              <div class="advanced-box">
+                <div class="section-title" style="margin-bottom:8px;">专家参数</div>
+                <div class="simple-grid">
+                  <div class="form-row"><div class="form-label">规则实现方式暴露</div><div class="form-field"><select class="form-select"><option>隐藏</option><option>只读显示</option><option>允许编辑</option></select></div></div>
+                  <div class="form-row"><div class="form-label">Fallback 策略</div><div class="form-field"><select class="form-select"><option>告警</option><option>放行</option><option>阻断</option></select></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" onclick="prevWizardStep()">上一步</button>
+        <button class="btn btn-default" type="button" onclick="nextWizardStep()">下一步</button>
+        <button class="btn btn-primary" type="button" onclick="submitPackage()">保存策略包</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="versionModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">策略包版本历史</div>
+        <div class="modal-close" onclick="closeModal('versionModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="version-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>v3</strong>
+            <span class="tag tag-success">已发布</span>
+          </div>
+          <div class="meta-sub">创建人：安全管理员 | 时间：2026-04-20 10:40</div>
+          <div style="margin-top:8px;">变更说明：新增 1 条工具管控规则，调整手机号脱敏动作。</div>
+          <div style="margin-top:10px;"><button class="btn btn-link" type="button" onclick="toastSuccess('已打开版本内容')">查看内容</button><button class="btn btn-link" type="button" onclick="openDistributionPage()">查看绑定</button></div>
+        </div>
+        <div class="version-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>v2</strong>
+            <span class="tag tag-warning">灰度</span>
+          </div>
+          <div class="meta-sub">创建人：周敏 | 时间：2026-04-18 15:20</div>
+          <div style="margin-top:8px;">变更说明：优化内容安全阈值，保留旧版工具审批规则。</div>
+          <div style="margin-top:10px;"><button class="btn btn-link" type="button" onclick="toastSuccess('已打开版本内容')">查看内容</button><button class="btn btn-link" type="button" onclick="openDistributionPage()">绑定到应用</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bindingModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">已绑定接入应用</div>
+        <div class="modal-close" onclick="closeModal('bindingModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="bind-list">
+          <div class="bind-item">
+            <div><strong>智能客服 Copilot</strong><div class="meta-sub">app_copilot_service</div></div>
+            <div style="text-align:right;"><span class="tag tag-success">当前版本 v3</span><div class="meta-sub">下发状态：已同步</div><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></div>
+          </div>
+          <div class="bind-item">
+            <div><strong>工单辅助助手</strong><div class="meta-sub">app_ticket_assistant</div></div>
+            <div style="text-align:right;"><span class="tag tag-success">当前版本 v3</span><div class="meta-sub">下发状态：已同步</div><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></div>
+          </div>
+          <div class="bind-item">
+            <div><strong>客服质检助手</strong><div class="meta-sub">app_quality_assistant</div></div>
+            <div style="text-align:right;"><span class="tag tag-warning">当前版本 v2</span><div class="meta-sub">下发状态：灰度中</div><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    let currentTemplate = 'customer';
+    let currentLevel = 'standard';
+    let currentStep = 1;
+
+    const templateMeta = {
+      customer: {
+        name: '客服安全模板',
+        desc: '用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。',
+        rules: ['Prompt 注入检测', '手机号脱敏', '高危工具审批']
+      },
+      rd: {
+        name: '研发审计模板',
+        desc: '适用于代码解释、命令执行与文件读写场景，默认启用审批与高危审计。',
+        rules: ['高危工具审批', '未备案域名外联拦截', '命令执行审计']
+      },
+      rag: {
+        name: '知识问答模板',
+        desc: '适用于知识检索与问答，默认加强知识源访问控制和输出风险检测。',
+        rules: ['RAG 结果校验', '知识源访问控制', '输出内容风险检测']
+      }
+    };
+
+    const levelMeta = {
+      standard: '标准',
+      strict: '严格',
+      observe: '观察'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '策略包管理' }]);
+      }
+      syncPreview();
+      updateWizardSteps();
+    });
+
+    function openPackageWizard(id) {
+      document.getElementById('packageModalTitle').textContent = id ? '编辑策略包' : '新建策略包';
+      currentStep = 1;
+      if (id === 'pkg-002') {
+        currentTemplate = 'rd';
+        currentLevel = 'strict';
+        document.getElementById('packageName').value = '增强审计包';
+        document.getElementById('packageDesc').value = '用于研发类接入应用的增强审计与高危工具审批策略包。';
+      } else if (id === 'pkg-003') {
+        currentTemplate = 'rag';
+        currentLevel = 'observe';
+        document.getElementById('packageName').value = '客服只读防护包';
+        document.getElementById('packageDesc').value = '用于知识问答场景的只读型防护包，强调访问约束与审计记录。';
+      } else {
+        currentTemplate = 'customer';
+        currentLevel = 'standard';
+        document.getElementById('packageName').value = '基础安全包';
+        document.getElementById('packageDesc').value = '用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。';
+      }
+      refreshWizardSelections();
+      syncPreview();
+      updateWizardSteps();
+      openModal('packageWizardModal');
+    }
+
+    function refreshWizardSelections() {
+      document.querySelectorAll('#stepPane1 .choice-card').forEach(function(card) {
+        card.classList.toggle('active', card.getAttribute('data-template') === currentTemplate);
+      });
+      document.querySelectorAll('#stepPane2 .choice-card').forEach(function(card) {
+        card.classList.toggle('active', card.getAttribute('data-level') === currentLevel);
+      });
+    }
+
+    function selectTemplate(template, el) {
+      currentTemplate = template;
+      document.querySelectorAll('#stepPane1 .choice-card').forEach(function(card) {
+        card.classList.remove('active');
+      });
+      el.classList.add('active');
+
+      if (template === 'customer') {
+        document.getElementById('packageName').value = '基础安全包';
+        document.getElementById('packageDesc').value = templateMeta.customer.desc;
+      } else if (template === 'rd') {
+        document.getElementById('packageName').value = '增强审计包';
+        document.getElementById('packageDesc').value = templateMeta.rd.desc;
+      } else {
+        document.getElementById('packageName').value = '知识问答防护包';
+        document.getElementById('packageDesc').value = templateMeta.rag.desc;
+      }
+      syncPreview();
+    }
+
+    function selectLevel(level, el) {
+      currentLevel = level;
+      document.querySelectorAll('#stepPane2 .choice-card').forEach(function(card) {
+        card.classList.remove('active');
+      });
+      el.classList.add('active');
+
+      if (level === 'strict') {
+        document.getElementById('decisionBlock').value = '高风险 + 中风险阻断';
+        document.getElementById('decisionMask').value = '严格脱敏';
+        document.getElementById('decisionAlert').value = '中高风险通知';
+        document.getElementById('decisionApproval').value = '高危工具需审批';
+      } else if (level === 'observe') {
+        document.getElementById('decisionBlock').value = '仅告警不阻断';
+        document.getElementById('decisionMask').value = '仅标记不脱敏';
+        document.getElementById('decisionAlert').value = '仅聚合通知';
+        document.getElementById('decisionApproval').value = '所有工具无需审批';
+      } else {
+        document.getElementById('decisionBlock').value = '高风险阻断';
+        document.getElementById('decisionMask').value = '标准脱敏';
+        document.getElementById('decisionAlert').value = '高风险即时通知';
+        document.getElementById('decisionApproval').value = '高危工具需审批';
+      }
+      syncPreview();
+    }
+
+    function syncPreview() {
+      document.getElementById('previewTemplate').textContent = templateMeta[currentTemplate].name;
+      document.getElementById('previewLevel').textContent = levelMeta[currentLevel];
+      document.getElementById('previewBlock').textContent = document.getElementById('decisionBlock').value;
+      document.getElementById('previewAlert').textContent = document.getElementById('decisionAlert').value;
+      document.getElementById('previewApproval').textContent = document.getElementById('decisionApproval').value;
+      document.getElementById('previewRules').innerHTML = templateMeta[currentTemplate].rules.map(function(item) {
+        return '<li>' + item + '</li>';
+      }).join('');
+    }
+
+    function updateWizardSteps() {
+      for (let i = 1; i <= 5; i++) {
+        const step = document.getElementById('wizardStep' + i);
+        const pane = document.getElementById('stepPane' + i);
+        step.classList.remove('active', 'done');
+        pane.classList.remove('active');
+        if (i < currentStep) step.classList.add('done');
+        if (i === currentStep) {
+          step.classList.add('active');
+          pane.classList.add('active');
+        }
+      }
+      syncPreview();
+    }
+
+    function nextWizardStep() {
+      if (currentStep < 5) {
+        currentStep += 1;
+        updateWizardSteps();
+      }
+    }
+
+    function prevWizardStep() {
+      if (currentStep > 1) {
+        currentStep -= 1;
+        updateWizardSteps();
+      }
+    }
+
+    function openVersionModal() {
+      openModal('versionModal');
+    }
+
+    function openBindingModal() {
+      openModal('bindingModal');
+    }
+
+    function openDistributionPage() {
+      navigateTo('pages/policy/distribution-status.html', '绑定与下发', null);
+    }
+
+    function openAppDetailPage() {
+      navigateTo('pages/assets/app-detail.html', '应用详情', null);
+    }
+
+    function submitPackage() {
+      if (!validateForm('packageForm')) return;
+      closeModal('packageWizardModal');
+      toastSuccess('策略包已根据模板生成并保存');
+    }
+  </script>
+</body>
+</html>

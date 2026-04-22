@@ -2,215 +2,185 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>通知渠道配置</title>
+  <title>通知渠道管理</title>
   <link rel="stylesheet" href="../../css/style.css">
   <style>
-    .channel-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .channel-card {
-      width: 320px;
-      border: 1px solid #EBEEF5;
-      border-radius: 4px;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-    .channel-header {
-      padding: 15px;
-      border-bottom: 1px solid #EBEEF5;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fcfcfc;
-    }
-    .c-title { font-weight: bold; color: #303133; font-size: 15px; }
-    .c-status { font-size: 12px; }
-    .channel-body {
-      padding: 15px;
-      flex: 1;
-      font-size: 13px;
-      color: #606266;
-    }
-    .channel-footer {
-      padding: 10px 15px;
-      border-top: 1px solid #EBEEF5;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fafafa;
-    }
-    .prop-row { margin-bottom: 6px; }
-    .prop-row span.lbl { display: inline-block; width: 80px; color: #909399; }
+    .channel-list { display:flex; flex-wrap:wrap; gap:20px; }
+    .channel-card { width:320px; border:1px solid #EBEEF5; border-radius:6px; background:#fff; display:flex; flex-direction:column; }
+    .channel-header { padding:14px 16px; border-bottom:1px solid #EBEEF5; display:flex; justify-content:space-between; align-items:center; background:#fcfcfc; }
+    .channel-title { font-weight:700; color:#303133; font-size:15px; }
+    .channel-body { padding:14px 16px; flex:1; font-size:13px; color:#606266; }
+    .channel-footer { padding:10px 16px; border-top:1px solid #EBEEF5; display:flex; justify-content:space-between; align-items:center; background:#fafafa; }
+    .prop-row { margin-bottom:6px; }
+    .prop-row .lbl { display:inline-block; width:86px; color:#909399; }
   </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="card">
-      <div class="card-header">
-        <span class="card-title">通知接收点管理</span>
-        <button class="btn btn-primary" onclick="openChannelModal()">增加新触达网络</button>
+    <div class="page-header">
+      <div>
+        <div class="page-title">通知渠道管理</div>
+        <div class="page-subtitle">统一维护告警通知的发送通道，用于策略告警动作、平台运维告警和人工审批通知的复用。</div>
       </div>
-      <div class="card-body" style="background: #f0f2f5; padding-top: 20px; padding-bottom: 20px;">
+      <button class="btn btn-primary" type="button" onclick="openChannelModal()">新建通知渠道</button>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="background:#f0f2f5; padding-top:20px; padding-bottom:20px;">
         <div class="channel-list">
-          
           <div class="channel-card">
             <div class="channel-header">
-              <span class="c-title">飞书安全运营机器人</span>
-              <span class="c-status tag tag-success">在线联通的</span>
+              <span class="channel-title">飞书安全运营机器人</span>
+              <span class="tag tag-success">正常</span>
             </div>
             <div class="channel-body">
-              <div class="prop-row"><span class="lbl">发送平台</span>飞书企业内网版</div>
-              <div class="prop-row"><span class="lbl">接收策略</span>所有极高与高风险</div>
-              <div class="prop-row"><span class="lbl">网络钩子</span>https://open.feishu...</div>
+              <div class="prop-row"><span class="lbl">渠道类型</span>飞书机器人</div>
+              <div class="prop-row"><span class="lbl">告警级别</span>高危、极高危</div>
+              <div class="prop-row"><span class="lbl">Webhook 地址</span>https://open.feishu...</div>
             </div>
             <div class="channel-footer">
-              <button class="btn btn-default btn-mini" onclick="testConnection()">连通性探针测试</button>
+              <button class="btn btn-default btn-mini" type="button" onclick="testConnection()">测试连通性</button>
               <div>
-                <button class="btn btn-link" onclick="openChannelModal()">微调</button>
-                <button class="btn btn-link danger">拆卸</button>
+                <button class="btn btn-link" type="button" onclick="openChannelModal()">编辑</button>
+                <button class="btn btn-link danger" type="button" onclick="confirmDelete('飞书安全运营机器人', function(){ toastSuccess('通知渠道已删除'); })">删除</button>
               </div>
             </div>
           </div>
 
           <div class="channel-card">
             <div class="channel-header">
-              <span class="c-title">全量邮箱日结投递</span>
-              <span class="c-status tag tag-success">在线联通的</span>
+              <span class="channel-title">邮件汇总投递</span>
+              <span class="tag tag-success">正常</span>
             </div>
             <div class="channel-body">
-              <div class="prop-row"><span class="lbl">发送平台</span>内部工单邮件SMTP</div>
-              <div class="prop-row"><span class="lbl">接收策略</span>中风险与低风险审计</div>
-              <div class="prop-row"><span class="lbl">接收人群</span>security_ops@domain, cxo@...</div>
+              <div class="prop-row"><span class="lbl">渠道类型</span>SMTP 邮件</div>
+              <div class="prop-row"><span class="lbl">告警级别</span>中危、低危审计</div>
+              <div class="prop-row"><span class="lbl">接收人</span>security_ops@domain, cxo@domain</div>
             </div>
             <div class="channel-footer">
-              <button class="btn btn-default btn-mini" onclick="testConnection()">连通性探针测试</button>
+              <button class="btn btn-default btn-mini" type="button" onclick="testConnection()">测试连通性</button>
               <div>
-                <button class="btn btn-link" onclick="openChannelModal()">微调</button>
-                <button class="btn btn-link danger">拆卸</button>
+                <button class="btn btn-link" type="button" onclick="openChannelModal()">编辑</button>
+                <button class="btn btn-link danger" type="button" onclick="confirmDelete('邮件汇总投递', function(){ toastSuccess('通知渠道已删除'); })">删除</button>
               </div>
             </div>
           </div>
 
           <div class="channel-card">
             <div class="channel-header">
-              <span class="c-title">钉钉紧急拦截喊话</span>
-              <span class="c-status tag tag-danger">脱机报错中</span>
+              <span class="channel-title">钉钉紧急通知</span>
+              <span class="tag tag-danger">连接异常</span>
             </div>
             <div class="channel-body">
-              <div class="prop-row"><span class="lbl">发送平台</span>钉钉内网服务器专线</div>
-              <div class="prop-row"><span class="lbl">接收策略</span>自动化系统级误报灾难告警</div>
-              <div class="prop-row"><span class="lbl">错误详情</span><span style="color:#f56c6c;">鉴权特征失效, HTTP 401</span></div>
+              <div class="prop-row"><span class="lbl">渠道类型</span>钉钉机器人</div>
+              <div class="prop-row"><span class="lbl">告警级别</span>平台运维告警</div>
+              <div class="prop-row"><span class="lbl">错误详情</span><span style="color:#f56c6c;">签名校验失败，HTTP 401</span></div>
             </div>
             <div class="channel-footer">
-              <button class="btn btn-default btn-mini" onclick="testConnection()">连通性探针测试</button>
+              <button class="btn btn-default btn-mini" type="button" onclick="testConnection()">测试连通性</button>
               <div>
-                <button class="btn btn-link" onclick="openChannelModal()">微调</button>
-                <button class="btn btn-link danger">拆卸</button>
+                <button class="btn btn-link" type="button" onclick="openChannelModal()">编辑</button>
+                <button class="btn btn-link danger" type="button" onclick="confirmDelete('钉钉紧急通知', function(){ toastSuccess('通知渠道已删除'); })">删除</button>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 渠道配置弹窗 -->
   <div class="modal-overlay" id="channelModal">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">构建或编排通知渠道</div>
+        <div class="modal-title">新建 / 编辑通知渠道</div>
         <div class="modal-close" onclick="closeModal('channelModal')">×</div>
       </div>
       <div class="modal-body">
         <form id="channelForm">
           <div class="form-row">
-            <div class="form-label required">渠道命名</div>
-            <div class="form-field">
-              <input type="text" class="form-control" placeholder="用于在列表中识别..." required>
-            </div>
+            <div class="form-label required">渠道名称</div>
+            <div class="form-field"><input type="text" class="form-control" placeholder="用于在列表中识别" required></div>
           </div>
           <div class="form-row">
-            <div class="form-label required">采用通讯介质</div>
+            <div class="form-label required">渠道类型</div>
             <div class="form-field">
               <select class="form-select" id="mediaSelect" onchange="toggleMediaPanel()" required>
                 <option value="feishu">飞书机器人</option>
                 <option value="dingding">钉钉机器人</option>
-                <option value="smtp">传统SMTP邮件发送端口</option>
-                <option value="sms">短信息服务网关</option>
+                <option value="smtp">SMTP 邮件</option>
+                <option value="sms">短信网关</option>
               </select>
             </div>
           </div>
 
-          <!-- Webhook属性组 -->
-          <div id="panelWebhook" style="background:#f9f9f9; padding: 10px; margin-bottom:15px; border-radius:4px;">
+          <div id="panelWebhook" style="background:#f9f9f9; padding:10px; margin-bottom:15px; border-radius:4px;">
             <div class="form-row">
-              <div class="form-label required">网络回调钩子凭证</div>
-              <div class="form-field">
-                <input type="text" class="form-control" placeholder="https://..." required>
-              </div>
+              <div class="form-label required">Webhook 地址</div>
+              <div class="form-field"><input type="text" class="form-control" placeholder="https://..." required></div>
             </div>
             <div class="form-row">
-              <div class="form-label">密钥鉴权校验码</div>
-              <div class="form-field">
-                <input type="password" class="form-control" placeholder="若无需校验请留空">
-              </div>
+              <div class="form-label">签名密钥</div>
+              <div class="form-field"><input type="password" class="form-control" placeholder="如无需签名可留空"></div>
             </div>
           </div>
 
           <div class="form-row">
-            <div class="form-label required">绑定什么风险将触发他</div>
+            <div class="form-label required">告警级别</div>
             <div class="form-field">
-              <label style="margin-right:10px;"><input type="checkbox" checked> 高风险事件</label>
-              <label style="margin-right:10px;"><input type="checkbox"> 中风险事件</label>
-              <label><input type="checkbox"> 全部轻微告警审计</label>
+              <label style="margin-right:10px;"><input type="checkbox" checked> 高危事件</label>
+              <label style="margin-right:10px;"><input type="checkbox"> 中危事件</label>
+              <label><input type="checkbox"> 低危审计汇总</label>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('channelModal')">关 闭</button>
-        <button class="btn btn-primary" onclick="submitChannel()">应用并保存该渠道属性</button>
+        <button class="btn btn-default" type="button" onclick="closeModal('channelModal')">关闭</button>
+        <button class="btn btn-primary" type="button" onclick="submitChannel()">保存</button>
       </div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
   <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '通知渠道管理' }]);
+      }
+    });
+
     function openChannelModal() {
       document.getElementById('channelForm').reset();
+      toggleMediaPanel();
       openModal('channelModal');
     }
 
     function toggleMediaPanel() {
-      // 简单模拟选择切换
-      let val = document.getElementById('mediaSelect').value;
+      const val = document.getElementById('mediaSelect').value;
       if (val === 'smtp') {
-        document.getElementById('panelWebhook').innerHTML = `
-          <div class="form-row"><div class="form-label required">机房出口发件地址</div><div class="form-field"><input type="text" class="form-control" required></div></div>
-          <div class="form-row"><div class="form-label required">对方人员清单</div><div class="form-field"><input type="text" class="form-control" placeholder="逗号分隔" required></div></div>
-        `;
+        document.getElementById('panelWebhook').innerHTML =
+          '<div class="form-row"><div class="form-label required">发件地址</div><div class="form-field"><input type="text" class="form-control" required></div></div>' +
+          '<div class="form-row"><div class="form-label required">接收人列表</div><div class="form-field"><input type="text" class="form-control" placeholder="逗号分隔" required></div></div>';
+      } else if (val === 'sms') {
+        document.getElementById('panelWebhook').innerHTML =
+          '<div class="form-row"><div class="form-label required">网关地址</div><div class="form-field"><input type="text" class="form-control" required></div></div>' +
+          '<div class="form-row"><div class="form-label">鉴权 Token</div><div class="form-field"><input type="password" class="form-control"></div></div>';
       } else {
-        document.getElementById('panelWebhook').innerHTML = `
-          <div class="form-row"><div class="form-label required">网络回调钩子凭证</div><div class="form-field"><input type="text" class="form-control" placeholder="https://..." required></div></div>
-          <div class="form-row"><div class="form-label">密钥鉴权校验码</div><div class="form-field"><input type="password" class="form-control" placeholder="若无需校验请留空"></div></div>
-        `;
+        document.getElementById('panelWebhook').innerHTML =
+          '<div class="form-row"><div class="form-label required">Webhook 地址</div><div class="form-field"><input type="text" class="form-control" placeholder="https://..." required></div></div>' +
+          '<div class="form-row"><div class="form-label">签名密钥</div><div class="form-field"><input type="password" class="form-control" placeholder="如无需签名可留空"></div></div>';
       }
     }
 
     function submitChannel() {
       if (validateForm('channelForm')) {
-        toastSuccess('通道挂载保存完成，内部调度器将在五分钟后感知');
+        toastSuccess('通知渠道已保存');
         closeModal('channelModal');
       }
     }
 
     function testConnection() {
-      toastSuccess('已投递联通探针验证报文至通道，请前往该通道平台验证到达情况');
+      toastSuccess('已发送测试消息，请前往对应平台验证是否收到');
     }
   </script>
 </body>

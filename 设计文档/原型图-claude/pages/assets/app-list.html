@@ -19,9 +19,10 @@
     <div class="page-header">
       <div>
         <div class="page-title">接入应用管理</div>
-        <div class="page-subtitle">以 app_id 为主资产对象，统一承载责任归属、自动注册实例、策略覆盖和安全统计。</div>
+        <div class="page-subtitle">以 app_id 为主资产对象，统一承载责任归属、自动注册实例、策略包绑定覆盖和安全统计。</div>
       </div>
       <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="goBindingPage()">查看绑定与下发</button>
         <button class="btn btn-default" onclick="exportData()">导出清单</button>
         <button class="btn btn-primary" onclick="openAddModal()">新增接入应用</button>
       </div>
@@ -100,7 +101,7 @@
       <div class="table-toolbar">
         <div class="table-toolbar-left">
           <button class="btn btn-success" onclick="openGuideModal()">接入指引</button>
-          <button class="btn btn-warning" id="btnBatchPolicy" onclick="batchBindPolicy()" disabled>批量绑定策略</button>
+          <button class="btn btn-warning" id="btnBatchPolicy" onclick="batchBindPolicy()" disabled>批量绑定策略包</button>
           <button class="btn btn-info" id="btnBatchBlock" onclick="batchBlock()" disabled>批量限制</button>
           <button class="btn btn-danger" id="btnBatchDisable" onclick="batchDisable()" disabled>批量停用</button>
         </div>
@@ -135,7 +136,7 @@
                 <div class="app-name-cell">
                   <a href="javascript:void(0)" class="btn-link" onclick="goDetail()">智能客服 Copilot</a>
                   <span class="app-id">app_copilot_service</span>
-                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-success">config v18</span></div>
+                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-success">基础安全包 v3</span></div>
                 </div>
               </td>
               <td><span class="tag tag-success">正常</span></td>
@@ -156,7 +157,7 @@
                 <div class="app-name-cell">
                   <a href="javascript:void(0)" class="btn-link" onclick="goDetail()">研发代码审查助手</a>
                   <span class="app-id">app_rd_code_review</span>
-                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-warning">config v11 待同步</span></div>
+                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-warning">增强审计包 v2 待同步</span></div>
                 </div>
               </td>
               <td><span class="tag tag-warning">告警</span></td>
@@ -177,7 +178,7 @@
                 <div class="app-name-cell">
                   <a href="javascript:void(0)" class="btn-link" onclick="goDetail()">企业知识库问答</a>
                   <span class="app-id">app_knowledge_rag</span>
-                  <div class="inline-meta"><span class="tag tag-primary">staging</span><span class="tag tag-success">config v9</span></div>
+                  <div class="inline-meta"><span class="tag tag-primary">staging</span><span class="tag tag-success">知识问答包 v1</span></div>
                 </div>
               </td>
               <td><span class="tag tag-success">正常</span></td>
@@ -264,7 +265,7 @@
             <div class="form-label required">app_id</div>
             <div class="form-field">
               <input id="formAppId" class="form-control" placeholder="如 app_copilot_service" required>
-              <div class="form-hint">用于 SDK 上报鉴权、策略绑定和事件归属，创建后不建议修改。</div>
+              <div class="form-hint">用于 SDK 上报鉴权、策略包绑定和事件归属，创建后不建议修改。</div>
             </div>
           </div>
           <div class="form-row">
@@ -312,13 +313,15 @@
             </div>
           </div>
           <div class="form-row">
-            <div class="form-label">默认策略</div>
+            <div class="form-label">默认策略包</div>
             <div class="form-field">
-              <div class="checkbox-group">
-                <label class="checkbox-item"><input type="checkbox" checked> Prompt 注入检测</label>
-                <label class="checkbox-item"><input type="checkbox" checked> 敏感信息脱敏</label>
-                <label class="checkbox-item"><input type="checkbox"> 高风险工具限制</label>
-              </div>
+              <select class="form-select">
+                <option>基础安全包 v3</option>
+                <option>增强审计包 v2</option>
+                <option>知识问答包 v1</option>
+                <option>暂不绑定</option>
+              </select>
+              <div class="form-hint">接入应用创建后可在“绑定与下发”页面切换绑定的策略包版本。</div>
             </div>
           </div>
           <div class="form-row">
@@ -388,12 +391,13 @@ agentsec-langchain run --service-name customer-copilot</pre>
 
   <div class="modal-overlay" id="policyBindModal">
     <div class="modal-box modal-lg">
-      <div class="modal-header"><div class="modal-title">批量绑定策略</div><div class="modal-close" onclick="closeModal('policyBindModal')">×</div></div>
+      <div class="modal-header"><div class="modal-title">批量绑定策略包版本</div><div class="modal-close" onclick="closeModal('policyBindModal')">×</div></div>
       <div class="modal-body">
-        <div class="alert-box alert-info"><span class="alert-icon">i</span><span>策略将绑定到选中的 app_id，并在下一轮 SDK 配置拉取时生效。</span></div>
-        <div class="form-row"><div class="form-label">检测规则</div><div class="form-field"><select class="form-select"><option>Prompt 注入检测 v3.4.2</option><option>敏感信息泄露检测 v2.8.0</option><option>限制工具审计 v1.9.1</option></select></div></div>
-        <div class="form-row"><div class="form-label">告警规则</div><div class="form-field"><select class="form-select"><option>高危即时告警</option><option>5 分钟聚合告警</option><option>Collector 离线通知</option></select></div></div>
-        <div class="form-row"><div class="form-label">生效方式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="policyApply" checked> 立即发布新配置版本</label><label class="radio-item"><input type="radio" name="policyApply"> 仅保存草稿</label></div></div></div>
+        <div class="alert-box alert-info"><span class="alert-icon">i</span><span>系统会把选中的策略包版本绑定到目标接入应用，并在下一轮配置拉取时完成下发。</span></div>
+        <div class="form-row"><div class="form-label">目标策略包</div><div class="form-field"><select class="form-select"><option>基础安全包</option><option>增强审计包</option><option>知识问答包</option></select></div></div>
+        <div class="form-row"><div class="form-label">目标版本</div><div class="form-field"><select class="form-select"><option>v3（已发布）</option><option>v2（灰度）</option><option>v1（历史稳定版）</option></select></div></div>
+        <div class="form-row"><div class="form-label">下发方式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="policyApply" checked> 立即下发到已选应用</label><label class="radio-item"><input type="radio" name="policyApply"> 仅变更绑定，稍后统一下发</label></div></div></div>
+        <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="填写本次批量绑定的原因，例如：客服类应用统一切换到基础安全包 v3"></textarea></div></div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('policyBindModal')">取消</button><button class="btn btn-primary" onclick="submitPolicyBind()">确认绑定</button></div>
     </div>
@@ -438,6 +442,10 @@ agentsec-langchain run --service-name customer-copilot</pre>
       navigateTo('pages/assets/app-detail.html', '应用详情', null);
     }
 
+    function goBindingPage() {
+      navigateTo('pages/policy/distribution-status.html', '绑定与下发', null);
+    }
+
     function searchData() { toastSuccess('应用列表已刷新'); }
     function exportData() { toastSuccess('导出任务已创建'); }
     function resetSearch() {
@@ -478,7 +486,7 @@ agentsec-langchain run --service-name customer-copilot</pre>
 
     function openGuideModal() { openModal('guideModal'); }
     function batchBindPolicy() { openModal('policyBindModal'); }
-    function submitPolicyBind() { closeModal('policyBindModal'); toastSuccess('策略已绑定，新配置版本已发布'); }
+    function submitPolicyBind() { closeModal('policyBindModal'); toastSuccess('策略包版本已绑定并进入下发流程'); }
     function openBlockModal(appId) { document.getElementById('blockAppId').value = appId; document.getElementById('blockReason').value = ''; openModal('blockModal'); }
     function submitBlock() {
       if (!document.getElementById('blockReason').value) { toastError('请填写处置原因'); return; }
