@@ -54,11 +54,11 @@
     <div class="page-header">
       <div>
         <div class="page-title">策略包管理</div>
-        <div class="page-subtitle">以策略包为主入口，优先通过场景模板生成策略，并将复杂规则项与高级配置后置给专家用户。</div>
+        <div class="page-subtitle">以探针策略包为主入口，优先通过场景模板生成策略，并将复杂规则项与高级配置后置给专家用户。</div>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="btn btn-default" type="button" onclick="openDistributionPage()">查看绑定与下发</button>
-        <button class="btn btn-default" type="button" onclick="openVersionModal('pkg-001')">查看版本历史</button>
+        <button class="btn btn-default" type="button" onclick="openDistributionPage()">查看下发</button>
+        <button class="btn btn-default" type="button" onclick="openVersionModal('pkg-001')">查看版本</button>
         <button class="btn btn-primary" type="button" onclick="openPackageWizard()">新建策略包</button>
       </div>
     </div>
@@ -73,23 +73,22 @@
     <div class="search-bar">
       <div class="search-item"><span class="form-label">策略包名称</span><input class="form-control" placeholder="策略包名称 / package_id"></div>
       <div class="search-item">
-        <span class="form-label">发布状态</span>
+        <span class="form-label">策略状态</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>草稿</option>
-          <option>灰度</option>
-          <option>已发布</option>
-          <option>已废弃</option>
+          <option>已启用</option>
+          <option>待下发</option>
+          <option>已停用</option>
         </select>
       </div>
       <div class="search-item">
         <span class="form-label">模板来源</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>客服安全模板</option>
-          <option>研发审计模板</option>
-          <option>知识问答模板</option>
           <option>高危工具审批模板</option>
+          <option>运行熔断模板</option>
+          <option>遥测采集治理模板</option>
+          <option>外联访问约束模板</option>
           <option>数据脱敏模板</option>
         </select>
       </div>
@@ -97,11 +96,11 @@
         <span class="form-label">包含规则类型</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>内容安全</option>
-          <option>数据防泄露</option>
           <option>工具管控</option>
           <option>访问控制</option>
           <option>采集控制</option>
+          <option>运行控制</option>
+          <option>审计控制</option>
         </select>
       </div>
       <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('策略包列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
@@ -118,7 +117,7 @@
               <th>规则数</th>
               <th>当前版本</th>
               <th>绑定应用数</th>
-              <th>发布状态</th>
+              <th>策略状态</th>
               <th>下发状态</th>
               <th>最近更新时间</th>
               <th style="width:250px;">操作</th>
@@ -126,40 +125,40 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>基础安全包</strong><div class="meta-sub">pkg-001</div></td>
-              <td>客服安全模板</td>
-              <td><div class="type-tags"><span class="type-tag">内容安全</span><span class="type-tag">数据防泄露</span><span class="type-tag">工具管控</span></div></td>
+              <td><strong>基础探针安全包</strong><div class="meta-sub">pkg-001</div></td>
+              <td>高危工具审批模板</td>
+              <td><div class="type-tags"><span class="type-tag">工具管控</span><span class="type-tag">访问控制</span><span class="type-tag">审计控制</span></div></td>
               <td>8</td>
               <td><span class="tag tag-success">v3</span></td>
               <td>6</td>
-              <td><span class="tag tag-success">已发布</span></td>
+              <td><span class="tag tag-success">已启用</span></td>
               <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
               <td>2026-04-20 10:40</td>
-              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-001')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-001')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-001')">查看绑定</button></td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-001')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-001')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-001')">查看下发</button></td>
             </tr>
             <tr>
-              <td><strong>增强审计包</strong><div class="meta-sub">pkg-002</div></td>
-              <td>研发审计模板</td>
-              <td><div class="type-tags"><span class="type-tag">工具管控</span><span class="type-tag">访问控制</span><span class="type-tag">采集控制</span></div></td>
+              <td><strong>探针运行审计包</strong><div class="meta-sub">pkg-002</div></td>
+              <td>运行熔断模板</td>
+              <td><div class="type-tags"><span class="type-tag">运行控制</span><span class="type-tag">工具管控</span><span class="type-tag">审计控制</span></div></td>
               <td>5</td>
               <td><span class="tag tag-warning">v2</span></td>
               <td>4</td>
-              <td><span class="tag tag-warning">灰度</span></td>
+              <td><span class="tag tag-warning">待下发</span></td>
               <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></td>
               <td>2026-04-20 09:15</td>
-              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-002')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-002')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-002')">查看绑定</button></td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-002')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-002')">查看版本</button><button class="btn btn-link" type="button" onclick="openBindingModal('pkg-002')">查看下发</button></td>
             </tr>
             <tr>
-              <td><strong>客服只读防护包</strong><div class="meta-sub">pkg-003</div></td>
-              <td>知识问答模板</td>
-              <td><div class="type-tags"><span class="type-tag">访问控制</span><span class="type-tag">工具管控</span></div></td>
+              <td><strong>探针遥测治理包</strong><div class="meta-sub">pkg-003</div></td>
+              <td>遥测采集治理模板</td>
+              <td><div class="type-tags"><span class="type-tag">采集控制</span><span class="type-tag">审计控制</span></div></td>
               <td>4</td>
               <td><span class="tag">v1</span></td>
               <td>0</td>
-              <td><span class="tag">草稿</span></td>
+              <td><span class="tag">已停用</span></td>
               <td><div class="status-wrap"><div class="sync-progress"><div class="sync-bar warning" style="width:0%;"></div></div><span>未下发</span></div></td>
               <td>2026-04-20 11:05</td>
-              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-003')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-003')">查看版本</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略包已进入发布流程')">发布</button></td>
+              <td><button class="btn btn-link" type="button" onclick="openPackageWizard('pkg-003')">编辑</button><button class="btn btn-link" type="button" onclick="openVersionModal('pkg-003')">查看版本</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略包已进入下发流程')">下发</button></td>
             </tr>
           </tbody>
         </table>
@@ -189,23 +188,23 @@
               <div class="section-desc">普通用户先选场景模板，再由系统自动生成推荐规则组合和默认参数。</div>
               <div class="choice-grid">
                 <div class="choice-card active" data-template="customer" onclick="selectTemplate('customer', this)">
-                  <div class="choice-title">客服安全模板</div>
-                  <div class="choice-desc">覆盖 Prompt 注入检测、手机号脱敏、常见高危工具限制，适用于客服类接入应用。</div>
+                  <div class="choice-title">高危工具审批模板</div>
+                  <div class="choice-desc">覆盖高危工具执行审批、外联访问约束和关键审计记录，适用于高风险探针场景。</div>
                 </div>
                 <div class="choice-card" data-template="rd" onclick="selectTemplate('rd', this)">
-                  <div class="choice-title">研发审计模板</div>
-                  <div class="choice-desc">覆盖高危工具审批、命令执行审计、外联约束与敏感参数检查。</div>
+                  <div class="choice-title">运行熔断模板</div>
+                  <div class="choice-desc">覆盖死循环熔断、异常重试抑制和高频工具调用限制，适用于运行稳定性保障。</div>
                 </div>
                 <div class="choice-card" data-template="rag" onclick="selectTemplate('rag', this)">
-                  <div class="choice-title">知识问答模板</div>
-                  <div class="choice-desc">覆盖知识源访问控制、输出风险检测与 RAG 结果校验。</div>
+                  <div class="choice-title">遥测采集治理模板</div>
+                  <div class="choice-desc">覆盖采样率控制、敏感字段脱敏和保留策略，适用于探针遥测治理。</div>
                 </div>
               </div>
               <div class="form-grid-2" style="margin-top:14px;">
-                <div class="form-row"><div class="form-label required">策略包名称</div><div class="form-field"><input id="packageName" class="form-control" value="基础安全包" required></div></div>
+                <div class="form-row"><div class="form-label required">策略包名称</div><div class="form-field"><input id="packageName" class="form-control" value="基础探针安全包" required></div></div>
                 <div class="form-row"><div class="form-label">默认适用环境</div><div class="form-field"><select class="form-select"><option>生产</option><option>测试</option><option>全部</option></select></div></div>
               </div>
-              <div class="form-row"><div class="form-label">策略包说明</div><div class="form-field"><textarea id="packageDesc" class="form-textarea">用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。</textarea></div></div>
+              <div class="form-row"><div class="form-label">策略包说明</div><div class="form-field"><textarea id="packageDesc" class="form-textarea">用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。</textarea></div></div>
             </div>
           </div>
 
@@ -258,7 +257,7 @@
                 <div class="preview-card">
                   <div class="preview-title">策略包摘要</div>
                   <table class="kv-table">
-                    <tr><td>场景模板</td><td id="previewTemplate">客服安全模板</td></tr>
+                    <tr><td>场景模板</td><td id="previewTemplate">高危工具审批模板</td></tr>
                     <tr><td>策略强度</td><td id="previewLevel">标准</td></tr>
                     <tr><td>阻断策略</td><td id="previewBlock">高风险阻断</td></tr>
                     <tr><td>通知级别</td><td id="previewAlert">高风险即时通知</td></tr>
@@ -268,9 +267,9 @@
                 <div class="preview-card">
                   <div class="preview-title">系统将生成的推荐规则</div>
                   <ul class="preview-list" id="previewRules">
-                    <li>Prompt 注入检测</li>
-                    <li>手机号脱敏</li>
                     <li>高危工具审批</li>
+                    <li>未备案域名外联拦截</li>
+                    <li>关键操作审计</li>
                   </ul>
                 </div>
               </div>
@@ -285,12 +284,12 @@
                 <div class="section-title" style="margin-bottom:8px;">可选规则项</div>
                 <div class="table-wrapper">
                   <table class="data-table select-table">
-                    <thead><tr><th></th><th>规则项</th><th>类型</th><th>执行面</th><th>实现方式</th></tr></thead>
+                    <thead><tr><th></th><th>规则项</th><th>类型</th><th>探针能力域</th><th>实现方式</th></tr></thead>
                     <tbody>
-                      <tr><td><input type="checkbox" checked></td><td>Prompt 注入检测</td><td>内容安全</td><td>网关</td><td>显式规则</td></tr>
-                      <tr><td><input type="checkbox" checked></td><td>手机号脱敏</td><td>数据防泄露</td><td>网关</td><td>阈值规则</td></tr>
-                      <tr><td><input type="checkbox" checked></td><td>高危工具审批</td><td>工具管控</td><td>探针</td><td>模型规则</td></tr>
-                      <tr><td><input type="checkbox"></td><td>未备案域名外联拦截</td><td>访问控制</td><td>探针</td><td>外部服务规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>高危工具审批</td><td>工具管控</td><td>工具调用审查</td><td>模型规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>未备案域名外联拦截</td><td>访问控制</td><td>外联访问约束</td><td>外部服务规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>Agent 死循环熔断</td><td>运行控制</td><td>运行状态保护</td><td>阈值规则</td></tr>
+                      <tr><td><input type="checkbox"></td><td>探针遥测采样治理</td><td>采集控制</td><td>遥测采集控制</td><td>流程规则</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -325,16 +324,16 @@
         <div class="version-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong>v3</strong>
-            <span class="tag tag-success">已发布</span>
+            <span class="tag tag-success">已启用</span>
           </div>
           <div class="meta-sub">创建人：安全管理员 | 时间：2026-04-20 10:40</div>
-          <div style="margin-top:8px;">变更说明：新增 1 条工具管控规则，调整手机号脱敏动作。</div>
+          <div style="margin-top:8px;">变更说明：新增 1 条运行控制规则，强化高危工具审批约束。</div>
           <div style="margin-top:10px;"><button class="btn btn-link" type="button" onclick="toastSuccess('已打开版本内容')">查看内容</button><button class="btn btn-link" type="button" onclick="openDistributionPage()">查看绑定</button></div>
         </div>
         <div class="version-card">
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <strong>v2</strong>
-            <span class="tag tag-warning">灰度</span>
+            <span class="tag tag-warning">待下发</span>
           </div>
           <div class="meta-sub">创建人：周敏 | 时间：2026-04-18 15:20</div>
           <div style="margin-top:8px;">变更说明：优化内容安全阈值，保留旧版工具审批规则。</div>
@@ -377,19 +376,19 @@
 
     const templateMeta = {
       customer: {
-        name: '客服安全模板',
-        desc: '用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。',
-        rules: ['Prompt 注入检测', '手机号脱敏', '高危工具审批']
+        name: '高危工具审批模板',
+        desc: '用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。',
+        rules: ['高危工具审批', '未备案域名外联拦截', '关键操作审计']
       },
       rd: {
-        name: '研发审计模板',
-        desc: '适用于代码解释、命令执行与文件读写场景，默认启用审批与高危审计。',
-        rules: ['高危工具审批', '未备案域名外联拦截', '命令执行审计']
+        name: '运行熔断模板',
+        desc: '适用于高频任务与复杂 Agent 编排场景，默认启用死循环熔断与异常重试抑制。',
+        rules: ['Agent 死循环熔断', '高频工具调用限制', '异常重试抑制']
       },
       rag: {
-        name: '知识问答模板',
-        desc: '适用于知识检索与问答，默认加强知识源访问控制和输出风险检测。',
-        rules: ['RAG 结果校验', '知识源访问控制', '输出内容风险检测']
+        name: '遥测采集治理模板',
+        desc: '适用于探针遥测治理场景，默认加强采样率控制、脱敏和保留周期约束。',
+        rules: ['探针遥测采样治理', '敏感字段脱敏', '日志保留周期控制']
       }
     };
 
@@ -401,7 +400,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof updateBreadcrumb === 'function') {
-        updateBreadcrumb([{ label: '统一策略中心' }, { label: '策略包管理' }]);
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '探针策略管理' }, { label: '策略包管理' }]);
       }
       syncPreview();
       updateWizardSteps();
@@ -413,18 +412,18 @@
       if (id === 'pkg-002') {
         currentTemplate = 'rd';
         currentLevel = 'strict';
-        document.getElementById('packageName').value = '增强审计包';
-        document.getElementById('packageDesc').value = '用于研发类接入应用的增强审计与高危工具审批策略包。';
+        document.getElementById('packageName').value = '探针运行审计包';
+        document.getElementById('packageDesc').value = '用于高频任务与复杂 Agent 编排场景的运行熔断策略包。';
       } else if (id === 'pkg-003') {
         currentTemplate = 'rag';
         currentLevel = 'observe';
-        document.getElementById('packageName').value = '客服只读防护包';
-        document.getElementById('packageDesc').value = '用于知识问答场景的只读型防护包，强调访问约束与审计记录。';
+        document.getElementById('packageName').value = '探针遥测治理包';
+        document.getElementById('packageDesc').value = '用于探针遥测采样、脱敏和保留周期治理的策略包。';
       } else {
         currentTemplate = 'customer';
         currentLevel = 'standard';
-        document.getElementById('packageName').value = '基础安全包';
-        document.getElementById('packageDesc').value = '用于客服类接入应用的基础安全防护，优先保障内容安全、数据脱敏和工具调用边界。';
+        document.getElementById('packageName').value = '基础探针安全包';
+        document.getElementById('packageDesc').value = '用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。';
       }
       refreshWizardSelections();
       syncPreview();
@@ -449,10 +448,10 @@
       el.classList.add('active');
 
       if (template === 'customer') {
-        document.getElementById('packageName').value = '基础安全包';
+        document.getElementById('packageName').value = '基础探针安全包';
         document.getElementById('packageDesc').value = templateMeta.customer.desc;
       } else if (template === 'rd') {
-        document.getElementById('packageName').value = '增强审计包';
+        document.getElementById('packageName').value = '探针运行审计包';
         document.getElementById('packageDesc').value = templateMeta.rd.desc;
       } else {
         document.getElementById('packageName').value = '知识问答防护包';

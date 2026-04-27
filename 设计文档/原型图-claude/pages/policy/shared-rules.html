@@ -45,7 +45,7 @@
     <div class="page-header">
       <div>
         <div class="page-title">高级规则项</div>
-        <div class="page-subtitle">面向专家用户维护原子规则项，支持类型化配置与多种规则实现方式，为策略包提供可复用能力。</div>
+        <div class="page-subtitle">面向专家用户维护探针侧原子规则项，支持类型化配置与多种规则实现方式，为探针策略包提供可复用能力。</div>
       </div>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-default" type="button" onclick="openPackagePage()">查看策略包管理</button>
@@ -87,11 +87,13 @@
         </select>
       </div>
       <div class="search-item">
-        <span class="form-label">执行面</span>
+        <span class="form-label">探针能力域</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>网关</option>
-          <option>探针</option>
+          <option>工具调用审查</option>
+          <option>运行状态保护</option>
+          <option>外联访问约束</option>
+          <option>遥测采集控制</option>
         </select>
       </div>
       <div class="search-item">
@@ -121,8 +123,8 @@
               <th>规则项名称</th>
               <th>规则类型</th>
               <th>实现方式</th>
-              <th>执行面</th>
-              <th>Hook Point</th>
+              <th>探针能力域</th>
+              <th>探针处理节点</th>
               <th>动作策略</th>
               <th>状态</th>
               <th>被策略包引用数</th>
@@ -132,24 +134,24 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>Prompt 注入检测</strong><div class="meta-sub">rule-001</div></td>
-              <td><span class="type-tag">内容安全</span></td>
+              <td><strong>关键操作审计</strong><div class="meta-sub">rule-001</div></td>
+              <td><span class="type-tag">审计控制</span></td>
               <td><span class="type-tag impl-tag">显式规则</span></td>
-              <td><span class="type-tag target-gateway">网关</span></td>
-              <td>gw-request-in</td>
-              <td>阻断 + 告警</td>
+              <td><span class="type-tag target-probe">工具调用审查</span></td>
+              <td>probe-tool-before</td>
+              <td>审计 + 告警</td>
               <td><span class="tag tag-success">启用</span></td>
               <td>3</td>
               <td>2026-04-20 10:20</td>
               <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-001')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-001')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已复制规则项')">复制</button></td>
             </tr>
             <tr>
-              <td><strong>手机号脱敏</strong><div class="meta-sub">rule-002</div></td>
-              <td><span class="type-tag">数据防泄露</span></td>
+              <td><strong>Agent 死循环熔断</strong><div class="meta-sub">rule-002</div></td>
+              <td><span class="type-tag">运行控制</span></td>
               <td><span class="type-tag impl-threshold">阈值规则</span></td>
-              <td><span class="type-tag target-gateway">网关</span></td>
-              <td>gw-response-out</td>
-              <td>脱敏 + 告警</td>
+              <td><span class="type-tag target-probe">运行状态保护</span></td>
+              <td>probe-lifecycle</td>
+              <td>熔断 + 告警</td>
               <td><span class="tag tag-success">启用</span></td>
               <td>2</td>
               <td>2026-04-20 09:48</td>
@@ -159,7 +161,7 @@
               <td><strong>高危工具审批</strong><div class="meta-sub">rule-003</div></td>
               <td><span class="type-tag">工具管控</span></td>
               <td><span class="type-tag impl-model">模型规则</span></td>
-              <td><span class="type-tag target-probe">探针</span></td>
+              <td><span class="type-tag target-probe">工具调用审查</span></td>
               <td>probe-tool-before</td>
               <td>审批 + 告警</td>
               <td><span class="tag tag-success">启用</span></td>
@@ -171,8 +173,8 @@
               <td><strong>未备案域名外联拦截</strong><div class="meta-sub">rule-004</div></td>
               <td><span class="type-tag">访问控制</span></td>
               <td><span class="type-tag impl-service">外部服务规则</span></td>
-              <td><span class="type-tag target-probe">探针</span></td>
-              <td>probe-tool-before</td>
+              <td><span class="type-tag target-probe">外联访问约束</span></td>
+              <td>probe-network-out</td>
               <td>阻断 + 审计</td>
               <td><span class="tag tag-warning">停用</span></td>
               <td>0</td>
@@ -195,16 +197,16 @@
         <form id="ruleForm">
           <div class="section-block">
             <div class="section-title">A. 基础信息</div>
-            <div class="section-desc">定义规则项名称、规则类型、执行面与 Hook Point，形成统一骨架。</div>
+            <div class="section-desc">定义规则项名称、规则类型、探针能力域与处理节点，形成统一骨架。</div>
             <div class="form-grid-2">
-              <div class="form-row"><div class="form-label required">规则项名称</div><div class="form-field"><input id="ruleName" class="form-control" value="Prompt 注入检测" required></div></div>
+              <div class="form-row"><div class="form-label required">规则项名称</div><div class="form-field"><input id="ruleName" class="form-control" value="关键操作审计" required></div></div>
               <div class="form-row"><div class="form-label">规则项编码</div><div class="form-field"><input id="ruleId" class="form-control" value="rule-001"></div></div>
-              <div class="form-row"><div class="form-label required">规则类型</div><div class="form-field"><select id="ruleType" class="form-select" onchange="updateRulePanels()"><option value="content">内容安全</option><option value="dlp">数据防泄露</option><option value="tool">工具管控</option><option value="access">访问控制</option><option value="collect">采集控制</option><option value="audit">审计控制</option></select></div></div>
-              <div class="form-row"><div class="form-label required">执行面</div><div class="form-field"><select id="ruleTarget" class="form-select" onchange="updateHookPointOptions()"><option value="gateway">网关</option><option value="probe">探针</option></select></div></div>
-              <div class="form-row"><div class="form-label required">Hook Point</div><div class="form-field"><select id="hookPoint" class="form-select"><option value="gw-request-in">gw-request-in</option><option value="gw-response-out">gw-response-out</option></select></div></div>
+              <div class="form-row"><div class="form-label required">规则类型</div><div class="form-field"><select id="ruleType" class="form-select" onchange="updateRulePanels()"><option value="tool">工具管控</option><option value="access">访问控制</option><option value="collect">采集控制</option><option value="audit">审计控制</option><option value="content">内容安全</option><option value="dlp">数据防泄露</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针能力域</div><div class="form-field"><select id="ruleDomain" class="form-select" onchange="updateHookPointOptions()"><option value="tool">工具调用审查</option><option value="lifecycle">运行状态保护</option><option value="network">外联访问约束</option><option value="telemetry">遥测采集控制</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针处理节点</div><div class="form-field"><select id="hookPoint" class="form-select"><option value="probe-tool-before">probe-tool-before</option><option value="probe-tool-after">probe-tool-after</option></select></div></div>
               <div class="form-row"><div class="form-label">风险等级</div><div class="form-field"><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div></div>
             </div>
-            <div class="form-row"><div class="form-label">规则说明</div><div class="form-field"><textarea class="form-textarea">用于识别包含绕过系统约束、忽略上文指令等明显注入特征的请求，并在网关入口直接拦截。</textarea></div></div>
+            <div class="form-row"><div class="form-label">规则说明</div><div class="form-field"><textarea class="form-textarea">用于识别探针侧关键工具调用，并在执行前补充审计记录与风险标记。</textarea></div></div>
           </div>
 
           <div class="section-block">
@@ -440,13 +442,15 @@
   <script src="../../js/common.js"></script>
   <script>
     const hookPointOptions = {
-      gateway: ['gw-request-in', 'gw-response-out'],
-      probe: ['probe-tool-before', 'probe-llm-before', 'probe-response-before']
+      tool: ['probe-tool-before', 'probe-tool-after'],
+      lifecycle: ['probe-lifecycle', 'probe-scheduler'],
+      network: ['probe-network-out', 'probe-network-in'],
+      telemetry: ['probe-telemetry-export', 'probe-telemetry-buffer']
     };
 
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof updateBreadcrumb === 'function') {
-        updateBreadcrumb([{ label: '统一策略中心' }, { label: '高级规则项' }]);
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '探针策略管理' }, { label: '高级规则项' }]);
       }
       updateRulePanels();
       updateHookPointOptions();
@@ -455,28 +459,28 @@
     function openRuleModal(id) {
       document.getElementById('ruleModalTitle').textContent = id ? '编辑规则项' : '新建规则项';
       if (id === 'rule-002') {
-        document.getElementById('ruleName').value = '手机号脱敏';
+        document.getElementById('ruleName').value = 'Agent 死循环熔断';
         document.getElementById('ruleId').value = 'rule-002';
-        document.getElementById('ruleType').value = 'dlp';
-        document.getElementById('ruleTarget').value = 'gateway';
+        document.getElementById('ruleType').value = 'collect';
+        document.getElementById('ruleDomain').value = 'lifecycle';
         document.getElementById('implType').value = 'threshold';
       } else if (id === 'rule-003') {
         document.getElementById('ruleName').value = '高危工具审批';
         document.getElementById('ruleId').value = 'rule-003';
         document.getElementById('ruleType').value = 'tool';
-        document.getElementById('ruleTarget').value = 'probe';
+        document.getElementById('ruleDomain').value = 'tool';
         document.getElementById('implType').value = 'model';
       } else if (id === 'rule-004') {
         document.getElementById('ruleName').value = '未备案域名外联拦截';
         document.getElementById('ruleId').value = 'rule-004';
         document.getElementById('ruleType').value = 'access';
-        document.getElementById('ruleTarget').value = 'probe';
+        document.getElementById('ruleDomain').value = 'network';
         document.getElementById('implType').value = 'service';
       } else {
-        document.getElementById('ruleName').value = 'Prompt 注入检测';
+        document.getElementById('ruleName').value = '关键操作审计';
         document.getElementById('ruleId').value = 'rule-001';
-        document.getElementById('ruleType').value = 'content';
-        document.getElementById('ruleTarget').value = 'gateway';
+        document.getElementById('ruleType').value = 'audit';
+        document.getElementById('ruleDomain').value = 'tool';
         document.getElementById('implType').value = 'explicit';
       }
       updateHookPointOptions();
@@ -485,7 +489,7 @@
     }
 
     function updateHookPointOptions() {
-      const target = document.getElementById('ruleTarget').value;
+      const target = document.getElementById('ruleDomain').value;
       const hookPoint = document.getElementById('hookPoint');
       const current = hookPoint.value;
       hookPoint.innerHTML = hookPointOptions[target].map(function(item) {

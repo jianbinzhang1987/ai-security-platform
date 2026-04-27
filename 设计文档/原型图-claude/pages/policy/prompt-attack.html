@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>提示词攻击防护</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .score-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#fdf6ec; color:#e6a23c; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">提示词攻击防护</div>
+        <div class="page-subtitle">管理网关请求进入大模型前的提示词攻击检测策略，统一维护越狱识别、系统提示词套取和上下文污染拦截能力。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="toastSuccess('提示词攻击词库已刷新')">查看词库</button>
+        <button class="btn btn-default" type="button" onclick="toastSuccess('模拟校验已启动')">干跑模拟</button>
+        <button class="btn btn-primary" type="button" onclick="openPolicyModal('create')">新建防护策略</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">策略总数</div><div class="v">11</div></div>
+      <div class="stat-lite"><div class="k">已启用策略</div><div class="v" style="color:#67C23A;">7</div></div>
+      <div class="stat-lite"><div class="k">近 7 日命中次数</div><div class="v" style="color:#E6A23C;">5,312</div></div>
+      <div class="stat-lite"><div class="k">高风险阻断次数</div><div class="v" style="color:#F56C6C;">842</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略名称</span><input class="form-control" placeholder="策略名称 / policy_id"></div>
+      <div class="search-item"><span class="form-label">策略模式</span><select class="form-select"><option>全部</option><option>全局默认</option><option>路由覆盖</option></select></div>
+      <div class="search-item"><span class="form-label">策略状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>待下发</option><option>已停用</option></select></div>
+      <div class="search-item"><span class="form-label">默认动作</span><select class="form-select"><option>全部</option><option>BLOCK</option><option>LOG_ONLY</option><option>PASS</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('提示词攻击策略列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>策略名称</th>
+              <th>策略模式</th>
+              <th>作用对象</th>
+              <th>规则包</th>
+              <th>默认动作</th>
+              <th>风险阈值</th>
+              <th>状态</th>
+              <th>最近更新时间</th>
+              <th style="width:220px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>全局提示词攻击基线</strong><div class="meta-sub">gw-pa-001</div></td>
+              <td>全局默认</td>
+              <td>全部 AI 路由</td>
+              <td>基础提示词攻击防护包</td>
+              <td>BLOCK / LOG_ONLY</td>
+              <td><span class="score-tag">0.82 / 0.68</span></td>
+              <td><span class="tag tag-success">已启用</span></td>
+              <td>2026-04-21 16:35</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略模拟已开始')">模拟</button><button class="btn btn-link warning" type="button" onclick="toastSuccess('策略已停用')">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>财务路由高敏拦截</strong><div class="meta-sub">gw-pa-002</div></td>
+              <td>路由覆盖</td>
+              <td>ai-request-safety-guard-finance</td>
+              <td>高敏场景防护包</td>
+              <td>BLOCK / BLOCK</td>
+              <td><span class="score-tag">0.76 / 0.60</span></td>
+              <td><span class="tag tag-warning">待下发</span></td>
+              <td>2026-04-21 14:22</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已进入下发流程')">下发</button><button class="btn btn-link" type="button" onclick="toastSuccess('版本差异已打开')">查看版本</button></td>
+            </tr>
+            <tr>
+              <td><strong>测试环境观察策略</strong><div class="meta-sub">gw-pa-003</div></td>
+              <td>路由覆盖</td>
+              <td>ai-request-safety-guard-test</td>
+              <td>轻量日志观察包</td>
+              <td>LOG_ONLY</td>
+              <td><span class="score-tag">0.90 / 0.75</span></td>
+              <td><span class="tag">已停用</span></td>
+              <td>2026-04-20 18:10</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已启用')">启用</button><button class="btn btn-link" type="button" onclick="toastSuccess('词库详情已打开')">查看词库</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="policyModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title" id="policyModalTitle">新建提示词攻击策略</div><div class="modal-close" onclick="closeModal('policyModal')">×</div></div>
+      <div class="modal-body">
+        <form id="policyForm">
+          <div class="form-row"><div class="form-label required">策略名称</div><div class="form-field"><input class="form-control" value="全局提示词攻击基线" required></div></div>
+          <div class="form-row"><div class="form-label required">策略模式</div><div class="form-field"><select class="form-select"><option>全局默认</option><option>路由覆盖</option></select></div></div>
+          <div class="form-row"><div class="form-label">作用对象</div><div class="form-field"><input class="form-control" value="全部 AI 路由"></div></div>
+          <div class="form-row"><div class="form-label required">规则包</div><div class="form-field"><select class="form-select"><option>基础提示词攻击防护包</option><option>高敏场景防护包</option><option>轻量日志观察包</option></select></div></div>
+          <div class="form-row"><div class="form-label required">默认动作</div><div class="form-field"><select class="form-select"><option>高风险 BLOCK / 中风险 LOG_ONLY</option><option>高风险 BLOCK / 中风险 BLOCK</option><option>全量 LOG_ONLY</option></select></div></div>
+          <div class="form-row"><div class="form-label">白名单例外</div><div class="form-field"><textarea class="form-textarea">route: internal-whitelist</textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('policyModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitPolicy()">保存</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '提示词攻击防护' }]);
+    });
+
+    function openPolicyModal(mode) {
+      document.getElementById('policyModalTitle').textContent = mode === 'edit' ? '编辑提示词攻击策略' : '新建提示词攻击策略';
+      openModal('policyModal');
+    }
+
+    function submitPolicy() {
+      if (!validateForm('policyForm')) return;
+      closeModal('policyModal');
+      toastSuccess('提示词攻击策略已保存');
+    }
+  </script>
+</body>
+</html>

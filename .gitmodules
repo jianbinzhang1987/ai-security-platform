@@ -1,15 +1,20 @@
 [submodule "third_party/openllmetry"]
 	path = third_party/openllmetry
 	url = https://github.com/traceloop/openllmetry.git
+	ignore = dirty
 [submodule "third_party/opentelemetry-collector-contrib"]
 	path = third_party/opentelemetry-collector-contrib
 	url = https://github.com/open-telemetry/opentelemetry-collector-contrib.git
+	ignore = dirty
 [submodule "third_party/opentelemetry-go"]
 	path = third_party/opentelemetry-go
 	url = https://github.com/open-telemetry/opentelemetry-go.git
+	ignore = dirty
 [submodule "third_party/opentelemetry-java-instrumentation"]
 	path = third_party/opentelemetry-java-instrumentation
 	url = https://github.com/open-telemetry/opentelemetry-java-instrumentation.git
+	ignore = dirty
 [submodule "third_party/opentelemetry-python-contrib"]
 	path = third_party/opentelemetry-python-contrib
 	url = https://github.com/open-telemetry/opentelemetry-python-contrib.git
+	ignore = dirty

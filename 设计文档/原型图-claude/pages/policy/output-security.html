@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>输出侧安全管理</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .type-tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f4f4f5; color:#606266; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">输出侧安全管理</div>
+        <div class="page-subtitle">管理模型响应返回前的输出侧检测和处置策略，统一维护敏感信息脱敏、企业敏感词过滤、涉密输出阻断和违规回答改写能力。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="toastSuccess('输出样例预演已开始')">输出预演</button>
+        <button class="btn btn-default" type="button" onclick="toastSuccess('敏感类别说明已打开')">查看敏感类别</button>
+        <button class="btn btn-primary" type="button" onclick="openPolicyModal('create')">新建防护策略</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">策略总数</div><div class="v">8</div></div>
+      <div class="stat-lite"><div class="k">已启用策略</div><div class="v" style="color:#67C23A;">5</div></div>
+      <div class="stat-lite"><div class="k">近 7 日脱敏次数</div><div class="v" style="color:#E6A23C;">12,840</div></div>
+      <div class="stat-lite"><div class="k">近 7 日改写返回</div><div class="v" style="color:#409EFF;">2,114</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略名称</span><input class="form-control" placeholder="策略名称 / policy_id"></div>
+      <div class="search-item"><span class="form-label">策略模式</span><select class="form-select"><option>全部</option><option>全局默认</option><option>路由覆盖</option></select></div>
+      <div class="search-item"><span class="form-label">默认动作</span><select class="form-select"><option>全部</option><option>REWRITE</option><option>SANITIZE</option><option>BLOCK</option></select></div>
+      <div class="search-item"><span class="form-label">策略状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>待下发</option><option>已停用</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('输出侧安全策略列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>策略名称</th>
+              <th>策略模式</th>
+              <th>作用对象</th>
+              <th>规则包</th>
+              <th>默认动作</th>
+              <th>敏感类别</th>
+              <th>状态</th>
+              <th>最近更新时间</th>
+              <th style="width:220px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>全局输出安全基线</strong><div class="meta-sub">gw-out-001</div></td>
+              <td>全局默认</td>
+              <td>全部 AI 路由</td>
+              <td>基础输出安全包</td>
+              <td>REWRITE</td>
+              <td><div class="type-tags"><span class="type-tag">PII 泄露</span><span class="type-tag">企业敏感词</span><span class="type-tag">违规输出</span></div></td>
+              <td><span class="tag tag-success">已启用</span></td>
+              <td>2026-04-21 15:12</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('输出预演已开始')">预演</button><button class="btn btn-link warning" type="button" onclick="toastSuccess('策略已停用')">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>客服路由输出改写</strong><div class="meta-sub">gw-out-002</div></td>
+              <td>路由覆盖</td>
+              <td>ai-response-safety-guard-service</td>
+              <td>高敏输出防护包</td>
+              <td>SANITIZE</td>
+              <td><div class="type-tags"><span class="type-tag">PII 泄露</span><span class="type-tag">涉密输出</span></div></td>
+              <td><span class="tag tag-warning">待下发</span></td>
+              <td>2026-04-21 13:52</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已进入下发流程')">下发</button><button class="btn btn-link" type="button" onclick="toastSuccess('版本差异已打开')">查看版本</button></td>
+            </tr>
+            <tr>
+              <td><strong>灰度环境观察策略</strong><div class="meta-sub">gw-out-003</div></td>
+              <td>路由覆盖</td>
+              <td>ai-response-safety-guard-gray</td>
+              <td>轻量日志观察包</td>
+              <td>LOG_ONLY</td>
+              <td><div class="type-tags"><span class="type-tag">违规输出</span><span class="type-tag">企业敏感词</span></div></td>
+              <td><span class="tag">已停用</span></td>
+              <td>2026-04-20 16:44</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已启用')">启用</button><button class="btn btn-link" type="button" onclick="toastSuccess('敏感类别说明已打开')">查看类别</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="policyModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title" id="policyModalTitle">新建输出侧安全策略</div><div class="modal-close" onclick="closeModal('policyModal')">×</div></div>
+      <div class="modal-body">
+        <form id="policyForm">
+          <div class="form-row"><div class="form-label required">策略名称</div><div class="form-field"><input class="form-control" value="全局输出安全基线" required></div></div>
+          <div class="form-row"><div class="form-label required">策略模式</div><div class="form-field"><select class="form-select"><option>全局默认</option><option>路由覆盖</option></select></div></div>
+          <div class="form-row"><div class="form-label">作用对象</div><div class="form-field"><input class="form-control" value="全部 AI 路由"></div></div>
+          <div class="form-row"><div class="form-label required">规则包</div><div class="form-field"><select class="form-select"><option>基础输出安全包</option><option>高敏输出防护包</option><option>轻量日志观察包</option></select></div></div>
+          <div class="form-row"><div class="form-label required">默认动作</div><div class="form-field"><select class="form-select"><option>REWRITE</option><option>SANITIZE</option><option>BLOCK</option><option>LOG_ONLY</option></select></div></div>
+          <div class="form-row"><div class="form-label">敏感类别</div><div class="form-field"><textarea class="form-textarea">PII 泄露、企业敏感词、涉密输出、违规输出</textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('policyModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitPolicy()">保存</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '输出侧安全管理' }]);
+    });
+
+    function openPolicyModal(mode) {
+      document.getElementById('policyModalTitle').textContent = mode === 'edit' ? '编辑输出侧安全策略' : '新建输出侧安全策略';
+      openModal('policyModal');
+    }
+
+    function submitPolicy() {
+      if (!validateForm('policyForm')) return;
+      closeModal('policyModal');
+      toastSuccess('输出侧安全策略已保存');
+    }
+  </script>
+</body>
+</html>

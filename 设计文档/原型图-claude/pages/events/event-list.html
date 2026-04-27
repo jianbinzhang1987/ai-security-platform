@@ -24,12 +24,18 @@
     <div class="page-header">
       <div>
         <div class="page-title">风险事件处置中心</div>
-        <div class="page-subtitle">围绕风险事件、证据锚点、处置状态和审计留痕完成闭环。</div>
+        <div class="page-subtitle">围绕风险事件、证据锚点、处置状态和审计留痕完成闭环；会话原文、用户行为轨迹和研判上下文请回到“会话审计”查看。</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-default" onclick="toastSuccess('事件清单已导出')">导出清单</button>
+        <button class="btn btn-default" onclick="goSessionAudit()">查看会话审计</button>
         <button class="btn btn-primary" onclick="openShellPage('pages/monitor/trace-list.html','风险溯源')">进入风险溯源</button>
       </div>
+    </div>
+
+    <div class="alert-box alert-info" style="margin-bottom:12px;">
+      <span class="alert-icon">i</span>
+      <span>边界说明：本页是风险事件的正式闭环主档，负责指派、确认、误报、接受风险和关闭；如果需要查看完整会话输入输出、用户画像和会话时间轴，请进入“会话审计”。</span>
     </div>
 
     <div class="stat-cards">
@@ -162,7 +168,7 @@
               <td><div class="evidence-tags"><span class="tag tag-danger">未声明工具</span><span class="tag tag-warning">外联数据流</span><span class="tag tag-info">已脱敏</span></div><div class="evidence-summary">Tool Input 包含内部仓库路径片段。</div></td>
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_finance_023', sessionId: 'sess-fin-20381', eventType: 'PII 外发尝试', tab: 'events' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button></div></td>
             </tr>
             <tr data-id="EVT-2026-00012">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00012" onchange="checkBtnState()"></td>
@@ -174,7 +180,7 @@
               <td><div class="evidence-tags"><span class="tag tag-warning">手机号片段</span><span class="tag tag-info">Raw 需授权</span></div><div class="evidence-summary">响应输出包含个人信息片段。</div></td>
               <td><span class="status-badge status-confirmed"></span>已处置</td>
               <td>李运营</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_finance_023', sessionId: 'sess-fin-20381', eventType: 'PII 外发尝试', tab: 'sessions' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></div></td>
             </tr>
             <tr data-id="EVT-2026-00009">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00009" onchange="checkBtnState()"></td>
@@ -186,7 +192,7 @@
               <td><div class="evidence-tags"><span class="tag tag-info">低置信度</span><span class="tag tag-success">已入样本</span></div><div class="evidence-summary">人工复核后标记为误报样本。</div></td>
               <td><span class="status-badge status-fp"></span>误报</td>
               <td>张安全</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')">处置登记</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')">处置登记</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_cs_119', sessionId: 'sess-cs-11807', eventType: '提示词注入', tab: 'users' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -279,6 +285,11 @@
       if (typeof renderPagination === 'function') {
         renderPagination('pagination', 154, 1, 10, function(p){});
       }
+      var params = new URLSearchParams(window.location.search);
+      var eventId = params.get('eventId');
+      if (eventId) {
+        openDetail(eventId);
+      }
     });
     function searchData() { toastSuccess('过滤成功'); }
     function resetSearch() {
@@ -345,6 +356,16 @@
     }
     function openDetail(id) {
       openShellPage('pages/events/event-detail.html?id=' + encodeURIComponent(id), '风险事件详情', 'event-detail.html?id=' + encodeURIComponent(id));
+    }
+    function goSessionAudit(context) {
+      context = context || {};
+      var params = [];
+      if (context.userId) params.push('userId=' + encodeURIComponent(context.userId));
+      if (context.sessionId) params.push('sessionId=' + encodeURIComponent(context.sessionId));
+      if (context.eventType) params.push('eventType=' + encodeURIComponent(context.eventType));
+      if (context.tab) params.push('tab=' + encodeURIComponent(context.tab));
+      var query = params.length ? ('?' + params.join('&')) : '';
+      navigateTo('pages/policy/session-audit.html' + query, '会话审计', '../policy/session-audit.html' + query);
     }
     function goTrace(traceId, spanId) {
       var url = 'pages/monitor/trace-list.html?trace_id=' + encodeURIComponent(traceId || '') + '&span_id=' + encodeURIComponent(spanId || '');

@@ -192,6 +192,65 @@
             .nav-hidden-p0 {
                 display: none !important;
             }
+
+            .nav-subgroup {
+                margin: 6px 0;
+            }
+
+            .nav-sub-parent {
+                display: flex;
+                align-items: center;
+                padding: 10px 16px 10px 40px;
+                color: #d3deea;
+                cursor: pointer;
+                font-size: 13px;
+                background: #223244;
+                border-left: 3px solid transparent;
+                transition:
+                    background 0.15s,
+                    color 0.15s;
+            }
+
+            .nav-sub-parent:hover,
+            .nav-sub-parent.open {
+                background: #26384c;
+                color: #fff;
+            }
+
+            .nav-sub-parent.active {
+                color: #409eff;
+                border-left-color: #409eff;
+            }
+
+            .nav-sub-label {
+                flex: 1;
+            }
+
+            .nav-sub-arrow {
+                width: 7px;
+                height: 7px;
+                border-right: 1.5px solid currentColor;
+                border-bottom: 1.5px solid currentColor;
+                transform: rotate(45deg);
+                transition: transform 0.2s;
+            }
+
+            .nav-sub-parent.open .nav-sub-arrow {
+                transform: rotate(225deg);
+            }
+
+            .nav-sub-children {
+                display: none;
+                background: #1b2735;
+            }
+
+            .nav-sub-children.show {
+                display: block;
+            }
+
+            .nav-sub-children .nav-item {
+                padding-left: 58px;
+            }
         </style>
     </head>
     <body>
@@ -530,47 +589,133 @@
                         <span class="nav-arrow"></span>
                     </div>
                     <div class="nav-children">
-                        <div
-                            class="nav-item"
-                            data-page="pages/policy/unified-protection.html"
-                            data-label="策略包管理"
-                            onclick="
-                                loadPage(
-                                    'pages/policy/unified-protection.html',
-                                    '策略包管理',
-                                    this,
-                                )
-                            "
-                        >
-                            策略包管理
+                        <div class="nav-subgroup">
+                            <div class="nav-sub-parent open" onclick="toggleSubNav(this)">
+                                <span class="nav-sub-label">网关策略管理</span>
+                                <span class="nav-sub-arrow"></span>
+                            </div>
+                            <div class="nav-sub-children show">
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/access-control.html"
+                                    data-label="访问控制策略"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/access-control.html',
+                                            '访问控制策略',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    访问控制策略
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/traffic-governance.html"
+                                    data-label="流量与服务治理"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/traffic-governance.html',
+                                            '流量与服务治理',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    流量与服务治理
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/content-security.html"
+                                    data-label="内容安全策略"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/content-security.html',
+                                            '内容安全策略',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    内容安全策略
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/session-audit.html"
+                                    data-label="会话审计"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/session-audit.html',
+                                            '会话审计',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    会话审计
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/gateway-distribution.html"
+                                    data-label="绑定与下发"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/gateway-distribution.html',
+                                            '绑定与下发',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    绑定与下发
+                                </div>
+                            </div>
                         </div>
-                        <div
-                            class="nav-item"
-                            data-page="pages/policy/shared-rules.html"
-                            data-label="高级规则项"
-                            onclick="
-                                loadPage(
-                                    'pages/policy/shared-rules.html',
-                                    '高级规则项',
-                                    this,
-                                )
-                            "
-                        >
-                            高级规则项
-                        </div>
-                        <div
-                            class="nav-item"
-                            data-page="pages/policy/distribution-status.html"
-                            data-label="绑定与下发"
-                            onclick="
-                                loadPage(
-                                    'pages/policy/distribution-status.html',
-                                    '绑定与下发',
-                                    this,
-                                )
-                            "
-                        >
-                            绑定与下发
+                        <div class="nav-subgroup">
+                            <div class="nav-sub-parent open" onclick="toggleSubNav(this)">
+                                <span class="nav-sub-label">探针策略管理</span>
+                                <span class="nav-sub-arrow"></span>
+                            </div>
+                            <div class="nav-sub-children show">
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/unified-protection.html"
+                                    data-label="策略包管理"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/unified-protection.html',
+                                            '策略包管理',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    策略包管理
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/shared-rules.html"
+                                    data-label="高级规则项"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/shared-rules.html',
+                                            '高级规则项',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    高级规则项
+                                </div>
+                                <div
+                                    class="nav-item"
+                                    data-page="pages/policy/distribution-status.html"
+                                    data-label="绑定与下发"
+                                    onclick="
+                                        loadPage(
+                                            'pages/policy/distribution-status.html',
+                                            '绑定与下发',
+                                            this,
+                                        )
+                                    "
+                                >
+                                    绑定与下发
+                                </div>
+                            </div>
                         </div>
                         <div
                             class="nav-item"
@@ -1075,17 +1220,7 @@
 
                 // 更新导航激活状态
                 if (navEl) {
-                    document
-                        .querySelectorAll(".nav-item")
-                        .forEach(function (el) {
-                            el.classList.remove("active");
-                        });
-                    document
-                        .querySelectorAll(".nav-item-top")
-                        .forEach(function (el) {
-                            el.classList.remove("active");
-                        });
-                    navEl.classList.add("active");
+                    syncActiveNav(path, navEl);
                 }
 
                 // 更新或添加标签页
@@ -1137,15 +1272,7 @@
                         });
                     tab.classList.add("active");
                     // 同步激活导航
-                    document
-                        .querySelectorAll(".nav-item, .nav-item-top")
-                        .forEach(function (el) {
-                            if (el.dataset.page === path) {
-                                el.classList.add("active");
-                            } else {
-                                el.classList.remove("active");
-                            }
-                        });
+                    syncActiveNav(path, null);
                 };
 
                 tabsEl.appendChild(tab);
@@ -1193,6 +1320,51 @@
                 var children = parentEl.nextElementSibling;
                 if (children && children.classList.contains("nav-children")) {
                     children.classList.toggle("show");
+                }
+            }
+
+            function toggleSubNav(parentEl) {
+                parentEl.classList.toggle("open");
+                var children = parentEl.nextElementSibling;
+                if (children && children.classList.contains("nav-sub-children")) {
+                    children.classList.toggle("show");
+                }
+            }
+
+            function syncActiveNav(path, navEl) {
+                document
+                    .querySelectorAll(".nav-item, .nav-item-top, .nav-sub-parent")
+                    .forEach(function (el) {
+                        el.classList.remove("active");
+                    });
+
+                var activeEl =
+                    navEl ||
+                    document.querySelector('.nav-item[data-page="' + path + '"]') ||
+                    document.querySelector('.nav-item-top[data-page="' + path + '"]');
+
+                if (activeEl) {
+                    activeEl.classList.add("active");
+                    expandNavHierarchy(activeEl);
+                }
+            }
+
+            function expandNavHierarchy(activeEl) {
+                var subGroup = activeEl.closest(".nav-subgroup");
+                if (subGroup) {
+                    var subParent = subGroup.querySelector(".nav-sub-parent");
+                    var subChildren = subGroup.querySelector(".nav-sub-children");
+                    if (subParent) subParent.classList.add("open", "active");
+                    if (subChildren) subChildren.classList.add("show");
+                }
+
+                var topChildren = activeEl.closest(".nav-children");
+                if (topChildren) {
+                    topChildren.classList.add("show");
+                    var topParent = topChildren.previousElementSibling;
+                    if (topParent && topParent.classList.contains("nav-parent")) {
+                        topParent.classList.add("open");
+                    }
                 }
             }
 
