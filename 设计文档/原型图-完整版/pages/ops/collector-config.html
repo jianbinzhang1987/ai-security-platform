@@ -38,11 +38,11 @@
       <div class="card-header"><div class="card-title">Collector 实例状态</div></div>
       <div class="table-wrapper">
         <table class="data-table">
-          <thead><tr><th>实例</th><th>区域</th><th>版本</th><th>状态</th><th>最近心跳</th><th>接收 QPS</th><th>丢弃数</th><th>配置版本</th></tr></thead>
+          <thead><tr><th>collector_id</th><th>区域</th><th>版本</th><th>instance_status</th><th>sync_status</th><th>最近心跳</th><th>接收 QPS</th><th>错误率</th><th>丢弃数</th><th>队列积压</th><th>存储写入状态</th></tr></thead>
           <tbody>
-            <tr><td>collector-0</td><td>prod-a</td><td>0.90.1</td><td><span class="tag tag-success">在线</span></td><td>10 秒前</td><td>3,210</td><td>12</td><td><span class="tag tag-success">v18</span></td></tr>
-            <tr><td>collector-1</td><td>prod-a</td><td>0.90.1</td><td><span class="tag tag-success">在线</span></td><td>11 秒前</td><td>3,084</td><td>8</td><td><span class="tag tag-success">v18</span></td></tr>
-            <tr><td>collector-2</td><td>prod-b</td><td>0.90.1</td><td><span class="tag tag-warning">队列积压</span></td><td>9 秒前</td><td>4,880</td><td>21</td><td><span class="tag tag-success">v18</span></td></tr>
+            <tr><td class="mono">collector-0</td><td>prod-a</td><td>0.90.1</td><td><span class="tag tag-success">online</span></td><td><span class="tag tag-success">synced / v18</span></td><td>10 秒前</td><td>3,210</td><td>0.02%</td><td>12</td><td>1,024</td><td><span class="tag tag-success">正常</span></td></tr>
+            <tr><td class="mono">collector-1</td><td>prod-a</td><td>0.90.1</td><td><span class="tag tag-success">online</span></td><td><span class="tag tag-success">synced / v18</span></td><td>11 秒前</td><td>3,084</td><td>0.01%</td><td>8</td><td>920</td><td><span class="tag tag-success">正常</span></td></tr>
+            <tr><td class="mono">collector-2</td><td>prod-b</td><td>0.90.1</td><td><span class="tag tag-warning">degraded</span></td><td><span class="tag tag-success">synced / v18</span></td><td>9 秒前</td><td>4,880</td><td>0.08%</td><td>21</td><td>12,480</td><td><span class="tag tag-warning">写入延迟</span></td></tr>
           </tbody>
         </table>
       </div>

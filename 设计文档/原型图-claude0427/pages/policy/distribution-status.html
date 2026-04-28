@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>绑定与下发</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .sync-status { display:flex; align-items:center; gap:8px; }
+    .sync-progress { width:84px; height:6px; background:#EBEEF5; border-radius:4px; overflow:hidden; }
+    .sync-bar { height:100%; }
+    .sync-bar.success { background:#67c23a; }
+    .sync-bar.warning { background:#e6a23c; }
+    .sync-bar.danger { background:#f56c6c; }
+    .detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .detail-card { border:1px solid #EBEEF5; border-radius:6px; padding:14px; background:#fff; }
+    .detail-card h4 { margin:0 0 10px; font-size:14px; color:#303133; }
+    .info-list { display:grid; gap:8px; }
+    .info-row { display:flex; justify-content:space-between; gap:10px; border-bottom:1px solid #F5F7FA; padding-bottom:8px; }
+    .info-row:last-child { border-bottom:none; padding-bottom:0; }
+    .info-row .k { color:#909399; }
+    .bind-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">绑定与下发</div>
+        <div class="page-subtitle">按接入应用查看当前绑定的策略包版本、发布时间和下发状态，并支持切换绑定版本。</div>
+      </div>
+      <button class="btn btn-default" type="button" onclick="toastSuccess('下发状态回执已刷新')">刷新下发回执</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">已绑定应用总数</div><div class="v">14</div></div>
+      <div class="stat-lite"><div class="k">已同步应用数</div><div class="v" style="color:#67C23A;">11</div></div>
+      <div class="stat-lite"><div class="k">灰度中的应用数</div><div class="v" style="color:#E6A23C;">2</div></div>
+      <div class="stat-lite"><div class="k">下发异常应用数</div><div class="v" style="color:#F56C6C;">1</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">接入应用</span><input class="form-control" placeholder="应用名称 / app_id"></div>
+      <div class="search-item">
+        <span class="form-label">当前策略包</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>基础探针安全包</option>
+          <option>探针运行审计包</option>
+          <option>探针遥测治理包</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">下发状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>已同步</option>
+          <option>下发中</option>
+          <option>下发异常</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('绑定与下发列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>接入应用</th>
+              <th>当前策略包</th>
+              <th>当前版本</th>
+              <th>发布时间</th>
+              <th style="width:220px;">下发状态</th>
+              <th>最近同步时间</th>
+              <th style="width:280px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>智能客服 Copilot</strong><div class="meta-sub">app_copilot_service</div></td>
+              <td>基础探针安全包</td>
+              <td><span class="tag tag-success">v3</span></td>
+              <td>2026-04-20 10:40</td>
+              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
+              <td>2026-04-20 10:42</td>
+              <td><button class="btn btn-link" type="button" onclick="openDetailModal('app1')">查看详情</button><button class="btn btn-link" type="button" onclick="openBindModal('app1')">更换版本</button><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></td>
+            </tr>
+            <tr>
+              <td><strong>工单辅助助手</strong><div class="meta-sub">app_ticket_assistant</div></td>
+              <td>基础探针安全包</td>
+              <td><span class="tag tag-success">v3</span></td>
+              <td>2026-04-20 10:40</td>
+              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
+              <td>2026-04-20 10:41</td>
+              <td><button class="btn btn-link" type="button" onclick="openDetailModal('app2')">查看详情</button><button class="btn btn-link" type="button" onclick="openBindModal('app2')">更换版本</button><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></td>
+            </tr>
+            <tr>
+              <td><strong>客服质检助手</strong><div class="meta-sub">app_quality_assistant</div></td>
+              <td>探针运行审计包</td>
+              <td><span class="tag tag-warning">v2</span></td>
+              <td>2026-04-20 09:15</td>
+              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></td>
+              <td>2026-04-20 10:18</td>
+              <td><button class="btn btn-link" type="button" onclick="openDetailModal('app3')">查看详情</button><button class="btn btn-link" type="button" onclick="openBindModal('app3')">更换版本</button><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></td>
+            </tr>
+            <tr>
+              <td><strong>外呼训练助手</strong><div class="meta-sub">app_call_training</div></td>
+              <td>基础探针安全包</td>
+              <td><span class="tag tag-warning">v2</span></td>
+              <td>2026-04-18 15:20</td>
+              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar danger" style="width:38%;"></div></div><span>下发异常</span></div></td>
+              <td>2026-04-20 10:03</td>
+              <td><button class="btn btn-link" type="button" onclick="openDetailModal('app4')">查看详情</button><button class="btn btn-link" type="button" onclick="openBindModal('app4')">更换版本</button><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">接入应用绑定详情</div>
+        <div class="modal-close" onclick="closeModal('detailModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h4>当前绑定信息</h4>
+            <div class="info-list">
+              <div class="info-row"><span class="k">接入应用</span><span id="detailAppName">智能客服 Copilot</span></div>
+              <div class="info-row"><span class="k">当前策略包</span><span id="detailPackageName">基础探针安全包</span></div>
+              <div class="info-row"><span class="k">当前版本</span><span id="detailVersion">v3</span></div>
+              <div class="info-row"><span class="k">发布时间</span><span id="detailPublishAt">2026-04-20 10:40</span></div>
+              <div class="info-row"><span class="k">下发状态</span><span id="detailSyncStatus">已同步</span></div>
+            </div>
+          </div>
+          <div class="detail-card">
+            <h4>版本摘要</h4>
+            <div class="info-list">
+              <div class="info-row"><span class="k">包含规则类型</span><span id="detailTypes">工具管控、访问控制、审计控制</span></div>
+              <div class="info-row"><span class="k">规则数</span><span id="detailRuleCount">8</span></div>
+              <div class="info-row"><span class="k">最近变更</span><span id="detailChange">新增 1 条工具管控规则</span></div>
+              <div class="info-row"><span class="k">最近同步时间</span><span id="detailSyncAt">2026-04-20 10:42</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-card" style="margin-top:14px;">
+          <h4>实例回执</h4>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>实例名称</th><th>service.name</th><th>当前版本</th><th>同步状态</th><th>最后心跳</th></tr></thead>
+              <tbody id="detailInstanceBody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px; display:flex; justify-content:flex-end;">
+            <button class="btn btn-link" type="button" onclick="openAppDetailPage()">查看接入应用详情</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bindModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">更换绑定版本</div>
+        <div class="modal-close" onclick="closeModal('bindModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="bindForm">
+          <div class="bind-form-grid">
+            <div class="form-row"><div class="form-label">接入应用</div><div class="form-field"><input id="bindAppName" class="form-control" value="智能客服 Copilot" readonly></div></div>
+            <div class="form-row"><div class="form-label">当前策略包</div><div class="form-field"><input id="bindPackageName" class="form-control" value="基础探针安全包" readonly></div></div>
+            <div class="form-row"><div class="form-label">当前版本</div><div class="form-field"><input id="bindCurrentVersion" class="form-control" value="v3" readonly></div></div>
+            <div class="form-row"><div class="form-label required">目标版本</div><div class="form-field"><select class="form-select" id="bindTargetVersion"><option>v3</option><option>v2</option><option>v1</option></select></div></div>
+          </div>
+          <div class="form-row"><div class="form-label">变更原因</div><div class="form-field"><textarea class="form-textarea" placeholder="填写版本切换原因"></textarea></div></div>
+          <div class="form-row"><div class="form-label">生效方式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="bindMode" checked> 立即下发</label><label class="radio-item"><input type="radio" name="bindMode"> 保存待下发</label></div></div></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" onclick="closeModal('bindModal')">取消</button>
+        <button class="btn btn-primary" type="button" onclick="submitBinding()">确认变更</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    const appDetails = {
+      app1: {
+        name: '智能客服 Copilot',
+        pkg: '基础探针安全包',
+        version: 'v3',
+        publishAt: '2026-04-20 10:40',
+        syncStatus: '已同步',
+        types: '工具管控、访问控制、审计控制',
+        ruleCount: '8',
+        change: '新增 1 条工具管控规则',
+        syncAt: '2026-04-20 10:42',
+        instances: [
+          ['copilot-prod-01', 'customer-copilot', 'v3', '<span class="tag tag-success">已同步</span>', '10 秒前'],
+          ['copilot-prod-02', 'customer-copilot', 'v3', '<span class="tag tag-success">已同步</span>', '12 秒前']
+        ]
+      },
+      app2: {
+        name: '工单辅助助手',
+        pkg: '基础探针安全包',
+        version: 'v3',
+        publishAt: '2026-04-20 10:40',
+        syncStatus: '已同步',
+        types: '工具管控、访问控制、审计控制',
+        ruleCount: '8',
+        change: '沿用基础探针安全包当前发布版本',
+        syncAt: '2026-04-20 10:41',
+        instances: [
+          ['ticket-prod-01', 'ticket-assistant', 'v3', '<span class="tag tag-success">已同步</span>', '14 秒前']
+        ]
+      },
+      app3: {
+        name: '客服质检助手',
+        pkg: '探针运行审计包',
+        version: 'v2',
+        publishAt: '2026-04-20 09:15',
+        syncStatus: '下发中',
+        types: '运行控制、工具管控、审计控制',
+        ruleCount: '5',
+        change: '增加采集控制和风险审计规则',
+        syncAt: '2026-04-20 10:18',
+        instances: [
+          ['quality-prod-01', 'quality-assistant', 'v2', '<span class="tag tag-warning">灰度中</span>', '25 秒前'],
+          ['quality-gray-01', 'quality-assistant-gray', 'v1', '<span class="tag tag-warning">待升级</span>', '1 分钟前']
+        ]
+      },
+      app4: {
+        name: '外呼训练助手',
+        pkg: '基础探针安全包',
+        version: 'v2',
+        publishAt: '2026-04-18 15:20',
+        syncStatus: '下发异常',
+        types: '工具管控、访问控制、审计控制',
+        ruleCount: '7',
+        change: '旧版仍在部分实例运行',
+        syncAt: '2026-04-20 10:03',
+        instances: [
+          ['call-prod-01', 'call-training', 'v2', '<span class="tag tag-success">已同步</span>', '18 秒前'],
+          ['call-prod-02', 'call-training', 'v1', '<span class="tag tag-danger">失败</span>', '5 分钟前']
+        ]
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '探针策略管理' }, { label: '绑定与下发' }]);
+      }
+    });
+
+    function openDetailModal(key) {
+      const item = appDetails[key];
+      document.getElementById('detailAppName').textContent = item.name;
+      document.getElementById('detailPackageName').textContent = item.pkg;
+      document.getElementById('detailVersion').textContent = item.version;
+      document.getElementById('detailPublishAt').textContent = item.publishAt;
+      document.getElementById('detailSyncStatus').textContent = item.syncStatus;
+      document.getElementById('detailTypes').textContent = item.types;
+      document.getElementById('detailRuleCount').textContent = item.ruleCount;
+      document.getElementById('detailChange').textContent = item.change;
+      document.getElementById('detailSyncAt').textContent = item.syncAt;
+      document.getElementById('detailInstanceBody').innerHTML = item.instances.map(function(row) {
+        return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td><td>' + row[3] + '</td><td>' + row[4] + '</td></tr>';
+      }).join('');
+      openModal('detailModal');
+    }
+
+    function openBindModal(key) {
+      const item = appDetails[key];
+      document.getElementById('bindAppName').value = item.name;
+      document.getElementById('bindPackageName').value = item.pkg;
+      document.getElementById('bindCurrentVersion').value = item.version;
+      openModal('bindModal');
+    }
+
+    function openAppDetailPage() {
+      navigateTo('pages/assets/app-detail.html', '应用详情', null);
+    }
+
+    function submitBinding() {
+      if (!validateForm('bindForm')) return;
+      closeModal('bindModal');
+      toastSuccess('绑定版本已更新，变更任务已进入下发队列');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>资产拓扑</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .topology-board { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+    .graph-panel { min-height: 560px; position: relative; background: linear-gradient(#fff, #fbfcff); border: 1px solid #EBEEF5; border-radius: 4px; overflow: hidden; }
+    .node { position: absolute; min-width: 156px; border: 1px solid #DCDFE6; border-radius: 4px; background: #fff; padding: 10px 12px; box-shadow: 0 2px 8px rgba(0,21,41,.08); }
+    .node strong { display: block; color: #303133; margin-bottom: 4px; }
+    .node span { display: block; color: #909399; font-size: 12px; line-height: 1.7; }
+    .node.app { left: 36px; top: 220px; border-color: #409EFF; }
+    .node.instance-a { left: 270px; top: 120px; }
+    .node.instance-b { left: 270px; top: 320px; }
+    .node.agent-a { left: 510px; top: 80px; }
+    .node.agent-b { left: 510px; top: 240px; }
+    .node.tool { left: 745px; top: 70px; }
+    .node.resource { left: 745px; top: 300px; }
+    .edge { position: absolute; height: 2px; background: #C0C4CC; transform-origin: left center; }
+    .edge.e1 { left: 190px; top: 257px; width: 105px; transform: rotate(-34deg); }
+    .edge.e2 { left: 190px; top: 278px; width: 105px; transform: rotate(31deg); }
+    .edge.e3 { left: 430px; top: 158px; width: 95px; transform: rotate(-22deg); }
+    .edge.e4 { left: 430px; top: 358px; width: 95px; transform: rotate(-34deg); }
+    .edge.e5 { left: 670px; top: 118px; width: 80px; transform: rotate(-10deg); }
+    .edge.e6 { left: 670px; top: 276px; width: 80px; transform: rotate(34deg); }
+    .legend-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">资产拓扑</div>
+        <div class="page-subtitle">第一轮迭代范围：接入应用 -> 运行实例 -> 逻辑智能体 / 工作流节点 -> 已观测工具 / 已声明资源。</div>
+      </div>
+      <div><button class="btn btn-primary" onclick="toastSuccess('拓扑已刷新')">刷新拓扑</button></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">接入应用：</span><select class="form-select"><option>智能客服 Copilot</option><option>研发代码审查助手</option><option>企业知识库问答</option></select></div>
+      <div class="search-item"><span class="form-label">关系来源：</span><select class="form-select"><option>全部</option><option>平台注册</option><option>LangChain 元数据</option><option>工具与资源声明</option><option>推断关系</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('过滤条件已应用')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="topology-board">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">基础资产关系图</div>
+          <div class="legend-row"><span class="tag tag-primary">强识别</span><span class="tag tag-success">中识别</span><span class="tag tag-warning">推断关系</span></div>
+        </div>
+        <div class="card-body">
+          <div class="graph-panel">
+            <div class="edge e1"></div><div class="edge e2"></div><div class="edge e3"></div><div class="edge e4"></div><div class="edge e5"></div><div class="edge e6"></div>
+            <div class="node app"><strong>智能客服 Copilot</strong><span>app_copilot_service</span><span>主资产对象</span><span><span class="tag tag-primary">强识别</span></span></div>
+            <div class="node instance-a"><strong>copilot-prod-01</strong><span>instance_id: inst-prod-01</span><span>service.name: customer-copilot</span></div>
+            <div class="node instance-b"><strong>copilot-gray-01</strong><span>instance_id: inst-gray-01</span><span>SDK 0.8.2</span></div>
+            <div class="node agent-a"><strong>售前咨询智能体</strong><span>agentsec.node.display_name</span><span>confidence 100%</span></div>
+            <div class="node agent-b"><strong>订单查询节点</strong><span>LangChain runnable</span><span>confidence 92%</span></div>
+            <div class="node tool"><strong>已观测工具</strong><span>crm_search</span><span>ticket_create</span><span>order_lookup</span></div>
+            <div class="node resource"><strong>声明资源</strong><span>kb_customer_policy</span><span>external_refund_api</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">节点详情</div></div>
+        <div class="card-body">
+          <div class="desc-list" style="grid-template-columns:1fr;">
+            <div class="desc-item"><div class="desc-label">根节点</div><div class="desc-value">app_copilot_service</div></div>
+            <div class="desc-item"><div class="desc-label">运行实例</div><div class="desc-value">18 个，当前展示 2 个代表实例</div></div>
+            <div class="desc-item"><div class="desc-label">节点来源</div><div class="desc-value">LangChain node/tool 元数据、平台注册 agent_id、工具与资源声明</div></div>
+            <div class="desc-item"><div class="desc-label">弱识别处理</div><div class="desc-value">不进入资产列表，仅在 Trace 内标注为疑似节点</div></div>
+          </div>
+          <hr class="divider">
+          <div class="timeline">
+            <div class="timeline-item"><div class="timeline-dot green"></div><div class="timeline-content"><div class="timeline-time">2026-04-15 17:21</div><div class="timeline-text">新增观测工具 order_lookup</div><div class="timeline-detail">来源：agentsec.tool.name</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-15 16:48</div><div class="timeline-text">gray 实例 SDK 版本滞后</div><div class="timeline-detail">建议升级到 0.8.4</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-time">2026-04-15 15:44</div><div class="timeline-text">外部退款 API 被声明为受控资源</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([{ label: '资产管理' }, { label: '资产拓扑' }]);
+    }
+  </script>
+</body>
+</html>

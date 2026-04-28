@@ -186,10 +186,10 @@
           <div class="tab-pane" data-tab="risks">
             <div class="table-wrapper">
               <table class="data-table">
-                <thead><tr><th>事件编号</th><th>风险类型</th><th>等级</th><th>关联 Agent / 节点</th><th>工具 / 资源</th><th>状态</th><th>操作</th></tr></thead>
+                <thead><tr><th>event_id</th><th>风险等级</th><th>风险类型</th><th>event_status</th><th>trace_id</th><th>span_id</th><th>负责人</th><th>操作入口</th></tr></thead>
                 <tbody>
-                  <tr><td class="mono">EVT-2026-00018</td><td>工具能力边界越界</td><td><span class="tag tag-danger">高</span></td><td>代码审查工作流</td><td>external_http_post</td><td><span class="tag tag-warning">In Progress</span></td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-00018','风险事件详情',null)">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
-                  <tr><td class="mono">EVT-2026-00009</td><td>Prompt 风险</td><td><span class="tag tag-primary">低</span></td><td>订单查询节点</td><td>crm_search</td><td><span class="tag tag-info">False Positive</span></td><td><button class="btn btn-link">详情</button><button class="btn btn-link" onclick="goObserve()">溯源</button></td></tr>
+                  <tr><td class="mono">EVT-2026-00018</td><td><span class="tag tag-danger">高</span></td><td>工具能力边界越界</td><td><span class="tag tag-warning">处理中</span></td><td class="mono">TRC-20260416-018</td><td class="mono">sp_04_tool</td><td>李航</td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-00018','风险事件详情',null)">详情</button><button class="btn btn-link" onclick="navigateTo('pages/monitor/trace-list.html?trace_id=TRC-20260416-018&span_id=sp_04_tool','风险溯源工作台',null)">溯源</button></td></tr>
+                  <tr><td class="mono">EVT-2026-00009</td><td><span class="tag tag-primary">低</span></td><td>Prompt 风险</td><td><span class="tag tag-info">误报</span></td><td class="mono">TRC-20260416-009</td><td class="mono">sp_02_llm</td><td>周敏</td><td><button class="btn btn-link" onclick="navigateTo('pages/events/event-detail.html?id=EVT-2026-00009','风险事件详情',null)">详情</button><button class="btn btn-link" onclick="navigateTo('pages/monitor/trace-list.html?trace_id=TRC-20260416-009&span_id=sp_02_llm','风险溯源工作台',null)">溯源</button></td></tr>
                 </tbody>
               </table>
             </div>

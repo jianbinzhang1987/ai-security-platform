@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>平台路由与部署</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .deploy-panel {
+      display: flex; gap: 20px;
+    }
+    .dp-col { flex: 1; border: 1px solid #EBEEF5; border-radius: 4px; background: #fff; }
+    .dp-header { background: #fcfcfc; border-bottom: 1px solid #EBEEF5; padding: 12px 16px; font-weight: bold; color: #303133; }
+    .dp-body { padding: 16px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">终极掌控：系统骨骼与血液走向布阵台</div>
+        <div class="page-subtitle">修改这里的枢纽可能导致全线架构神经元错乱，请勿无证驾驶！</div>
+      </div>
+      <div>
+        <button class="btn btn-danger" onclick="applyDeploy()">执行硬重启覆盖机房结构</button>
+      </div>
+    </div>
+
+    <div class="deploy-panel">
+      <!-- 队列与路由 -->
+      <div class="dp-col">
+        <div class="dp-header">血液导管：消息引路枢纽阵</div>
+        <div class="dp-body">
+          <form>
+            <div class="form-row">
+              <div class="form-label">总控高速引路管道路由地址</div>
+              <div class="form-field"><input type="text" class="form-control" value="kafka://msg-broker-cluster:9092" style="width:100%;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">残缺垃圾丢弃池地址 (死信库)</div>
+              <div class="form-field"><input type="text" class="form-control" value="kafka://msg-broker-dead:9092" style="width:100%;"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">极度绝密国宝级告警外发转接口</div>
+              <div class="form-field"><input type="text" class="form-control" value="https://national.sec.portal/receive" style="width:100%;"></div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 组件副本容量配置 -->
+      <div class="dp-col">
+        <div class="dp-header">肉体操纵：各大器官体型拉伸参数</div>
+        <div class="dp-body">
+          <form>
+            <div class="form-row">
+              <div class="form-label">门童：采集网关克隆数量</div>
+              <div class="form-field">
+                <input type="number" class="form-control" value="3" style="width:80px;"> 把分身
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">老黄牛：结构库数据兵工厂</div>
+              <div class="form-field">
+                <input type="number" class="form-control" value="5" style="width:80px;"> 个结伴
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-label">猎犬：安全审查判定撕咬网格</div>
+              <div class="form-field">
+                <input type="number" class="form-control" value="10" style="width:80px;"> 匹猎狗
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="deploy-panel" style="margin-top: 20px;">
+      <div class="dp-col">
+        <div class="dp-header">终极保险箱锁匙门禁</div>
+        <div class="dp-body">
+          <div class="form-row">
+            <div class="form-label">大楼多租户防盗隔板门开关</div>
+            <div class="form-field">
+              <label><input type="radio" name="tenant_on" checked> 开启了！不小心关掉不同租客将大混血！</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">全局可观测上帝视角天眼</div>
+            <div class="form-field">
+              <label><input type="radio" name="obs_on" checked> 一切皆落幕在我眼中 (开启监控指标提取)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    function applyDeploy() {
+      confirmDelete('将重塑机房内所有虚拟建筑。这极度危险！将带来全网三秒钟震动抽搐！您准备好了吗？', function() {
+        toastSuccess('开天辟地指令已传递给Kubernetes神明，机房架构正在轰鸣地蜕变！');
+      });
+    }
+  </script>
+</body>
+</html>

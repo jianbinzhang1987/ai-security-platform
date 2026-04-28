@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>用户与权限</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">用户与权限</div>
+        <div class="page-subtitle">管理控制台用户、角色、MFA 状态和账号可用状态。</div>
+      </div>
+      <button class="btn btn-primary" onclick="openInviteModal()">邀请用户</button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">用户</span>
+        <input type="text" class="form-control" placeholder="姓名或邮箱">
+      </div>
+      <div class="search-item">
+        <span class="form-label">角色</span>
+        <select class="form-select">
+          <option value="">全部角色</option>
+          <option value="超管">平台管理员</option>
+          <option value="租户管">租户管理员</option>
+          <option value="安全管">安全管理员</option>
+          <option value="工程师">安全运营工程师</option>
+          <option value="只读">只读查看员</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>用户姓名</th>
+              <th>邮箱</th>
+              <th>角色</th>
+              <th>MFA 状态</th>
+              <th>最近登录</th>
+              <th>账号状态</th>
+              <th style="width:150px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>王丹</td>
+              <td>dana.wang@company.example</td>
+              <td><span class="tag tag-danger" data-role-tag>平台管理员</span></td>
+              <td><span class="tag tag-success" data-mfa-tag>已启用</span></td>
+              <td>2026-04-14 01:22:33</td>
+              <td><span class="tag tag-success" data-status-tag>启用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openRoleModal(this, '王丹', '平台管理员', '已启用', '启用')">编辑角色</button><button class="btn btn-link danger" onclick="disableUser('王丹')">禁用</button></div></td>
+            </tr>
+            <tr>
+              <td>张三丰</td>
+              <td>sf.zhang@company.example</td>
+              <td><span class="tag tag-info" data-role-tag>安全运营工程师</span></td>
+              <td><span class="tag tag-warning" data-mfa-tag>未启用</span></td>
+              <td>2026-04-13 18:45:00</td>
+              <td><span class="tag tag-success" data-status-tag>启用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openRoleModal(this, '张三丰', '安全运营工程师', '未启用', '启用')">编辑角色</button><button class="btn btn-link danger" onclick="disableUser('张三丰')">禁用</button></div></td>
+            </tr>
+            <tr>
+              <td>审计查看员</td>
+              <td>audit001@outer.example</td>
+              <td><span class="tag tag-info" data-role-tag>只读查看员</span></td>
+              <td><span class="tag tag-warning" data-mfa-tag>未启用</span></td>
+              <td>2026-01-10 10:00:00</td>
+              <td><span class="tag tag-danger" data-status-tag>已禁用</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" style="color:#67c23a;" onclick="toastSuccess('用户已恢复')">恢复</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="inviteModal">
+    <div class="modal-box">
+      <div class="modal-header"><div class="modal-title">邀请用户</div><div class="modal-close" onclick="closeModal('inviteModal')">×</div></div>
+      <div class="modal-body">
+        <form id="inviteForm">
+          <div class="form-row"><div class="form-label required">邮箱</div><div class="form-field"><input type="email" class="form-control" required placeholder="请输入企业邮箱"></div></div>
+          <div class="form-row">
+            <div class="form-label required">角色</div>
+            <div class="form-field">
+              <select class="form-select" required>
+                <option value="">请选择角色</option>
+                <option value="安全管">安全管理员（具备高影响处置权限）</option>
+                <option value="工程师">安全运营工程师</option>
+                <option value="只读">只读查看员</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('inviteModal')">取消</button><button class="btn btn-primary" onclick="submitInvite()">发送邀请</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="roleModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">编辑角色</div><div class="modal-close" onclick="closeModal('roleModal')">×</div></div>
+      <div class="modal-body">
+        <form id="roleForm">
+          <div class="form-row">
+            <div class="form-label">用户</div>
+            <div class="form-field"><input type="text" class="form-control" id="roleUserName" readonly></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">角色</div>
+            <div class="form-field">
+              <select class="form-select" id="roleSelect" required>
+                <option value="">请选择角色</option>
+                <option value="平台管理员">平台管理员</option>
+                <option value="租户管理员">租户管理员</option>
+                <option value="安全管理员">安全管理员</option>
+                <option value="安全运营工程师">安全运营工程师</option>
+                <option value="只读查看员">只读查看员</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">MFA 状态</div>
+            <div class="form-field">
+              <select class="form-select" id="mfaSelect" required>
+                <option value="已启用">已启用</option>
+                <option value="未启用">未启用</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">账号状态</div>
+            <div class="form-field">
+              <select class="form-select" id="statusSelect" required>
+                <option value="启用">启用</option>
+                <option value="已禁用">已禁用</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('roleModal')">取消</button><button class="btn btn-primary" onclick="submitRoleEdit()">保存</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    var currentEditRow = null;
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof renderPagination === 'function') renderPagination('pagination', 34, 1, 10, function(p){});
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '系统管理' }, { label: '用户与权限' }]);
+      }
+    });
+    function searchData() { toastSuccess('用户列表已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function openInviteModal() { document.getElementById('inviteForm').reset(); openModal('inviteModal'); }
+    function submitInvite() { if (validateForm('inviteForm')) { toastSuccess('邀请已发送'); closeModal('inviteModal'); } }
+    function disableUser(name) { showConfirm('确认禁用用户 [' + name + ']？该用户的控制台会话将被强制下线。', function(){ toastSuccess('用户已禁用，操作已写入审计日志'); }, '禁用确认', 'danger'); }
+    function openRoleModal(trigger, userName, role, mfaStatus, accountStatus) {
+      currentEditRow = trigger.closest('tr');
+      document.getElementById('roleUserName').value = userName;
+      document.getElementById('roleSelect').value = role;
+      document.getElementById('mfaSelect').value = mfaStatus;
+      document.getElementById('statusSelect').value = accountStatus;
+      openModal('roleModal');
+    }
+    function getTagClass(field, value) {
+      if (field === 'role') {
+        return value === '平台管理员' ? 'tag tag-danger' : 'tag tag-info';
+      }
+      if (field === 'mfa') {
+        return value === '已启用' ? 'tag tag-success' : 'tag tag-warning';
+      }
+      return value === '启用' ? 'tag tag-success' : 'tag tag-danger';
+    }
+    function submitRoleEdit() {
+      if (!validateForm('roleForm') || !currentEditRow) return;
+
+      var role = document.getElementById('roleSelect').value;
+      var mfaStatus = document.getElementById('mfaSelect').value;
+      var accountStatus = document.getElementById('statusSelect').value;
+      var userName = document.getElementById('roleUserName').value;
+
+      var roleTag = currentEditRow.querySelector('[data-role-tag]');
+      var mfaTag = currentEditRow.querySelector('[data-mfa-tag]');
+      var statusTag = currentEditRow.querySelector('[data-status-tag]');
+
+      roleTag.textContent = role;
+      roleTag.className = getTagClass('role', role);
+      mfaTag.textContent = mfaStatus;
+      mfaTag.className = getTagClass('mfa', mfaStatus);
+      statusTag.textContent = accountStatus;
+      statusTag.className = getTagClass('status', accountStatus);
+
+      closeModal('roleModal');
+      toastSuccess('用户 [' + userName + '] 的角色信息已更新');
+    }
+  </script>
+</body>
+</html>

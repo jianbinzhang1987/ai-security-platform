@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>访问控制策略</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .type-tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f4f4f5; color:#606266; }
+    .table-toolbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:12px; }
+    .bulk-actions { display:flex; gap:8px; align-items:center; color:#606266; font-size:12px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
+    .field-panel { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#FAFAFA; margin-top:10px; }
+    .field-panel-title { font-weight:600; margin-bottom:10px; color:#303133; }
+    .mini-table { width:100%; border-collapse:collapse; background:#fff; }
+    .mini-table th,.mini-table td { border:1px solid #EBEEF5; padding:8px; font-size:12px; text-align:left; }
+    .stat-toolbar { display:flex; justify-content:space-between; align-items:center; margin:-4px 0 12px; gap:12px; }
+    .range-switch { display:flex; gap:8px; align-items:center; }
+    .range-chip { border:1px solid #DCDFE6; background:#fff; color:#606266; border-radius:999px; padding:4px 10px; font-size:12px; cursor:pointer; }
+    .range-chip.active { color:#409EFF; border-color:#B3D8FF; background:#ECF5FF; }
+    .stat-lite.clickable { cursor:pointer; transition:all .2s ease; }
+    .stat-lite.clickable:hover { border-color:#C6E2FF; box-shadow:0 6px 16px rgba(64,158,255,.08); transform:translateY(-1px); }
+    .sort-link { cursor:pointer; color:#909399; font-weight:600; }
+    .sort-link:hover { color:#409EFF; }
+    .status-cell { display:flex; align-items:center; gap:8px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">访问控制策略</div>
+        <div class="page-subtitle">统一配置网关入口认证、资源授权和访问黑白名单，决定谁可以通过网关访问哪些 AI 资源。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="openRecordDrawer('访问拒绝记录')">拒绝记录</button>
+        <button class="btn btn-primary" type="button" onclick="openPolicyModal()">新建访问策略</button>
+      </div>
+    </div>
+
+    <div class="stat-toolbar">
+      <div class="range-switch">
+        <span class="form-label">统计周期</span>
+        <button class="range-chip active" type="button" onclick="setTimeRange(this, '近 7 日')">近 7 日</button>
+        <button class="range-chip" type="button" onclick="setTimeRange(this, '近 30 日')">近 30 日</button>
+        <button class="range-chip" type="button" onclick="setTimeRange(this, '本月')">本月</button>
+      </div>
+      <button class="btn btn-default btn-sm" type="button" onclick="openRecordDrawer('访问控制统计下钻')">查看统计明细</button>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-lite clickable" onclick="openRecordDrawer('认证策略统计')"><div class="k">认证策略</div><div class="v">6</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('授权资源统计')"><div class="k">授权资源</div><div class="v" style="color:#409EFF;">42</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('拒绝访问统计')"><div class="k">近 7 日拒绝访问</div><div class="v" style="color:#F56C6C;">1,286</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('名单命中统计')"><div class="k">名单命中次数</div><div class="v" style="color:#E6A23C;">312</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略名称</span><input class="form-control" placeholder="策略名称 / policy_id"></div>
+      <div class="search-item"><span class="form-label">策略类型</span><select class="form-select"><option>全部</option><option>身份认证</option><option>资源授权</option><option>黑白名单</option></select></div>
+      <div class="search-item"><span class="form-label">作用对象</span><input class="form-control" placeholder="应用 / 路由 / 服务"></div>
+      <div class="search-item"><span class="form-label">状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>待下发</option><option>已停用</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('访问控制策略列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="tab-nav" id="accessTabs">
+          <div class="tab-item active" data-tab="auth">身份认证</div>
+          <div class="tab-item" data-tab="permission">资源授权</div>
+          <div class="tab-item" data-tab="list">黑白名单</div>
+        </div>
+        <div class="table-toolbar">
+          <div class="bulk-actions">
+            <label><input type="checkbox" onclick="toggleChecks(this)"> 全选</label>
+            <button class="btn btn-default btn-sm" type="button" onclick="toastSuccess('已批量启用选中策略')">批量启用</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量停用选中访问策略', '已批量停用')">批量停用</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量下发选中访问策略', '已提交批量下发任务')">批量下发</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="confirmDelete('选中的访问策略', function(){ toastSuccess('已删除选中策略'); })">批量删除</button>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-default btn-sm" id="accessEmptyBtn" type="button" onclick="toggleEmptyPreview()">空状态预览</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="openVersionDrawer('访问控制策略版本')">版本历史</button>
+          </div>
+        </div>
+        <div id="accessPanes">
+          <div class="tab-pane show" data-tab="auth">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('认证策略')">认证策略</span></th><th>认证方式</th><th>作用范围</th><th>校验规则</th><th>失败动作</th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox"></td><td><strong>全局 APIKey 认证</strong><div class="meta-sub">gw-ac-auth-001 · v3 · 已发布 · 优先级 10</div></td><td>APIKey</td><td>全部 AI 路由</td><td>Header: X-API-Key，启用有效期/签名校验</td><td>拒绝访问 + 审计</td><td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '全局 APIKey 认证')"><span class="toggle-track"></span></label><span class="tag tag-success">已启用</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('auth')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('全局 APIKey 认证')">版本</button><button class="btn btn-link" onclick="confirmAction('下发全局 APIKey 认证到全部网关节点', '下发任务已提交')">下发</button><button class="btn btn-link danger" onclick="confirmDelete('全局 APIKey 认证', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>企业 JWT 认证</strong><div class="meta-sub">gw-ac-auth-002 · v1 · 草稿 · 优先级 20</div></td><td>JWT Token</td><td>内部办公应用</td><td>RS256 签名，校验 iss/aud/exp</td><td>拒绝访问 + 告警</td><td><div class="status-cell"><label class="toggle"><input type="checkbox" onchange="toggleStatus(this, '企业 JWT 认证')"><span class="toggle-track"></span></label><span class="tag tag-warning">待下发</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('auth')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('企业 JWT 认证')">版本</button><button class="btn btn-link" onclick="confirmAction('下发企业 JWT 认证', '下发任务已提交')">下发</button><button class="btn btn-link danger" onclick="confirmDelete('企业 JWT 认证', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="permission">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('授权策略')">授权策略</span></th><th>授权主体</th><th>资源范围</th><th>权限动作</th><th>拒绝动作</th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox"></td><td><strong>客服应用资源授权</strong><div class="meta-sub">gw-ac-perm-001 · v5 · 已发布</div></td><td>app: customer-service</td><td><div class="type-tags"><span class="type-tag">客服模型</span><span class="type-tag">FAQ 知识库</span><span class="type-tag">工单工具</span></div></td><td>调用 / 检索 / 工具执行</td><td>拒绝访问 + 审计</td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="openPolicyModal('permission')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('客服应用资源授权')">版本</button><button class="btn btn-link danger" onclick="confirmDelete('客服应用资源授权', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>财务高敏资源授权</strong><div class="meta-sub">gw-ac-perm-002 · v2 · 草稿</div></td><td>role: finance-auditor</td><td><div class="type-tags"><span class="type-tag">财务模型路由</span><span class="type-tag">发票识别服务</span></div></td><td>调用 / 审计查询</td><td>拒绝访问 + 高危告警</td><td><span class="tag tag-warning">待下发</span></td><td><button class="btn btn-link" onclick="openPolicyModal('permission')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('财务高敏资源授权')">版本</button><button class="btn btn-link" onclick="confirmAction('下发财务高敏资源授权', '下发任务已提交')">下发</button><button class="btn btn-link danger" onclick="confirmDelete('财务高敏资源授权', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane" data-tab="list">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('名单策略')">名单策略</span></th><th>名单模式</th><th>匹配维度</th><th>名单内容</th><th>命中动作</th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr><td><input type="checkbox"></td><td><strong>外网访问黑名单</strong><div class="meta-sub">gw-ac-list-001 · v2 · 已发布</div></td><td>黑名单</td><td>IP / CIDR</td><td>203.0.113.0/24，198.51.100.12</td><td>强制拒绝</td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="openPolicyModal('list')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('外网访问黑名单')">版本</button><button class="btn btn-link danger" onclick="confirmDelete('外网访问黑名单', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>核心模型白名单</strong><div class="meta-sub">gw-ac-list-002 · v4 · 已发布</div></td><td>白名单</td><td>应用 / 来源系统</td><td>risk-control-app，internal-ops</td><td>非名单拒绝</td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="openPolicyModal('list')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('核心模型白名单')">版本</button><button class="btn btn-link warning" onclick="confirmAction('停用核心模型白名单', '策略已停用')">停用</button><button class="btn btn-link danger" onclick="confirmDelete('核心模型白名单', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" id="accessEmpty" style="display:none;">
+          <span class="empty-icon">◌</span>
+          <div class="empty-text">当前筛选条件下暂无访问控制策略，可新建访问策略或重置筛选条件。</div>
+          <div style="margin-top:12px;">
+            <button class="btn btn-primary btn-sm" type="button" onclick="openPolicyModal()">新建访问策略</button>
+            <button class="btn btn-default btn-sm" type="button" onclick="toggleEmptyPreview(false)">恢复列表示例</button>
+          </div>
+        </div>
+      </div>
+      <div class="pagination-wrapper" id="accessPagination">
+        <div class="pagination-info">共 6 条，每页 10 条</div>
+        <div class="pagination"><button class="page-btn disabled">上一页</button><button class="page-btn active">1</button><button class="page-btn disabled">下一页</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="policyModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header"><div class="modal-title">新建 / 编辑访问控制策略</div><div class="modal-close" onclick="closeModal('policyModal')">×</div></div>
+      <div class="modal-body">
+        <form id="policyForm">
+          <div class="form-grid">
+            <div class="form-row"><div class="form-label required">策略名称</div><div class="form-field"><input class="form-control" value="全局 APIKey 认证" required></div></div>
+            <div class="form-row"><div class="form-label">策略 ID</div><div class="form-field"><input class="form-control" value="gw-ac-auth-001" readonly></div></div>
+            <div class="form-row"><div class="form-label required">策略类型</div><div class="form-field"><select class="form-select" id="policyType" onchange="renderPolicyFields()"><option value="auth">身份认证</option><option value="permission">资源授权</option><option value="list">黑白名单</option></select></div></div>
+            <div class="form-row"><div class="form-label">策略状态</div><div class="form-field"><select class="form-select"><option>保存为草稿</option><option>保存并提交发布</option><option>停用</option></select></div></div>
+            <div class="form-row"><div class="form-label">作用对象</div><div class="form-field"><select class="form-select"><option>全部 AI 路由</option><option>客服应用路由</option><option>财务模型路由</option><option>内部办公应用</option></select></div></div>
+            <div class="form-row"><div class="form-label">优先级</div><div class="form-field"><input class="form-control" type="number" value="10"></div></div>
+          </div>
+          <div id="dynamicFields" class="field-panel"></div>
+          <div class="form-row"><div class="form-label">处置动作</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 拒绝访问</label><label class="checkbox-item"><input type="checkbox" checked> 写入审计</label><label class="checkbox-item"><input type="checkbox"> 触发告警</label></div></div></div>
+          <div class="form-row"><div class="form-label">策略说明</div><div class="form-field"><textarea class="form-textarea">用于网关入口身份验证、资源授权或来源名单控制，验证失败时拒绝访问。</textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('policyModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitPolicy()">保存</button></div>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="detailOverlay" onclick="closeDrawer('detailOverlay','detailDrawer')"></div>
+  <div class="drawer-panel" id="detailDrawer">
+    <div class="drawer-header"><div class="drawer-title" id="detailTitle">详情</div><div class="drawer-close" onclick="closeDrawer('detailOverlay','detailDrawer')">×</div></div>
+    <div class="drawer-body" id="detailBody"></div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '访问控制策略' }]);
+      initTabs('accessTabs', 'accessPanes', 'auth');
+    });
+    function openPolicyModal(type) {
+      document.getElementById('policyType').value = type || 'auth';
+      renderPolicyFields();
+      openModal('policyModal');
+    }
+    function renderPolicyFields() {
+      var type = document.getElementById('policyType').value;
+      var html = '';
+      if (type === 'auth') {
+        html = '<div class="field-panel-title">身份认证配置</div><div class="form-grid">' +
+          '<div class="form-row"><div class="form-label required">认证方式</div><div class="form-field"><select class="form-select" id="authMode" onchange="renderPolicyFields()"><option value="jwt">JWT Token</option><option value="apikey">APIKey</option><option value="oidc">OIDC</option></select></div></div>' +
+          '</div>';
+        var authMode = document.getElementById('authMode') ? document.getElementById('authMode').value : 'jwt';
+        if (authMode === 'apikey') {
+          html += '<div class="form-grid"><div class="form-row"><div class="form-label">凭证位置</div><div class="form-field"><select class="form-select"><option>Header: X-API-Key</option><option>Authorization Bearer</option><option>Cookie</option></select></div></div><div class="form-row"><div class="form-label">密钥校验</div><div class="form-field"><label class="checkbox-item"><input type="checkbox" checked> 校验有效期</label></div></div></div>';
+        } else if (authMode === 'oidc') {
+          html += '<div class="form-grid"><div class="form-row"><div class="form-label">签发方（Issuer）</div><div class="form-field"><input class="form-control" value="https://idp.example.com"></div></div><div class="form-row"><div class="form-label">受众（Audience）</div><div class="form-field"><input class="form-control" value="ai-gateway"></div></div><div class="form-row"><div class="form-label">授权端点</div><div class="form-field"><input class="form-control" value="https://idp.example.com/oauth2/authorize"></div></div><div class="form-row"><div class="form-label">Token 端点</div><div class="form-field"><input class="form-control" value="https://idp.example.com/oauth2/token"></div></div><div class="form-row"><div class="form-label">JWKS 地址</div><div class="form-field"><input class="form-control" value="https://idp.example.com/.well-known/jwks.json"></div></div><div class="form-row"><div class="form-label">有效期校验</div><div class="form-field"><label class="checkbox-item"><input type="checkbox" checked> 校验 exp / nbf</label></div></div></div>';
+        } else {
+          html += '<div class="form-grid"><div class="form-row"><div class="form-label">签发方（Issuer）</div><div class="form-field"><input class="form-control" value="https://idp.example.com"></div></div><div class="form-row"><div class="form-label">受众（Audience）</div><div class="form-field"><input class="form-control" value="ai-gateway"></div></div><div class="form-row"><div class="form-label">JWKS 地址</div><div class="form-field"><input class="form-control" value="https://idp.example.com/.well-known/jwks.json"></div></div><div class="form-row"><div class="form-label">有效期校验</div><div class="form-field"><label class="checkbox-item"><input type="checkbox" checked> 校验 exp / nbf</label></div></div></div>';
+        }
+      } else if (type === 'permission') {
+        html = '<div class="field-panel-title">资源授权矩阵</div><table class="mini-table"><thead><tr><th>授权主体</th><th>资源范围</th><th>允许动作</th><th>拒绝动作</th></tr></thead><tbody><tr><td>app: customer-service</td><td>客服模型、FAQ 知识库</td><td>调用、检索、工具执行</td><td>拒绝访问 + 审计</td></tr><tr><td>role: finance-auditor</td><td>财务模型路由</td><td>调用、审计查询</td><td>高危告警</td></tr></tbody></table>';
+      } else {
+        html = '<div class="field-panel-title">名单内容</div><div class="form-grid">' +
+          '<div class="form-row"><div class="form-label required">名单模式</div><div class="form-field"><select class="form-select"><option>黑名单</option><option>白名单</option></select></div></div>' +
+          '<div class="form-row"><div class="form-label required">匹配维度</div><div class="form-field"><select class="form-select"><option>IP / CIDR</option><option>应用 ID</option><option>来源系统</option><option>用户 / 角色</option></select></div></div></div>' +
+          '<div class="form-row"><div class="form-label required">名单条目</div><div class="form-field"><textarea class="form-textarea">203.0.113.0/24\\n198.51.100.12\\nrisk-control-app</textarea><div class="form-hint">每行一条，支持 IP、CIDR、应用 ID 或来源系统。</div></div></div>';
+      }
+      document.getElementById('dynamicFields').innerHTML = html;
+    }
+    function toggleChecks(source) {
+      document.querySelectorAll('.data-table tbody input[type="checkbox"]').forEach(function (el) { el.checked = source.checked; });
+    }
+    function confirmAction(text, success) {
+      showConfirm('确认要' + text + '？该操作会生成发布记录。', function(){ toastSuccess(success); }, '操作确认', 'warning');
+    }
+    function setTimeRange(el, label) {
+      document.querySelectorAll('.range-chip').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      toastSuccess('已切换到' + label + '统计口径');
+    }
+    function sortToast(label) {
+      toastInfo('已按' + label + '切换排序');
+    }
+    function toggleStatus(el, name) {
+      var next = el.checked ? '启用' : '停用';
+      showConfirm('确认要' + next + name + '？', function(){ toastSuccess(name + '已' + next); }, '状态切换确认', 'warning');
+    }
+    function toggleEmptyPreview(forceEmpty) {
+      var panes = document.getElementById('accessPanes');
+      var empty = document.getElementById('accessEmpty');
+      var pagination = document.getElementById('accessPagination');
+      var btn = document.getElementById('accessEmptyBtn');
+      var showEmpty = typeof forceEmpty === 'boolean' ? forceEmpty : empty.style.display === 'none';
+      panes.style.display = showEmpty ? 'none' : '';
+      empty.style.display = showEmpty ? 'block' : 'none';
+      pagination.style.display = showEmpty ? 'none' : '';
+      btn.textContent = showEmpty ? '恢复列表示例' : '空状态预览';
+      toastInfo(showEmpty ? '已切换到访问控制空状态' : '已恢复访问控制列表示例');
+    }
+    function openRecordDrawer(title) {
+      document.getElementById('detailTitle').textContent = title;
+      document.getElementById('detailBody').innerHTML = '<table class="data-table"><thead><tr><th>时间</th><th>对象</th><th>命中策略</th><th>处置动作</th></tr></thead><tbody><tr><td>2026-04-22 14:12</td><td>customer-service</td><td>全局 APIKey 认证</td><td>拒绝访问 + 审计</td></tr><tr><td>2026-04-22 13:47</td><td>198.51.100.12</td><td>外网访问黑名单</td><td>强制拒绝</td></tr></tbody></table>';
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function openVersionDrawer(title) {
+      document.getElementById('detailTitle').textContent = title + ' - 版本历史';
+      document.getElementById('detailBody').innerHTML = `<table class="data-table"><thead><tr><th>版本</th><th>版本状态</th><th>操作人</th><th>时间</th><th>变更摘要</th><th>操作</th></tr></thead><tbody><tr><td>v3</td><td><span class="tag tag-success">已发布</span></td><td>安全管理员</td><td>2026-04-22 10:30</td><td>新增有效期校验</td><td><button class="btn btn-link" onclick="showVersionDiff()">查看差异</button></td></tr><tr><td>v2</td><td><span class="tag tag-info">已停用</span></td><td>周敏</td><td>2026-04-18 16:11</td><td>调整拒绝动作</td><td><button class="btn btn-link warning" onclick="rollbackVersion('v2')">回滚</button></td></tr><tr><td>v4</td><td><span class="tag tag-warning">草稿</span></td><td>安全管理员</td><td>2026-04-24 09:10</td><td>新增外部来源白名单</td><td><button class="btn btn-link" onclick="toastInfo('草稿版本不可直接下发')">查看草稿</button></td></tr></tbody></table>`;
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function showVersionDiff() {
+      document.getElementById('detailTitle').textContent = '访问控制版本差异：v2 -> v3';
+      document.getElementById('detailBody').innerHTML = '<div class="diff-block"><div class="diff-del">- 仅校验 X-API-Key 是否存在</div><div class="diff-add">+ 启用 APIKey 有效期校验</div><div class="diff-add">+ 失败动作增加写入审计</div></div>';
+    }
+    function rollbackVersion(version) {
+      showConfirm('确认回滚到 ' + version + '？系统会创建新的访问控制发布版本。', function(){ toastSuccess('已创建回滚发布任务'); }, '版本回滚确认', 'warning');
+    }
+    function submitPolicy() {
+      if (!validateForm('policyForm')) return;
+      closeModal('policyModal');
+      toastSuccess('访问控制策略已保存');
+    }
+  </script>
+</body>
+</html>

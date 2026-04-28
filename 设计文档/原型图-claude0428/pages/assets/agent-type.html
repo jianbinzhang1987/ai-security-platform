@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>智能体类型字典</title>
+    <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <!-- 搜索区域 -->
+    <div class="search-bar">
+        <div class="search-item">
+            <span class="form-label">类型编码：</span>
+            <input type="text" class="form-control" placeholder="请输入类型编码" id="searchCode">
+        </div>
+        <div class="search-item">
+            <span class="form-label">类型名称：</span>
+            <input type="text" class="form-control" placeholder="请输入类型名称" id="searchName">
+        </div>
+        <div class="search-item">
+            <span class="form-label">状态：</span>
+            <select class="form-select" id="searchStatus">
+                <option value="">全部</option>
+                <option value="1">正常</option>
+                <option value="0">停用</option>
+            </select>
+        </div>
+        <div class="search-btns">
+            <button class="btn btn-primary" onclick="searchData()">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M11.5 11.5L15 15M6.5 12C3.46243 12 1 9.53757 1 6.5C1 3.46243 3.46243 1 6.5 1C9.53757 1 12 3.46243 12 6.5C12 9.53757 9.53757 12 6.5 12Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                搜索
+            </button>
+            <button class="btn btn-default" onclick="resetSearch()">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8C14.5 11.5899 11.5899 14.5 8 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M11.5 14.5L8 14.5V11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                重置
+            </button>
+        </div>
+    </div>
+
+    <!-- 操作工具栏和表格区域 -->
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+            <button class="btn btn-primary" onclick="openModal('addModal')">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                新增
+            </button>
+            <button class="btn btn-success" onclick="editSelected()" id="btnEdit" disabled>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M1 11.5V15H4.5L13.5 6L10 2.5L1 11.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+                修改
+            </button>
+            <button class="btn btn-danger" onclick="deleteSelected()" id="btnDelete" disabled>
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M1 4H15M5 4V2C5 1.44772 5.44772 1 6 1H10C10.5523 1 11 1.44772 11 2V4M6 7V12M10 7V12M2 4L3 14C3 14.5523 3.44772 15 4 15H12C12.5523 15 13 14.5523 13 14L14 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                删除
+            </button>
+            <button class="btn btn-warning" onclick="exportData()">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="margin-right: 4px;">
+                    <path d="M8 1V11M8 11L4 7M8 11L12 7M1 15H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                导出
+            </button>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <div class="table-wrapper">
+        <table class="data-table" id="typeTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px"><input type="checkbox" id="checkAll" onchange="toggleAll(this)"></th>
+                    <th>字典编号</th>
+                    <th>类型编码</th>
+                    <th>类型名称</th>
+                    <th>显示顺序</th>
+                    <th>状态</th>
+                    <th>备注</th>
+                    <th>创建时间</th>
+                    <th style="width: 150px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+                    <td>1</td>
+                    <td>DLZS</td>
+                    <td>对话助手</td>
+                    <td>1</td>
+                    <td><span class="tag tag-success">正常</span></td>
+                    <td>通用问答与对话支持</td>
+                    <td>2023-10-01 10:00:00</td>
+                    <td>
+                        <div class="table-action-col">
+                            <button class="btn btn-link" onclick="openModal('editModal')">修改</button>
+                            <button class="btn btn-link danger" onclick="deleteItem()">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+                    <td>2</td>
+                    <td>WBSQ</td>
+                    <td>文本生成</td>
+                    <td>2</td>
+                    <td><span class="tag tag-success">正常</span></td>
+                    <td>文章、代码等长文本生成</td>
+                    <td>2023-10-01 10:05:00</td>
+                    <td>
+                        <div class="table-action-col">
+                            <button class="btn btn-link" onclick="openModal('editModal')">修改</button>
+                            <button class="btn btn-link danger" onclick="deleteItem()">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+                    <td>3</td>
+                    <td>KFYQ</td>
+                    <td>客服引擎</td>
+                    <td>3</td>
+                    <td><span class="tag tag-danger">停用</span></td>
+                    <td>智能客服知识库对接</td>
+                    <td>2023-10-02 11:30:00</td>
+                    <td>
+                        <div class="table-action-col">
+                            <button class="btn btn-link" onclick="openModal('editModal')">修改</button>
+                            <button class="btn btn-link danger" onclick="deleteItem()">删除</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+                    <td>4</td>
+                    <td>SJFX</td>
+                    <td>数据分析</td>
+                    <td>4</td>
+                    <td><span class="tag tag-success">正常</span></td>
+                    <td>图表生成与数据解读</td>
+                    <td>2023-10-03 09:15:00</td>
+                    <td>
+                        <div class="table-action-col">
+                            <button class="btn btn-link" onclick="openModal('editModal')">修改</button>
+                            <button class="btn btn-link danger" onclick="deleteItem()">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+      </div>
+
+      <!-- 分页 -->
+      <div id="pagination"></div>
+    </div>
+
+    <!-- 新增弹窗 -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-box modal-md">
+            <div class="modal-header">
+                <div class="modal-title">添加智能体类型</div>
+                <div class="modal-close" onclick="closeModal('addModal')">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form class="form">
+                    <div class="form-group">
+                        <label class="form-label required">类型编码</label>
+                        <div class="form-content">
+                            <input type="text" class="form-control" placeholder="请输入类型编码">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">类型名称</label>
+                        <div class="form-content">
+                            <input type="text" class="form-control" placeholder="请输入类型名称">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">显示顺序</label>
+                        <div class="form-content">
+                            <input type="number" class="form-control" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">状态</label>
+                        <div class="form-content" style="display: flex; align-items: center; gap: 15px; height: 32px;">
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="status" checked>
+                                <span>正常</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="status">
+                                <span>停用</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <div class="form-content">
+                            <textarea class="form-control" rows="3" placeholder="请输入内容"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="submitModal('addModal')">确定</button>
+                <button class="btn btn-default" onclick="closeModal('addModal')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改弹窗 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box modal-md">
+            <div class="modal-header">
+                <div class="modal-title">修改智能体类型</div>
+                <div class="modal-close" onclick="closeModal('editModal')">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form class="form">
+                    <div class="form-group">
+                        <label class="form-label required">类型编码</label>
+                        <div class="form-content">
+                            <input type="text" class="form-control" value="DLZS">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">类型名称</label>
+                        <div class="form-content">
+                            <input type="text" class="form-control" value="对话助手">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">显示顺序</label>
+                        <div class="form-content">
+                            <input type="number" class="form-control" value="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">状态</label>
+                        <div class="form-content" style="display: flex; align-items: center; gap: 15px; height: 32px;">
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="editStatus" checked>
+                                <span>正常</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <input type="radio" name="editStatus">
+                                <span>停用</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">备注</label>
+                        <div class="form-content">
+                            <textarea class="form-control" rows="3">通用问答与对话支持</textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="submitModal('editModal')">确定</button>
+                <button class="btn btn-default" onclick="closeModal('editModal')">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/common.js"></script>
+  <script>
+    // 初始化分页
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof renderPagination === "function") {
+            renderPagination("pagination", 4, 1, 10, function(p){ console.log("翻页至", p); });
+        }
+    });
+  </script>
+    <script>
+        // 复选框全选/取消全选
+        function toggleAll(source) {
+            const checkboxes = document.querySelectorAll('.row-checkbox');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            checkBtnState();
+        }
+
+        // 检查按钮状态（根据选中行数启用/禁用修改和删除按钮）
+        function checkBtnState() {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            const btnEdit = document.getElementById('btnEdit');
+            const btnDelete = document.getElementById('btnDelete');
+
+            if (checkboxes.length === 1) {
+                btnEdit.disabled = false;
+                btnDelete.disabled = false;
+            } else if (checkboxes.length > 1) {
+                btnEdit.disabled = true;
+                btnDelete.disabled = false;
+            } else {
+                btnEdit.disabled = true;
+                btnDelete.disabled = true;
+            }
+        }
+
+        // 打开弹窗
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        // 关闭弹窗
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+
+        // 提交弹窗表单
+        function submitModal(id) {
+            toastSuccess('保存成功');
+            closeModal(id);
+        }
+
+        // 搜索功能
+        function searchData() {
+            toastSuccess('搜索完成');
+        }
+
+        // 重置搜索表单
+        function resetSearch() {
+            document.getElementById('searchCode').value = '';
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchStatus').value = '';
+        }
+
+        // 点击工具栏的修改按钮
+        function editSelected() {
+            openModal('editModal');
+        }
+
+        // 点击工具栏的批量删除按钮
+        function deleteSelected() {
+            showConfirm('确认删除选中的数据项吗？', function() {
+                toastSuccess('删除成功');
+            });
+        }
+
+        // 点击列表行内的删除按钮
+        function deleteItem() {
+            showConfirm('确认删除该数据项吗？', function() {
+                toastSuccess('删除成功');
+            });
+        }
+
+        // 导出功能
+        function exportData() {
+            showConfirm('确认导出所有数据项吗？', function() {
+                toastSuccess('导出任务已提交');
+            });
+        }
+    </script>
+  </div>
+</body>
+</html>

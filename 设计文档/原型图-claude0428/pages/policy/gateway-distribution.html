@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>绑定与下发</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .sync-status { display:flex; align-items:center; gap:8px; }
+    .sync-progress { width:84px; height:6px; background:#EBEEF5; border-radius:4px; overflow:hidden; }
+    .sync-bar { height:100%; }
+    .sync-bar.success { background:#67c23a; }
+    .sync-bar.warning { background:#e6a23c; }
+    .sync-bar.danger { background:#f56c6c; }
+    .table-toolbar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px 0; gap:12px; }
+    .bulk-actions { display:flex; gap:8px; align-items:center; color:#606266; font-size:12px; }
+    .form-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
+    .field-panel { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#FAFAFA; margin-top:10px; }
+    .field-panel-title { font-weight:600; margin-bottom:10px; color:#303133; }
+    .sort-link { color:#606266; cursor:pointer; user-select:none; }
+    .sort-link:hover { color:#409EFF; }
+    .status-cell { display:flex; align-items:center; gap:8px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">绑定与下发</div>
+        <div class="page-subtitle">按网关策略查看当前绑定对象、引用版本和下发状态，支持访问控制、流量治理、内容安全策略的统一下发管理。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="openDetailDrawer('下发回执详情')">刷新下发回执</button>
+        <button class="btn btn-default" type="button" onclick="openHistoryDrawer()">查看下发历史</button>
+        <button class="btn btn-primary" type="button" onclick="openBindModal()">新建绑定</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略类型</span><select class="form-select"><option>全部</option><option>访问控制策略</option><option>流量与服务治理</option><option>内容安全策略</option></select></div>
+      <div class="search-item"><span class="form-label">绑定范围</span><select class="form-select"><option>全部</option><option>全局默认</option><option>路由覆盖</option></select></div>
+      <div class="search-item"><span class="form-label">下发状态</span><select class="form-select"><option>全部</option><option>已同步</option><option>下发中</option><option>下发异常</option></select></div>
+      <div class="search-item"><span class="form-label">当前版本</span><input class="form-control" placeholder="版本号"></div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('绑定与下发列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="bulk-actions">
+          <label><input type="checkbox" onclick="toggleChecks(this)"> 全选</label>
+          <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量重新下发选中绑定', '已提交批量下发任务')">批量下发</button>
+          <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量停用选中绑定', '已批量停用')">批量停用</button>
+          <button class="btn btn-default btn-sm" type="button" onclick="confirmDelete('选中的绑定', function(){ toastSuccess('已删除选中绑定'); })">批量删除</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-default btn-sm" id="distributionEmptyBtn" type="button" onclick="toggleEmptyPreview()">空状态预览</button>
+          <button class="btn btn-default btn-sm" type="button" onclick="openDetailDrawer('发布原则')">发布原则</button>
+        </div>
+      </div>
+      <div class="table-wrapper" id="distributionTable">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th><input type="checkbox" onclick="toggleChecks(this)"></th>
+              <th><span class="sort-link" onclick="sortToast('绑定名称')">绑定名称 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('策略类型')">策略类型 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('绑定范围')">绑定范围 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('绑定对象')">绑定对象 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('当前版本')">当前版本 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('下发状态')">下发状态 ↕</span></th>
+              <th><span class="sort-link" onclick="sortToast('最近下发时间')">最近下发时间 ↕</span></th>
+              <th style="width:240px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><strong>全局访问控制基线</strong><div class="meta-sub">dist-gw-001 · 访问控制策略：全局 APIKey 认证</div></td>
+              <td>访问控制策略</td>
+              <td>全局默认</td>
+              <td>全部 AI 路由</td>
+              <td><span class="tag tag-success">v1.3</span></td>
+              <td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '全局访问控制基线')"><span class="toggle-track"></span></label><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></div></td>
+              <td>2026-04-21 16:35</td>
+              <td><button class="btn btn-link" type="button" onclick="openBindModal()">编辑</button><button class="btn btn-link" type="button" onclick="confirmAction('重新下发全局访问控制基线 v1.3', '下发任务已重新提交')">重新下发</button><button class="btn btn-link" type="button" onclick="openVersionDrawer('全局访问控制基线')">查看版本</button><button class="btn btn-link danger" onclick="confirmDelete('全局访问控制基线绑定', function(){ toastSuccess('绑定已删除'); })">删除</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><strong>核心模型流量治理</strong><div class="meta-sub">dist-gw-002 · 流量策略：全局应用调用限流</div></td>
+              <td>流量与服务治理</td>
+              <td>路由覆盖</td>
+              <td>llm-core-route</td>
+              <td><span class="tag tag-warning">v0.9</span></td>
+              <td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '核心模型流量治理')"><span class="toggle-track"></span></label><div class="sync-status"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></div></td>
+              <td>2026-04-21 14:26</td>
+              <td><button class="btn btn-link" type="button" onclick="openBindModal()">编辑</button><button class="btn btn-link" type="button" onclick="openDetailDrawer('核心模型流量治理回执')">查看回执</button><button class="btn btn-link warning" type="button" onclick="confirmAction('停用核心模型流量治理绑定', '绑定已停用')">停用</button><button class="btn btn-link danger" onclick="confirmDelete('核心模型流量治理绑定', function(){ toastSuccess('绑定已删除'); })">删除</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><strong>客服路由内容安全</strong><div class="meta-sub">dist-gw-003 · 内容策略：客服输入输出安全检查</div></td>
+              <td>内容安全策略</td>
+              <td>路由覆盖</td>
+              <td>ai-response-safety-guard-service</td>
+              <td><span class="tag tag-success">v1.0</span></td>
+              <td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '客服路由内容安全')"><span class="toggle-track"></span></label><div class="sync-status"><div class="sync-progress"><div class="sync-bar danger" style="width:45%;"></div></div><span>下发异常</span></div></div></td>
+              <td>2026-04-21 13:12</td>
+              <td><button class="btn btn-link" type="button" onclick="openBindModal()">编辑</button><button class="btn btn-link" type="button" onclick="openFailedNodes()">失败节点</button><button class="btn btn-link" type="button" onclick="confirmAction('重新下发客服路由内容安全 v1.0', '下发任务已重新提交')">重新下发</button><button class="btn btn-link danger" onclick="confirmDelete('客服路由内容安全绑定', function(){ toastSuccess('绑定已删除'); })">删除</button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td><strong>财务路由输入安全</strong><div class="meta-sub">dist-gw-004 · 内容策略：财务路由 PII 拦截</div></td>
+              <td>内容安全策略</td>
+              <td>路由覆盖</td>
+              <td>finance-app / finance-model-route</td>
+              <td><span class="tag tag-success">v1.1</span></td>
+              <td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '财务路由输入安全')"><span class="toggle-track"></span></label><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></div></td>
+              <td>2026-04-21 11:08</td>
+              <td><button class="btn btn-link" type="button" onclick="openBindModal()">编辑</button><button class="btn btn-link" type="button" onclick="openDetailDrawer('财务路由输入安全回执')">查看回执</button><button class="btn btn-link warning" type="button" onclick="confirmAction('停用财务路由输入安全绑定', '绑定已停用')">停用</button><button class="btn btn-link danger" onclick="confirmDelete('财务路由输入安全绑定', function(){ toastSuccess('绑定已删除'); })">删除</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="empty-state" id="distributionEmpty" style="display:none;">
+        <span class="empty-icon">◌</span>
+        <div class="empty-text">当前筛选条件下暂无绑定与下发记录，可新建绑定或重置筛选条件。</div>
+        <div style="margin-top:12px;">
+          <button class="btn btn-primary btn-sm" type="button" onclick="openBindModal()">新建绑定</button>
+          <button class="btn btn-default btn-sm" type="button" onclick="toggleEmptyPreview(false)">恢复列表示例</button>
+        </div>
+      </div>
+      <div class="pagination-wrapper" id="distributionPagination">
+        <div class="pagination-info">共 4 条，每页 10 条</div>
+        <div class="pagination"><button class="page-btn disabled">上一页</button><button class="page-btn active">1</button><button class="page-btn disabled">下一页</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="bindModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header"><div class="modal-title">新建 / 编辑绑定</div><div class="modal-close" onclick="closeModal('bindModal')">×</div></div>
+      <div class="modal-body">
+        <form id="bindForm">
+          <div class="form-grid">
+            <div class="form-row"><div class="form-label required">绑定名称</div><div class="form-field"><input class="form-control" value="全局访问控制基线" required></div></div>
+            <div class="form-row"><div class="form-label">绑定 ID</div><div class="form-field"><input class="form-control" value="dist-gw-001" readonly></div></div>
+            <div class="form-row"><div class="form-label required">策略类型</div><div class="form-field"><select class="form-select" id="policyType" onchange="renderBindFields()"><option value="access">访问控制策略</option><option value="traffic">流量与服务治理</option><option value="content">内容安全策略</option></select></div></div>
+            <div class="form-row"><div class="form-label required">绑定范围</div><div class="form-field"><select class="form-select" id="bindScope" onchange="renderBindFields()"><option value="global">全局默认</option><option value="route">路由覆盖</option><option value="app">应用覆盖</option><option value="node">网关节点</option></select></div></div>
+            <div class="form-row"><div class="form-label required">策略名称</div><div class="form-field"><select class="form-select" id="policySelect"></select></div></div>
+            <div class="form-row"><div class="form-label">引用版本</div><div class="form-field"><select class="form-select"><option>v1.3 - 已发布</option><option>v1.2 - 已发布</option><option disabled>v1.1 - 已停用（不可引用）</option></select><div class="form-hint">仅允许选择已发布版本。草稿版本和已停用版本不可绑定、不可下发。</div></div></div>
+            <div class="form-row"><div class="form-label">下发动作</div><div class="form-field"><select class="form-select"><option>立即下发</option><option>保存待下发</option><option>灰度下发</option></select></div></div>
+            <div class="form-row"><div class="form-label">失败策略</div><div class="form-field"><select class="form-select"><option>失败自动重试 3 次</option><option>失败暂停并告警</option><option>失败回滚上一版本</option></select></div></div>
+          </div>
+          <div id="bindTargetPanel" class="field-panel"></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('bindModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitBind()">保存</button></div>
+    </div>
+  </div>
+  <div class="drawer-overlay" id="detailOverlay" onclick="closeDrawer('detailOverlay','detailDrawer')"></div>
+  <div class="drawer-panel" id="detailDrawer">
+    <div class="drawer-header"><div class="drawer-title" id="detailTitle">详情</div><div class="drawer-close" onclick="closeDrawer('detailOverlay','detailDrawer')">×</div></div>
+    <div class="drawer-body" id="detailBody"></div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '绑定与下发' }]);
+    });
+
+    function sortToast(label) {
+      toastInfo('已按“' + label + '”切换排序');
+    }
+
+    function toggleStatus(el, name) {
+      var next = el.checked ? '启用' : '停用';
+      showConfirm('确认' + next + '“' + name + '”绑定？', function () {
+        toastSuccess('“' + name + '”已' + next);
+      }, '状态变更确认', 'warning');
+    }
+    function toggleEmptyPreview(forceEmpty) {
+      var table = document.getElementById('distributionTable');
+      var empty = document.getElementById('distributionEmpty');
+      var pagination = document.getElementById('distributionPagination');
+      var btn = document.getElementById('distributionEmptyBtn');
+      var showEmpty = typeof forceEmpty === 'boolean' ? forceEmpty : empty.style.display === 'none';
+      table.style.display = showEmpty ? 'none' : '';
+      empty.style.display = showEmpty ? 'block' : 'none';
+      pagination.style.display = showEmpty ? 'none' : '';
+      btn.textContent = showEmpty ? '恢复列表示例' : '空状态预览';
+      toastInfo(showEmpty ? '已切换到绑定与下发空状态' : '已恢复绑定与下发列表示例');
+    }
+
+    function openBindModal() {
+      renderBindFields();
+      openModal('bindModal');
+    }
+    function renderBindFields() {
+      var type = document.getElementById('policyType').value;
+      var scope = document.getElementById('bindScope').value;
+      var policyMap = {
+        access: ['全局 APIKey 认证 v1.3', '企业 JWT 认证 v1.0', '客服应用资源授权 v5'],
+        traffic: ['全局应用调用限流 v4', '财务模型高峰保护 v2'],
+        content: ['全局输入输出安全基线 v6', '客服输入输出安全检查 v1', '敏感信息识别与脱敏 v2']
+      };
+      document.getElementById('policySelect').innerHTML = policyMap[type].map(function (item) { return '<option>' + item + '</option>'; }).join('');
+      var target = '<div class="field-panel-title">绑定对象</div>';
+      if (scope === 'global') {
+        target += '<div class="form-row"><div class="form-label">全局范围</div><div class="form-field"><select class="form-select"><option>全部 AI 路由</option><option>全部生产网关</option></select></div></div>';
+      } else if (scope === 'route') {
+        target += '<div class="form-row"><div class="form-label required">路由对象</div><div class="form-field"><select class="form-select"><option>finance-model-route</option><option>llm-core-route</option><option>customer-service-route</option></select></div></div>';
+      } else if (scope === 'app') {
+        target += '<div class="form-row"><div class="form-label required">接入应用</div><div class="form-field"><select class="form-select"><option>finance-app</option><option>customer-service</option><option>risk-control-app</option></select></div></div>';
+      } else {
+        target += '<div class="form-row"><div class="form-label required">网关节点</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> gw-prod-01</label><label class="checkbox-item"><input type="checkbox" checked> gw-prod-02</label><label class="checkbox-item"><input type="checkbox"> gw-gray-01</label></div></div></div>';
+      }
+      document.getElementById('bindTargetPanel').innerHTML = target;
+    }
+    function toggleChecks(source) { document.querySelectorAll('.data-table tbody input[type="checkbox"]').forEach(function (el) { el.checked = source.checked; }); }
+    function confirmAction(text, success) { showConfirm('确认要' + text + '？该操作会推送到网关运行时。', function(){ toastSuccess(success); }, '操作确认', 'warning'); }
+    function openDetailDrawer(title) {
+      document.getElementById('detailTitle').textContent = title;
+      document.getElementById('detailBody').innerHTML = '<table class="data-table"><thead><tr><th>网关节点</th><th>版本</th><th>状态</th><th>耗时</th><th>说明</th></tr></thead><tbody><tr><td>gw-prod-01</td><td>v1.3</td><td><span class="tag tag-success">成功</span></td><td>1.2s</td><td>已生效</td></tr><tr><td>gw-prod-02</td><td>v1.3</td><td><span class="tag tag-warning">下发中</span></td><td>8.4s</td><td>等待回执</td></tr></tbody></table>';
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function openFailedNodes() {
+      document.getElementById('detailTitle').textContent = '失败节点清单';
+      document.getElementById('detailBody').innerHTML = `<table class="data-table"><thead><tr><th>网关节点</th><th>目标版本</th><th>失败原因</th><th>最后心跳</th><th>操作</th></tr></thead><tbody><tr><td>gw-prod-03</td><td>v1.0</td><td>策略校验失败：引用词库版本不存在</td><td>10 秒前</td><td><button class="btn btn-link" onclick="retryNode('gw-prod-03')">重试</button></td></tr><tr><td>gw-gray-01</td><td>v1.0</td><td>节点离线</td><td>12 分钟前</td><td><button class="btn btn-link" onclick="showNodeDetail('gw-gray-01')">查看节点</button></td></tr></tbody></table>`;
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function retryNode(nodeName) {
+      showConfirm('确认重新向 ' + nodeName + ' 下发当前版本？', function(){ toastSuccess(nodeName + ' 重试任务已提交'); }, '节点重试确认', 'warning');
+    }
+    function showNodeDetail(nodeName) {
+      document.getElementById('detailTitle').textContent = nodeName + ' 节点详情';
+      document.getElementById('detailBody').innerHTML = '<div class="info-row"><span class="k">节点状态</span><span><span class="tag tag-danger">离线</span></span></div><div class="info-row"><span class="k">最后心跳</span><span>12 分钟前</span></div><div class="info-row"><span class="k">当前版本</span><span>v0.9</span></div><div class="info-row"><span class="k">建议处理</span><span>检查网关进程和配置拉取通道后重新下发。</span></div>';
+    }
+    function openHistoryDrawer() {
+      document.getElementById('detailTitle').textContent = '下发历史';
+      document.getElementById('detailBody').innerHTML = '<table class="data-table"><thead><tr><th>时间</th><th>绑定</th><th>版本</th><th>操作人</th><th>结果</th></tr></thead><tbody><tr><td>2026-04-21 16:35</td><td>全局访问控制基线</td><td>v1.3</td><td>安全管理员</td><td><span class="tag tag-success">成功</span></td></tr><tr><td>2026-04-21 13:12</td><td>客服路由内容安全</td><td>v1.0</td><td>周敏</td><td><span class="tag tag-danger">部分失败</span></td></tr></tbody></table>';
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function openVersionDrawer(name) {
+      document.getElementById('detailTitle').textContent = name + ' - 版本详情';
+      document.getElementById('detailBody').innerHTML = `<table class="data-table"><thead><tr><th>版本</th><th>版本状态</th><th>变更摘要</th><th>操作</th></tr></thead><tbody><tr><td>v1.3</td><td><span class="tag tag-success">已发布</span></td><td>新增 JWT aud 校验</td><td><button class="btn btn-link" onclick="showVersionDiff()">查看差异</button></td></tr><tr><td>v1.2</td><td><span class="tag tag-info">已停用</span></td><td>调整拒绝动作</td><td><button class="btn btn-link warning" onclick="rollbackVersion('v1.2')">回滚</button></td></tr><tr><td>v1.4</td><td><span class="tag tag-warning">草稿</span></td><td>新增灰度节点选择</td><td><button class="btn btn-link" onclick="toastInfo('草稿版本不可直接下发')">查看草稿</button></td></tr></tbody></table>`;
+      openDrawer('detailOverlay','detailDrawer');
+    }
+    function showVersionDiff() {
+      document.getElementById('detailTitle').textContent = '绑定版本差异：v1.2 -> v1.3';
+      document.getElementById('detailBody').innerHTML = '<div class="diff-block"><div class="diff-del">- JWT 仅校验签名</div><div class="diff-add">+ JWT 增加 aud 校验</div><div class="diff-add">+ 绑定范围扩展到全部生产网关</div></div>';
+    }
+    function rollbackVersion(version) {
+      showConfirm('确认回滚到 ' + version + '？回滚会生成新的下发任务并覆盖当前绑定版本。', function(){ toastSuccess('回滚发布任务已提交'); }, '版本回滚确认', 'warning');
+    }
+
+    function submitBind() {
+      if (!validateForm('bindForm')) return;
+      closeModal('bindModal');
+      toastSuccess('绑定配置已保存并进入下发队列');
+    }
+  </script>
+</body>
+</html>

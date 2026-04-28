@@ -201,7 +201,7 @@
           <div class="evidence-tabs">
             <div class="evidence-tab active" onclick="switchEvidenceTab(this,'summary')">证据摘要</div>
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
-            <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">原始载荷</div>
+            <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">Raw 授权</div>
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
           </div>
           <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段，当前应用未声明外部 HTTP POST 能力。</span></div>
@@ -508,8 +508,8 @@
         title = '格式化 JSON';
         content = profile.code;
       } else if (activeEvidenceTab === 'raw') {
-        title = '原始载荷';
-        content = profile.raw;
+        title = 'Raw 授权入口';
+        content = 'Raw 原文不在普通调查工作台直接展示。\n\nraw_ref：' + profile.rawRef + '\nmask_status：已脱敏展示\n授权要求：填写访问原因并关联 approval_id，访问记录写入高敏访问审计。\n可用操作：申请查看 Raw、复制 raw_ref、导出脱敏证据摘要。';
       } else if (activeEvidenceTab === 'rule') {
         title = '规则解释';
         content = profile.ruleText;

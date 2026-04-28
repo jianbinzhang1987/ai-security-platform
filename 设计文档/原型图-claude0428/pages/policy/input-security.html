@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>输入侧安全管理</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .type-tags { display:flex; flex-wrap:wrap; gap:6px; }
+    .type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f4f4f5; color:#606266; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">输入侧安全管理</div>
+        <div class="page-subtitle">管理请求进入模型前的输入侧检测与处置策略，统一维护违法违规、恶意链接、敏感信息外发和模板化诱导请求拦截能力。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="toastSuccess('检测维度明细已打开')">查看检测维度</button>
+        <button class="btn btn-default" type="button" onclick="toastSuccess('输入样例模拟已开始')">样例模拟</button>
+        <button class="btn btn-primary" type="button" onclick="openPolicyModal('create')">新建防护策略</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">策略名称</span><input class="form-control" placeholder="策略名称 / policy_id"></div>
+      <div class="search-item"><span class="form-label">策略模式</span><select class="form-select"><option>全部</option><option>全局默认</option><option>路由覆盖</option></select></div>
+      <div class="search-item"><span class="form-label">审核服务</span><select class="form-select"><option>全部</option><option>企业自研审核引擎</option></select></div>
+      <div class="search-item"><span class="form-label">策略状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>待下发</option><option>已停用</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('输入侧安全策略列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>策略名称</th>
+              <th>策略模式</th>
+              <th>作用对象</th>
+              <th>审核服务</th>
+              <th>规则包</th>
+              <th>检测维度</th>
+              <th>状态</th>
+              <th>最近更新时间</th>
+              <th style="width:220px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>全局输入安全基线</strong><div class="meta-sub">gw-in-001</div></td>
+              <td>全局默认</td>
+              <td>全部 AI 路由</td>
+              <td>企业自研审核引擎</td>
+              <td>基础输入安全包</td>
+              <td><div class="type-tags"><span class="type-tag">提示词攻击</span><span class="type-tag">违法违规</span><span class="type-tag">恶意链接</span><span class="type-tag">PII 外发</span><span class="type-tag">保密检查</span></div></td>
+              <td><span class="tag tag-success">已启用</span></td>
+              <td>2026-04-21 15:48</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('明细已打开')">查看明细</button><button class="btn btn-link warning" type="button" onclick="toastSuccess('策略已停用')">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>财务输入高敏检测</strong><div class="meta-sub">gw-in-002</div></td>
+              <td>路由覆盖</td>
+              <td>ai-request-safety-guard-finance</td>
+              <td>企业自研审核引擎</td>
+              <td>高敏审计包</td>
+              <td><div class="type-tags"><span class="type-tag">PII 外发</span><span class="type-tag">模板化诱导</span><span class="type-tag">保密检查</span></div></td>
+              <td><span class="tag tag-warning">待下发</span></td>
+              <td>2026-04-21 14:26</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已进入下发流程')">下发</button><button class="btn btn-link" type="button" onclick="toastSuccess('版本差异已打开')">查看版本</button></td>
+            </tr>
+            <tr>
+              <td><strong>灰度环境观察策略</strong><div class="meta-sub">gw-in-003</div></td>
+              <td>路由覆盖</td>
+              <td>ai-request-safety-guard-gray</td>
+              <td>企业自研审核引擎</td>
+              <td>轻量观察包</td>
+              <td><div class="type-tags"><span class="type-tag">违法违规</span><span class="type-tag">恶意链接</span></div></td>
+              <td><span class="tag">已停用</span></td>
+              <td>2026-04-20 17:05</td>
+              <td><button class="btn btn-link" type="button" onclick="openPolicyModal('edit')">编辑</button><button class="btn btn-link" type="button" onclick="toastSuccess('策略已启用')">启用</button><button class="btn btn-link" type="button" onclick="toastSuccess('样例模拟已开始')">模拟</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="policyModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title" id="policyModalTitle">新建输入侧安全策略</div><div class="modal-close" onclick="closeModal('policyModal')">×</div></div>
+      <div class="modal-body">
+        <form id="policyForm">
+          <div class="form-row"><div class="form-label required">策略名称</div><div class="form-field"><input class="form-control" value="全局输入安全基线" required></div></div>
+          <div class="form-row"><div class="form-label required">策略模式</div><div class="form-field"><select class="form-select"><option>全局默认</option><option>路由覆盖</option></select></div></div>
+          <div class="form-row"><div class="form-label">作用对象</div><div class="form-field"><input class="form-control" value="全部 AI 路由"></div></div>
+          <div class="form-row"><div class="form-label required">审核服务</div><div class="form-field"><select class="form-select"><option>企业自研审核引擎</option></select></div></div>
+          <div class="form-row"><div class="form-label required">规则包</div><div class="form-field"><select class="form-select"><option>基础输入安全包</option><option>高敏审计包</option><option>轻量观察包</option></select></div></div>
+          <div class="form-row"><div class="form-label">检测维度</div><div class="form-field"><textarea class="form-textarea">提示词攻击、违法违规、恶意链接、PII 外发、保密检查、模板化诱导请求</textarea><div class="form-hint">输入侧敏感信息识别按全量内容检测。</div></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('policyModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitPolicy()">保存</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '输入侧安全管理' }]);
+    });
+
+    function openPolicyModal(mode) {
+      document.getElementById('policyModalTitle').textContent = mode === 'edit' ? '编辑输入侧安全策略' : '新建输入侧安全策略';
+      openModal('policyModal');
+    }
+
+    function submitPolicy() {
+      if (!validateForm('policyForm')) return;
+      closeModal('policyModal');
+      toastSuccess('输入侧安全策略已保存');
+    }
+  </script>
+</body>
+</html>
