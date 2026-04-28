@@ -24,6 +24,9 @@
     .info-row:last-child { border-bottom:none; padding-bottom:0; }
     .info-row .k { color:#909399; }
     .bind-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .toolbar-actions { display:flex; gap:8px; }
+    .diff-box { border:1px solid #EBEEF5; border-radius:6px; background:#fafafa; padding:12px; margin-top:12px; }
+    .diff-line { font-family:Consolas, monospace; font-size:12px; line-height:1.8; color:#606266; }
   </style>
 </head>
 <body class="page-content">
@@ -31,15 +34,18 @@
     <div class="page-header">
       <div>
         <div class="page-title">绑定与下发</div>
-        <div class="page-subtitle">按接入应用查看当前绑定的策略包版本、发布时间和下发状态，并支持切换绑定版本。</div>
+        <div class="page-subtitle">按接入应用和实例查看策略包版本、配置版本、心跳回执和实时阻断通道状态。</div>
       </div>
-      <button class="btn btn-default" type="button" onclick="toastSuccess('下发状态回执已刷新')">刷新下发回执</button>
+      <div class="toolbar-actions">
+        <button class="btn btn-default" type="button" onclick="openBlockModal()">下发阻断指令</button>
+        <button class="btn btn-default" type="button" onclick="toastSuccess('下发状态回执已刷新')">刷新下发回执</button>
+      </div>
     </div>
 
     <div class="stat-grid">
       <div class="stat-lite"><div class="k">已绑定应用总数</div><div class="v">14</div></div>
       <div class="stat-lite"><div class="k">已同步应用数</div><div class="v" style="color:#67C23A;">11</div></div>
-      <div class="stat-lite"><div class="k">灰度中的应用数</div><div class="v" style="color:#E6A23C;">2</div></div>
+      <div class="stat-lite"><div class="k">配置版本不一致</div><div class="v" style="color:#E6A23C;">2</div></div>
       <div class="stat-lite"><div class="k">下发异常应用数</div><div class="v" style="color:#F56C6C;">1</div></div>
     </div>
 
@@ -61,6 +67,7 @@
           <option>已同步</option>
           <option>下发中</option>
           <option>下发异常</option>
+          <option>配置版本不一致</option>
         </select>
       </div>
       <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('绑定与下发列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
@@ -74,6 +81,7 @@
               <th>接入应用</th>
               <th>当前策略包</th>
               <th>当前版本</th>
+              <th>配置版本</th>
               <th>发布时间</th>
               <th style="width:220px;">下发状态</th>
               <th>最近同步时间</th>
@@ -85,6 +93,7 @@
               <td><strong>智能客服 Copilot</strong><div class="meta-sub">app_copilot_service</div></td>
               <td>基础探针安全包</td>
               <td><span class="tag tag-success">v3</span></td>
+              <td>cfg-20260420-003</td>
               <td>2026-04-20 10:40</td>
               <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
               <td>2026-04-20 10:42</td>
@@ -94,6 +103,7 @@
               <td><strong>工单辅助助手</strong><div class="meta-sub">app_ticket_assistant</div></td>
               <td>基础探针安全包</td>
               <td><span class="tag tag-success">v3</span></td>
+              <td>cfg-20260420-003</td>
               <td>2026-04-20 10:40</td>
               <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar success" style="width:100%;"></div></div><span>已同步</span></div></td>
               <td>2026-04-20 10:41</td>
@@ -103,8 +113,9 @@
               <td><strong>客服质检助手</strong><div class="meta-sub">app_quality_assistant</div></td>
               <td>探针运行审计包</td>
               <td><span class="tag tag-warning">v2</span></td>
+              <td>cfg-20260420-002</td>
               <td>2026-04-20 09:15</td>
-              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></td>
+              <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>配置版本不一致</span></div></td>
               <td>2026-04-20 10:18</td>
               <td><button class="btn btn-link" type="button" onclick="openDetailModal('app3')">查看详情</button><button class="btn btn-link" type="button" onclick="openBindModal('app3')">更换版本</button><button class="btn btn-link" type="button" onclick="openAppDetailPage()">应用详情</button></td>
             </tr>
@@ -112,6 +123,7 @@
               <td><strong>外呼训练助手</strong><div class="meta-sub">app_call_training</div></td>
               <td>基础探针安全包</td>
               <td><span class="tag tag-warning">v2</span></td>
+              <td>cfg-20260418-002</td>
               <td>2026-04-18 15:20</td>
               <td><div class="sync-status"><div class="sync-progress"><div class="sync-bar danger" style="width:38%;"></div></div><span>下发异常</span></div></td>
               <td>2026-04-20 10:03</td>
@@ -137,6 +149,7 @@
               <div class="info-row"><span class="k">接入应用</span><span id="detailAppName">智能客服 Copilot</span></div>
               <div class="info-row"><span class="k">当前策略包</span><span id="detailPackageName">基础探针安全包</span></div>
               <div class="info-row"><span class="k">当前版本</span><span id="detailVersion">v3</span></div>
+              <div class="info-row"><span class="k">配置版本</span><span id="detailConfigVersion">cfg-20260420-003</span></div>
               <div class="info-row"><span class="k">发布时间</span><span id="detailPublishAt">2026-04-20 10:40</span></div>
               <div class="info-row"><span class="k">下发状态</span><span id="detailSyncStatus">已同步</span></div>
             </div>
@@ -144,18 +157,27 @@
           <div class="detail-card">
             <h4>版本摘要</h4>
             <div class="info-list">
-              <div class="info-row"><span class="k">包含规则类型</span><span id="detailTypes">工具管控、访问控制、审计控制</span></div>
+              <div class="info-row"><span class="k">包含规则类型</span><span id="detailTypes">工具管控、数据防泄露、审计控制</span></div>
               <div class="info-row"><span class="k">规则数</span><span id="detailRuleCount">8</span></div>
               <div class="info-row"><span class="k">最近变更</span><span id="detailChange">新增 1 条工具管控规则</span></div>
               <div class="info-row"><span class="k">最近同步时间</span><span id="detailSyncAt">2026-04-20 10:42</span></div>
+              <div class="info-row"><span class="k">WS 阻断通道</span><span id="detailWsStatus">已连接 / 12 秒前</span></div>
             </div>
+          </div>
+        </div>
+        <div class="detail-card" style="margin-top:14px;">
+          <h4>版本差异</h4>
+          <div class="diff-box" id="detailDiffBox">
+            <div class="diff-line">+ tool_unknown_action: shadow</div>
+            <div class="diff-line">+ token_budget_limit: 100000</div>
+            <div class="diff-line">+ sampling_rate: 0.3</div>
           </div>
         </div>
         <div class="detail-card" style="margin-top:14px;">
           <h4>实例回执</h4>
           <div class="table-wrapper">
             <table class="data-table">
-              <thead><tr><th>实例名称</th><th>service.name</th><th>当前版本</th><th>同步状态</th><th>最后心跳</th></tr></thead>
+              <thead><tr><th>实例名称</th><th>instance_id</th><th>service.name</th><th>config_version</th><th>Token 状态</th><th>Collector</th><th>spans_sent_1m</th><th>同步状态</th><th>最后心跳</th></tr></thead>
               <tbody id="detailInstanceBody"></tbody>
             </table>
           </div>
@@ -192,6 +214,29 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">下发实时阻断指令</div>
+        <div class="modal-close" onclick="closeModal('blockModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="blockForm">
+          <div class="bind-form-grid">
+            <div class="form-row"><div class="form-label required">session_id</div><div class="form-field"><input class="form-control" value="sess-20260420-7f3a" required></div></div>
+            <div class="form-row"><div class="form-label required">TTL 秒</div><div class="form-field"><input class="form-control" value="1800" required></div></div>
+          </div>
+          <div class="form-row"><div class="form-label">下发范围</div><div class="form-field"><input class="form-control" value="copilot-prod-01, copilot-prod-02"></div></div>
+          <div class="form-row"><div class="form-label required">阻断原因</div><div class="form-field"><textarea class="form-textarea" required>会话命中严重风险，临时阻断并等待安全运营确认。</textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" onclick="closeModal('blockModal')">取消</button>
+        <button class="btn btn-primary" type="button" onclick="submitBlockCommand()">确认下发</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
   <script>
     const appDetails = {
@@ -199,59 +244,71 @@
         name: '智能客服 Copilot',
         pkg: '基础探针安全包',
         version: 'v3',
+        configVersion: 'cfg-20260420-003',
         publishAt: '2026-04-20 10:40',
         syncStatus: '已同步',
-        types: '工具管控、访问控制、审计控制',
+        types: '工具管控、数据防泄露、审计控制',
         ruleCount: '8',
         change: '新增 1 条工具管控规则',
         syncAt: '2026-04-20 10:42',
+        wsStatus: '已连接 / 12 秒前',
+        diff: ['+ tool_unknown_action: shadow', '+ token_budget_limit: 100000', '+ sampling_rate: 0.3'],
         instances: [
-          ['copilot-prod-01', 'customer-copilot', 'v3', '<span class="tag tag-success">已同步</span>', '10 秒前'],
-          ['copilot-prod-02', 'customer-copilot', 'v3', '<span class="tag tag-success">已同步</span>', '12 秒前']
+          ['copilot-prod-01', 'copilot-prod-01-a3f91c2e', 'customer-copilot', 'cfg-20260420-003', '<span class="tag tag-success">正常</span>', '<span class="tag tag-success">已连接</span>', '128', '<span class="tag tag-success">已同步</span>', '10 秒前'],
+          ['copilot-prod-02', 'copilot-prod-02-b82d4a19', 'customer-copilot', 'cfg-20260420-003', '<span class="tag tag-success">正常</span>', '<span class="tag tag-success">已连接</span>', '115', '<span class="tag tag-success">已同步</span>', '12 秒前']
         ]
       },
       app2: {
         name: '工单辅助助手',
         pkg: '基础探针安全包',
         version: 'v3',
+        configVersion: 'cfg-20260420-003',
         publishAt: '2026-04-20 10:40',
         syncStatus: '已同步',
-        types: '工具管控、访问控制、审计控制',
+        types: '工具管控、数据防泄露、审计控制',
         ruleCount: '8',
         change: '沿用基础探针安全包当前发布版本',
         syncAt: '2026-04-20 10:41',
+        wsStatus: '已连接 / 18 秒前',
+        diff: ['= config_version: cfg-20260420-003', '= tool_unknown_action: shadow'],
         instances: [
-          ['ticket-prod-01', 'ticket-assistant', 'v3', '<span class="tag tag-success">已同步</span>', '14 秒前']
+          ['ticket-prod-01', 'ticket-prod-01-1f9d0a31', 'ticket-assistant', 'cfg-20260420-003', '<span class="tag tag-success">正常</span>', '<span class="tag tag-success">已连接</span>', '86', '<span class="tag tag-success">已同步</span>', '14 秒前']
         ]
       },
       app3: {
         name: '客服质检助手',
         pkg: '探针运行审计包',
         version: 'v2',
+        configVersion: 'cfg-20260420-002',
         publishAt: '2026-04-20 09:15',
-        syncStatus: '下发中',
-        types: '运行控制、工具管控、审计控制',
+        syncStatus: '配置版本不一致',
+        types: '限流配额、工具管控、审计控制',
         ruleCount: '5',
         change: '增加采集控制和风险审计规则',
         syncAt: '2026-04-20 10:18',
+        wsStatus: '重连中 / 1 分钟前',
+        diff: ['- config_version: cfg-20260418-001', '+ config_version: cfg-20260420-002', '+ max_calls_per_minute: 20'],
         instances: [
-          ['quality-prod-01', 'quality-assistant', 'v2', '<span class="tag tag-warning">灰度中</span>', '25 秒前'],
-          ['quality-gray-01', 'quality-assistant-gray', 'v1', '<span class="tag tag-warning">待升级</span>', '1 分钟前']
+          ['quality-prod-01', 'quality-prod-01-c821a90f', 'quality-assistant', 'cfg-20260420-002', '<span class="tag tag-warning">接近上限</span>', '<span class="tag tag-warning">重连中</span>', '42', '<span class="tag tag-warning">配置不一致</span>', '25 秒前'],
+          ['quality-gray-01', 'quality-gray-01-6ad8f3b2', 'quality-assistant-gray', 'cfg-20260418-001', '<span class="tag tag-success">正常</span>', '<span class="tag tag-success">已连接</span>', '38', '<span class="tag tag-warning">待升级</span>', '1 分钟前']
         ]
       },
       app4: {
         name: '外呼训练助手',
         pkg: '基础探针安全包',
         version: 'v2',
+        configVersion: 'cfg-20260418-002',
         publishAt: '2026-04-18 15:20',
         syncStatus: '下发异常',
-        types: '工具管控、访问控制、审计控制',
+        types: '工具管控、数据防泄露、审计控制',
         ruleCount: '7',
         change: '旧版仍在部分实例运行',
         syncAt: '2026-04-20 10:03',
+        wsStatus: '断开 / 5 分钟前',
+        diff: ['! last_config_fetch_ok: false', '! collector_connected: false'],
         instances: [
-          ['call-prod-01', 'call-training', 'v2', '<span class="tag tag-success">已同步</span>', '18 秒前'],
-          ['call-prod-02', 'call-training', 'v1', '<span class="tag tag-danger">失败</span>', '5 分钟前']
+          ['call-prod-01', 'call-prod-01-37c9d2a0', 'call-training', 'cfg-20260418-002', '<span class="tag tag-success">正常</span>', '<span class="tag tag-success">已连接</span>', '61', '<span class="tag tag-success">已同步</span>', '18 秒前'],
+          ['call-prod-02', 'call-prod-02-c793f02b', 'call-training', 'cfg-20260418-001', '<span class="tag tag-danger">已熔断</span>', '<span class="tag tag-danger">断开</span>', '0', '<span class="tag tag-danger">失败</span>', '5 分钟前']
         ]
       }
     };
@@ -267,14 +324,19 @@
       document.getElementById('detailAppName').textContent = item.name;
       document.getElementById('detailPackageName').textContent = item.pkg;
       document.getElementById('detailVersion').textContent = item.version;
+      document.getElementById('detailConfigVersion').textContent = item.configVersion;
       document.getElementById('detailPublishAt').textContent = item.publishAt;
       document.getElementById('detailSyncStatus').textContent = item.syncStatus;
       document.getElementById('detailTypes').textContent = item.types;
       document.getElementById('detailRuleCount').textContent = item.ruleCount;
       document.getElementById('detailChange').textContent = item.change;
       document.getElementById('detailSyncAt').textContent = item.syncAt;
+      document.getElementById('detailWsStatus').textContent = item.wsStatus;
+      document.getElementById('detailDiffBox').innerHTML = item.diff.map(function(line) {
+        return '<div class="diff-line">' + line + '</div>';
+      }).join('');
       document.getElementById('detailInstanceBody').innerHTML = item.instances.map(function(row) {
-        return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td><td>' + row[3] + '</td><td>' + row[4] + '</td></tr>';
+        return '<tr><td>' + row[0] + '</td><td>' + row[1] + '</td><td>' + row[2] + '</td><td>' + row[3] + '</td><td>' + row[4] + '</td><td>' + row[5] + '</td><td>' + row[6] + '</td><td>' + row[7] + '</td><td>' + row[8] + '</td></tr>';
       }).join('');
       openModal('detailModal');
     }
@@ -295,6 +357,16 @@
       if (!validateForm('bindForm')) return;
       closeModal('bindModal');
       toastSuccess('绑定版本已更新，变更任务已进入下发队列');
+    }
+
+    function openBlockModal() {
+      openModal('blockModal');
+    }
+
+    function submitBlockCommand() {
+      if (!validateForm('blockForm')) return;
+      closeModal('blockModal');
+      toastSuccess('实时阻断指令已通过 WebSocket 通道下发');
     }
   </script>
 </body>

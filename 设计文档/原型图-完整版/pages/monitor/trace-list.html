@@ -283,6 +283,38 @@
     }
 
     var evidenceProfiles = {
+      sp_01_input: {
+        eventId: '-',
+        traceId: 'TRC-20260416-018',
+        stage: '意图输入',
+        confidence: '-',
+        source: 'prompt.input',
+        offset: '-',
+        rule: '未命中',
+        subject: 'User Request',
+        resource: 'merge_request',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_01_input.json',
+        finding: '用户提交代码审查任务，当前 Span 未命中风险规则，仅作为上下文证据展示。',
+        raw: 'USER PROMPT\n请检查合并请求中的配置文件和网络调用，重点关注支付回调相关变更。',
+        ruleText: '当前 Span 未命中风险规则。作为上游上下文，用于辅助判断后续工具调用是否超出授权边界。',
+        code: '{\n  "span_id": "sp_01_input",\n  "source_field": "prompt.input",\n  "risk_flag": false,\n  "summary": "用户提交代码审查任务"\n}'
+      },
+      sp_02_retriever: {
+        eventId: '-',
+        traceId: 'TRC-20260416-018',
+        stage: '上下文检索',
+        confidence: '-',
+        source: 'retriever.output',
+        offset: '-',
+        rule: '未命中',
+        subject: 'Retriever / SecureCodingKB',
+        resource: 'kb_secure_coding',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_02_retriever.json',
+        finding: '检索企业代码规范知识库，未发现敏感字段外流。该 Span 用于解释模型后续计划来源。',
+        raw: 'RETRIEVER OUTPUT\n返回安全编码规范：外联请求需要声明工具能力，并记录目标域名、数据范围和审批依据。',
+        ruleText: '当前 Span 未命中风险规则。该证据说明后续外联调用已有规范约束背景。',
+        code: '{\n  "span_id": "sp_02_retriever",\n  "source_field": "retriever.output",\n  "resource_id": "kb_secure_coding",\n  "risk_flag": false\n}'
+      },
       sp_04_tool: {
         eventId: 'EVT-2026-A018',
         traceId: 'TRC-20260416-018',
@@ -314,6 +346,22 @@
         raw: 'LLM RESPONSE\n审查发现 [REPO_PATH] 中 callback 配置存在外联路径，建议检查支付回调域名和鉴权参数。原文已按敏感字段策略脱敏。',
         ruleText: '规则 response-sensitive-v2.4.0：当模型响应中包含内部仓库路径、配置摘要、身份字段或业务敏感对象，且输出对象为普通会话响应时，判定为敏感输出复核。P0 原型默认展示脱敏片段，Raw 内容仅保留引用。',
         code: '{\n  "span_id": "sp_05_output",\n  "source_field": "llm.response",\n  "output_excerpt": "审查发现 [REPO_PATH] 中 callback 配置存在外联路径...",\n  "redaction_state": "redacted",\n  "risk": {\n    "type": "敏感数据输出",\n    "rule": "response-sensitive-v2.4.0",\n    "confidence": 0.84\n  }\n}'
+      },
+      sp_06_action: {
+        eventId: 'EVT-2026-A018',
+        traceId: 'TRC-20260416-018',
+        stage: '处置状态',
+        confidence: '-',
+        source: 'action.status',
+        offset: '-',
+        rule: 'action-suggestion-v1',
+        subject: 'Event Action / restrict_tool',
+        resource: 'external_http_post',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_06_action.json',
+        finding: '系统已生成工具级限制建议，等待负责人确认影响范围、TTL 和审批编号。',
+        raw: 'ACTION SUGGESTION\nscope=Tool external_http_post\nttl=6h\napproval_required=true\nrollback_supported=true',
+        ruleText: '处置建议规则：当工具能力边界越界且目标为外联工具时，优先建议 Tool 范围限制，避免直接影响整个应用。',
+        code: '{\n  "span_id": "sp_06_action",\n  "source_field": "action.status",\n  "suggested_action": "restrict_tool",\n  "target_id": "tool_external_http_post",\n  "ttl": "6h",\n  "approval_required": true\n}'
       },
       sp_03_llm: {
         eventId: 'EVT-2026-A018',
@@ -414,7 +462,11 @@
     }
 
     function updateEvidence(spanId) {
-      var profile = evidenceProfiles[spanId] || evidenceProfiles.sp_04_tool;
+      var profile = evidenceProfiles[spanId];
+      if (!profile) {
+        renderEmptyEvidence(spanId);
+        return;
+      }
       document.getElementById('evidenceEventId').textContent = profile.eventId;
       document.getElementById('evidenceStage').textContent = profile.stage;
       document.getElementById('evidenceConfidence').textContent = profile.confidence;
@@ -436,10 +488,14 @@
       document.querySelectorAll('.evidence-tab').forEach(function(item){ item.classList.remove('active'); });
       el.classList.add('active');
       activeEvidenceTab = tab;
-      renderEvidenceTab(evidenceProfiles[currentEvidenceSpan] || evidenceProfiles.sp_04_tool);
+      renderEvidenceTab(evidenceProfiles[currentEvidenceSpan]);
     }
 
     function renderEvidenceTab(profile) {
+      if (!profile) {
+        renderEmptyEvidence(currentEvidenceSpan);
+        return;
+      }
       var title = '当前证据片段';
       var content = profile.code;
       var metaList = document.getElementById('evidenceMetaList');
@@ -462,6 +518,23 @@
 
       document.getElementById('evidenceBoxTitle').textContent = title;
       document.getElementById('evidenceCode').textContent = content;
+    }
+
+    function renderEmptyEvidence(spanId) {
+      document.getElementById('evidenceEventId').textContent = '-';
+      document.getElementById('evidenceStage').textContent = '无风险证据';
+      document.getElementById('evidenceConfidence').textContent = '-';
+      document.getElementById('evidenceSource').textContent = '-';
+      document.getElementById('evidenceOffset').textContent = '-';
+      document.getElementById('evidenceRule').textContent = '-';
+      document.getElementById('evidenceFinding').textContent = '当前 Span 暂无独立风险证据。';
+      document.getElementById('evidenceSubject').textContent = '-';
+      document.getElementById('evidenceResource').textContent = '-';
+      document.getElementById('evidenceRawRef').textContent = '-';
+      document.getElementById('eventSpanId').value = spanId;
+      document.getElementById('traceQuery').value = currentTraceId + ' / ' + spanId;
+      document.getElementById('evidenceBoxTitle').textContent = '空态';
+      document.getElementById('evidenceCode').textContent = '当前 Span 未命中风险规则，也未配置 Raw 证据引用。';
     }
 
     function toggleAdvancedFilters() {

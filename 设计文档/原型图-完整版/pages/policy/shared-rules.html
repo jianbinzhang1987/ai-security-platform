@@ -15,8 +15,8 @@
     .target-probe { background:#e6f1fc; color:#409eff; }
     .impl-tag { background:#f0f9eb; color:#67c23a; }
     .impl-threshold { background:#fdf6ec; color:#e6a23c; }
-    .impl-model { background:#ecf5ff; color:#409eff; }
-    .impl-service { background:#f4f4f5; color:#606266; }
+    .impl-regex { background:#ecf5ff; color:#409eff; }
+    .impl-glob { background:#f0f9eb; color:#67c23a; }
     .quote-list { display:grid; gap:10px; }
     .quote-item { border:1px solid #EBEEF5; border-radius:6px; padding:12px; background:#fff; display:flex; justify-content:space-between; gap:12px; }
     .section-block { border:1px solid #EBEEF5; border-radius:6px; background:#fff; padding:16px; margin-bottom:14px; }
@@ -55,9 +55,9 @@
     </div>
 
     <div class="stat-grid">
-      <div class="stat-lite"><div class="k">规则项总数</div><div class="v">26</div></div>
-      <div class="stat-lite"><div class="k">启用规则项数</div><div class="v" style="color:#67C23A;">21</div></div>
-      <div class="stat-lite"><div class="k">模型规则项数</div><div class="v" style="color:#409EFF;">5</div></div>
+      <div class="stat-lite"><div class="k">规则项总数</div><div class="v">24</div></div>
+      <div class="stat-lite"><div class="k">启用规则项数</div><div class="v" style="color:#67C23A;">20</div></div>
+      <div class="stat-lite"><div class="k">正则规则项数</div><div class="v" style="color:#409EFF;">9</div></div>
       <div class="stat-lite"><div class="k">已被引用规则项数</div><div class="v" style="color:#E6A23C;">18</div></div>
     </div>
 
@@ -69,8 +69,10 @@
           <option value="">全部</option>
           <option>内容安全</option>
           <option>数据防泄露</option>
+          <option>注入防御</option>
+          <option>密钥扫描</option>
           <option>工具管控</option>
-          <option>访问控制</option>
+          <option>限流配额</option>
           <option>采集控制</option>
           <option>审计控制</option>
         </select>
@@ -79,11 +81,10 @@
         <span class="form-label">实现方式</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>显式规则</option>
+          <option>正则规则</option>
+          <option>Glob 匹配</option>
           <option>阈值规则</option>
-          <option>模型规则</option>
-          <option>外部服务规则</option>
-          <option>流程规则</option>
+          <option>概率采样</option>
         </select>
       </div>
       <div class="search-item">
@@ -91,8 +92,9 @@
         <select class="form-select">
           <option value="">全部</option>
           <option>工具调用审查</option>
-          <option>运行状态保护</option>
-          <option>外联访问约束</option>
+          <option>安全标签处理</option>
+          <option>PII 脱敏处理</option>
+          <option>限流配额处理</option>
           <option>遥测采集控制</option>
         </select>
       </div>
@@ -146,38 +148,38 @@
               <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-001')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-001')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已复制规则项')">复制</button></td>
             </tr>
             <tr>
-              <td><strong>Agent 死循环熔断</strong><div class="meta-sub">rule-002</div></td>
-              <td><span class="type-tag">运行控制</span></td>
+              <td><strong>Token 预算限流</strong><div class="meta-sub">rule-002</div></td>
+              <td><span class="type-tag">限流配额</span></td>
               <td><span class="type-tag impl-threshold">阈值规则</span></td>
-              <td><span class="type-tag target-probe">运行状态保护</span></td>
-              <td>probe-lifecycle</td>
-              <td>熔断 + 告警</td>
+              <td><span class="type-tag target-probe">限流配额处理</span></td>
+              <td>rate-limiter</td>
+              <td>block / alert</td>
               <td><span class="tag tag-success">启用</span></td>
               <td>2</td>
               <td>2026-04-20 09:48</td>
               <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-002')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-002')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已停用规则项')">停用</button></td>
             </tr>
             <tr>
-              <td><strong>高危工具审批</strong><div class="meta-sub">rule-003</div></td>
+              <td><strong>工具白名单与参数约束</strong><div class="meta-sub">rule-003</div></td>
               <td><span class="type-tag">工具管控</span></td>
-              <td><span class="type-tag impl-model">模型规则</span></td>
+              <td><span class="type-tag impl-glob">Glob 匹配</span></td>
               <td><span class="type-tag target-probe">工具调用审查</span></td>
-              <td>probe-tool-before</td>
-              <td>审批 + 告警</td>
+              <td>mcp-call-tool</td>
+              <td>shadow + alert</td>
               <td><span class="tag tag-success">启用</span></td>
               <td>4</td>
               <td>2026-04-20 11:06</td>
               <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-003')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-003')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已复制规则项')">复制</button></td>
             </tr>
             <tr>
-              <td><strong>未备案域名外联拦截</strong><div class="meta-sub">rule-004</div></td>
-              <td><span class="type-tag">访问控制</span></td>
-              <td><span class="type-tag impl-service">外部服务规则</span></td>
-              <td><span class="type-tag target-probe">外联访问约束</span></td>
-              <td>probe-network-out</td>
-              <td>阻断 + 审计</td>
-              <td><span class="tag tag-warning">停用</span></td>
-              <td>0</td>
+              <td><strong>PII 邮箱与手机号脱敏</strong><div class="meta-sub">rule-004</div></td>
+              <td><span class="type-tag">数据防泄露</span></td>
+              <td><span class="type-tag impl-regex">正则规则</span></td>
+              <td><span class="type-tag target-probe">PII 脱敏处理</span></td>
+              <td>pii-redactor</td>
+              <td>mask / remove</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>5</td>
               <td>2026-04-19 18:32</td>
               <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-004')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-004')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已启用规则项')">启用</button></td>
             </tr>
@@ -201,9 +203,9 @@
             <div class="form-grid-2">
               <div class="form-row"><div class="form-label required">规则项名称</div><div class="form-field"><input id="ruleName" class="form-control" value="关键操作审计" required></div></div>
               <div class="form-row"><div class="form-label">规则项编码</div><div class="form-field"><input id="ruleId" class="form-control" value="rule-001"></div></div>
-              <div class="form-row"><div class="form-label required">规则类型</div><div class="form-field"><select id="ruleType" class="form-select" onchange="updateRulePanels()"><option value="tool">工具管控</option><option value="access">访问控制</option><option value="collect">采集控制</option><option value="audit">审计控制</option><option value="content">内容安全</option><option value="dlp">数据防泄露</option></select></div></div>
-              <div class="form-row"><div class="form-label required">探针能力域</div><div class="form-field"><select id="ruleDomain" class="form-select" onchange="updateHookPointOptions()"><option value="tool">工具调用审查</option><option value="lifecycle">运行状态保护</option><option value="network">外联访问约束</option><option value="telemetry">遥测采集控制</option></select></div></div>
-              <div class="form-row"><div class="form-label required">探针处理节点</div><div class="form-field"><select id="hookPoint" class="form-select"><option value="probe-tool-before">probe-tool-before</option><option value="probe-tool-after">probe-tool-after</option></select></div></div>
+              <div class="form-row"><div class="form-label required">规则类型</div><div class="form-field"><select id="ruleType" class="form-select" onchange="updateRulePanels()"><option value="tool">工具管控</option><option value="dlp">数据防泄露</option><option value="injection">注入防御</option><option value="secret">密钥扫描</option><option value="quota">限流配额</option><option value="collect">采集控制</option><option value="audit">审计控制</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针能力域</div><div class="form-field"><select id="ruleDomain" class="form-select" onchange="updateHookPointOptions()"><option value="tool">工具调用审查</option><option value="security">安全标签处理</option><option value="pii">PII 脱敏处理</option><option value="quota">限流配额处理</option><option value="telemetry">遥测采集控制</option><option value="trace">本地 Trace 记录</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针处理节点</div><div class="form-field"><select id="hookPoint" class="form-select"><option value="mcp-call-tool">mcp-call-tool</option></select></div></div>
               <div class="form-row"><div class="form-label">风险等级</div><div class="form-field"><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div></div>
             </div>
             <div class="form-row"><div class="form-label">规则说明</div><div class="form-field"><textarea class="form-textarea">用于识别探针侧关键工具调用，并在执行前补充审计记录与风险标记。</textarea></div></div>
@@ -213,33 +215,45 @@
             <div class="section-title">B. 检测逻辑</div>
             <div class="section-desc">统一选择规则实现方式，再按规则类型切换类型化配置区。</div>
             <div class="form-grid-2">
-              <div class="form-row"><div class="form-label required">规则实现方式</div><div class="form-field"><select id="implType" class="form-select" onchange="updateRulePanels()"><option value="explicit">显式规则</option><option value="threshold">阈值规则</option><option value="model">模型规则</option><option value="service">外部服务规则</option><option value="flow">流程规则</option></select></div></div>
-              <div class="form-row"><div class="form-label">输入对象</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> prompt</label><label class="checkbox-item"><input type="checkbox"> response</label><label class="checkbox-item"><input type="checkbox"> tool_input</label><label class="checkbox-item"><input type="checkbox"> metadata</label></div></div></div>
+              <div class="form-row"><div class="form-label required">规则实现方式</div><div class="form-field"><select id="implType" class="form-select" onchange="updateRulePanels()"><option value="regex">正则规则</option><option value="glob">Glob 匹配</option><option value="threshold">阈值规则</option><option value="sampling">概率采样</option></select></div></div>
+              <div class="form-row"><div class="form-label">输入对象</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> prompt</label><label class="checkbox-item"><input type="checkbox"> completion</label><label class="checkbox-item"><input type="checkbox"> tool_input</label><label class="checkbox-item"><input type="checkbox"> tool_output</label></div></div></div>
             </div>
 
-            <div id="typePanel-content" class="config-panel active">
+            <div id="typePanel-injection" class="config-panel">
               <div class="sub-card">
-                <div class="sub-title">内容安全类型配置</div>
+                <div class="sub-title">注入防御类型配置</div>
                 <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label required">检测目标</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> prompt</label><label class="checkbox-item"><input type="checkbox"> response</label><label class="checkbox-item"><input type="checkbox"> tool_input</label><label class="checkbox-item"><input type="checkbox"> tool_output</label></div></div></div>
-                  <div class="form-row"><div class="form-label required">风险类别</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 注入</label><label class="checkbox-item"><input type="checkbox" checked> 越权</label><label class="checkbox-item"><input type="checkbox"> 政治</label><label class="checkbox-item"><input type="checkbox"> 自定义</label></div></div></div>
-                  <div class="form-row"><div class="form-label">风险阈值</div><div class="form-field"><input class="form-control" value="0.82"></div></div>
-                  <div class="form-row"><div class="form-label">置信度下限</div><div class="form-field"><input class="form-control" value="0.75"></div></div>
+                  <div class="form-row"><div class="form-label">注入防御开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label">规则名称</div><div class="form-field"><input class="form-control" value="ignore-previous-instructions"></div></div>
                 </div>
-                <div class="form-row"><div class="form-label">白名单表达式</div><div class="form-field"><input class="form-control" placeholder="如：app_tag in ['internal-test']"></div></div>
+                <div class="form-row"><div class="form-label">检测正则</div><div class="form-field"><textarea class="form-textarea">(?i)(ignore|disregard).{0,20}(previous|above).{0,20}(instruction|prompt)</textarea></div></div>
               </div>
             </div>
 
             <div id="typePanel-dlp" class="config-panel">
               <div class="sub-card">
-                <div class="sub-title">数据防泄露类型配置</div>
+                <div class="sub-title">PII 脱敏类型配置</div>
                 <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label required">检测对象</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 输出</label><label class="checkbox-item"><input type="checkbox"> 输入</label><label class="checkbox-item"><input type="checkbox"> 工具结果</label></div></div></div>
-                  <div class="form-row"><div class="form-label required">敏感类型</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 手机号</label><label class="checkbox-item"><input type="checkbox"> 身份证</label><label class="checkbox-item"><input type="checkbox"> API Key</label><label class="checkbox-item"><input type="checkbox"> 自定义</label></div></div></div>
-                  <div class="form-row"><div class="form-label">脱敏模板</div><div class="form-field"><select class="form-select"><option>局部掩码</option><option>哈希化</option><option>固定替换</option></select></div></div>
-                  <div class="form-row"><div class="form-label">例外字段</div><div class="form-field"><input class="form-control" placeholder="如：contact.public_phone"></div></div>
+                  <div class="form-row"><div class="form-label">全局脱敏开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input class="form-control" value="CN Mobile Mask"></div></div>
+                  <div class="form-row"><div class="form-label required">处置动作</div><div class="form-field"><select class="form-select"><option>mask</option><option>hash</option><option>remove</option></select></div></div>
+                  <div class="form-row"><div class="form-label">启停状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>停用</option></select></div></div>
                 </div>
-                <div class="form-row"><div class="form-label">自定义字典</div><div class="form-field"><textarea class="form-textarea" placeholder="支持多行字典或关键字段列表"></textarea></div></div>
+                <div class="form-row"><div class="form-label required">匹配正则</div><div class="form-field"><textarea class="form-textarea">(?<!\d)1[3-9]\d{9}(?!\d)</textarea></div></div>
+                <div class="field-hint">内置规则示例：Email 掩码、中国手机号掩码、OpenAI API Key 移除、Anthropic API Key 移除、AWS Access Key 哈希。</div>
+              </div>
+            </div>
+
+            <div id="typePanel-secret" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">密钥扫描类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">密钥扫描开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label">规则名称</div><div class="form-field"><input class="form-control" value="openai-api-key-remove"></div></div>
+                  <div class="form-row"><div class="form-label">处置动作</div><div class="form-field"><select class="form-select"><option>remove</option><option>mask</option><option>hash</option></select></div></div>
+                  <div class="form-row"><div class="form-label">启停状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>停用</option></select></div></div>
+                </div>
+                <div class="form-row"><div class="form-label">匹配正则</div><div class="form-field"><textarea class="form-textarea">sk-[A-Za-z0-9]{20,}</textarea></div></div>
               </div>
             </div>
 
@@ -247,25 +261,25 @@
               <div class="sub-card">
                 <div class="sub-title">工具管控类型配置</div>
                 <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label required">工具范围</div><div class="form-field"><input class="form-control" value="shell_exec, external_http_post"></div></div>
-                  <div class="form-row"><div class="form-label">调用频率上限</div><div class="form-field"><input class="form-control" value="20 / min"></div></div>
-                  <div class="form-row"><div class="form-label">调用来源限制</div><div class="form-field"><input class="form-control" placeholder="如：研发类接入应用"></div></div>
-                  <div class="form-row"><div class="form-label">是否需审批</div><div class="form-field"><select class="form-select"><option>是</option><option>否</option></select></div></div>
+                  <div class="form-row"><div class="form-label required">工具名称 Glob</div><div class="form-field"><input class="form-control" value="read_*, search_*, ticket_*"></div></div>
+                  <div class="form-row"><div class="form-label">未知工具动作</div><div class="form-field"><select class="form-select"><option>shadow</option><option>alert</option><option>block</option></select></div></div>
+                  <div class="form-row"><div class="form-label">调用频率上限</div><div class="form-field"><input class="form-control" value="20"></div></div>
+                  <div class="form-row"><div class="form-label">最大字符串长度</div><div class="form-field"><input class="form-control" value="2048"></div></div>
                 </div>
-                <div class="form-row"><div class="form-label">参数约束</div><div class="form-field"><textarea class="form-textarea" placeholder="示例：url.domain not in allowlist AND payload.size &lt; 1MB"></textarea></div></div>
+                <div class="form-row"><div class="form-label">允许参数</div><div class="form-field"><input class="form-control" value="query,ticket_id"></div></div>
+                <div class="form-row"><div class="form-label">必填参数</div><div class="form-field"><input class="form-control" value="query"></div></div>
               </div>
             </div>
 
-            <div id="typePanel-access" class="config-panel">
+            <div id="typePanel-quota" class="config-panel">
               <div class="sub-card">
-                <div class="sub-title">访问控制类型配置</div>
+                <div class="sub-title">限流配额类型配置</div>
                 <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label required">主体范围</div><div class="form-field"><input class="form-control" placeholder="应用 / 智能体 / 节点 / 角色"></div></div>
-                  <div class="form-row"><div class="form-label required">资源范围</div><div class="form-field"><input class="form-control" placeholder="知识库 / MCP / API / 数据源"></div></div>
-                  <div class="form-row"><div class="form-label required">操作类型</div><div class="form-field"><input class="form-control" placeholder="read / write / execute / export"></div></div>
-                  <div class="form-row"><div class="form-label">决策模式</div><div class="form-field"><select class="form-select"><option>deny</option><option>allow</option><option>challenge</option></select></div></div>
+                  <div class="form-row"><div class="form-label">工具频控</div><div class="form-field"><input class="form-control" value="20"></div></div>
+                  <div class="form-row"><div class="form-label">Token 预算</div><div class="form-field"><input class="form-control" value="100000"></div></div>
+                  <div class="form-row"><div class="form-label">超额动作</div><div class="form-field"><select class="form-select"><option>block</option><option>alert</option><option>shadow</option></select></div></div>
+                  <div class="form-row"><div class="form-label">预算提示</div><div class="form-field"><input class="form-control" value="当前 SDK Token 预算无自动重置"></div></div>
                 </div>
-                <div class="form-row"><div class="form-label">条件表达式</div><div class="form-field"><textarea class="form-textarea" placeholder="如：env == 'prod' AND user_role != 'admin'"></textarea></div></div>
               </div>
             </div>
 
@@ -274,9 +288,12 @@
                 <div class="sub-title">采集控制类型配置</div>
                 <div class="form-grid-2">
                   <div class="form-row"><div class="form-label">采样率</div><div class="form-field"><input class="form-control" value="30%"></div></div>
-                  <div class="form-row"><div class="form-label">时间窗口策略</div><div class="form-field"><select class="form-select"><option>5 分钟</option><option>15 分钟</option><option>1 小时</option></select></div></div>
-                  <div class="form-row"><div class="form-label">保留字段</div><div class="form-field"><input class="form-control" placeholder="trace_id, app_id, risk_score"></div></div>
-                  <div class="form-row"><div class="form-label">脱敏字段</div><div class="form-field"><input class="form-control" placeholder="phone, email, token"></div></div>
+                  <div class="form-row"><div class="form-label">强制采样阈值</div><div class="form-field"><input class="form-control" value="4000"></div></div>
+                  <div class="form-row"><div class="form-label">导出协议</div><div class="form-field"><select class="form-select"><option>gRPC</option><option>HTTP+Protobuf</option></select></div></div>
+                  <div class="form-row"><div class="form-label">缓冲区容量</div><div class="form-field"><input class="form-control" value="10000"></div></div>
+                  <div class="form-row"><div class="form-label">Prompt 截断长度</div><div class="form-field"><input class="form-control" value="4096"></div></div>
+                  <div class="form-row"><div class="form-label">Response 截断长度</div><div class="form-field"><input class="form-control" value="2048"></div></div>
+                  <div class="form-row"><div class="form-label">本地 Trace 上限</div><div class="form-field"><input class="form-control" value="1000"></div></div>
                 </div>
               </div>
             </div>
@@ -286,32 +303,24 @@
                 <div class="sub-title">审计控制类型配置</div>
                 <div class="form-grid-2">
                   <div class="form-row"><div class="form-label">审计级别</div><div class="form-field"><select class="form-select"><option>完整</option><option>摘要</option><option>元数据</option></select></div></div>
-                  <div class="form-row"><div class="form-label">保留周期</div><div class="form-field"><select class="form-select"><option>30 天</option><option>90 天</option><option>180 天</option></select></div></div>
+                  <div class="form-row"><div class="form-label">本地 Trace 上限</div><div class="form-field"><input class="form-control" value="1000"></div></div>
                 </div>
               </div>
             </div>
 
-            <div id="implPanel-explicit" class="config-panel active">
+            <div id="implPanel-regex" class="config-panel active">
               <div class="sub-card">
-                <div class="sub-title">显式规则参数</div>
-                <div class="form-row"><div class="form-label">条件表达式模式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="exprMode" checked> 简单模式</label><label class="radio-item"><input type="radio" name="exprMode"> 高级模式</label></div></div></div>
-                <div class="logic-row">
-                  <select class="form-select"><option>prompt</option><option>response</option><option>tool_input</option></select>
-                  <select class="form-select"><option>contains</option><option>matches</option><option>equals</option></select>
-                  <input class="form-control" value="忽略之前指令">
-                  <button class="btn btn-default" type="button" onclick="toastSuccess('已新增条件行')">新增</button>
-                </div>
-                <div class="logic-row">
-                  <select class="form-select"><option>prompt</option><option>response</option><option>tool_input</option></select>
-                  <select class="form-select"><option>contains</option><option>matches</option><option>equals</option></select>
-                  <input class="form-control" value="绕过系统约束">
-                  <button class="btn btn-default" type="button" onclick="toastSuccess('已删除条件行')">删除</button>
-                </div>
-                <div class="form-grid-2" style="margin-top:10px;">
-                  <div class="form-row"><div class="form-label">逻辑组合</div><div class="form-field"><select class="form-select"><option>AND</option><option>OR</option></select></div></div>
-                  <div class="form-row"><div class="form-label">大小写敏感</div><div class="form-field"><select class="form-select"><option>否</option><option>是</option></select></div></div>
-                </div>
-                <div class="form-row"><div class="form-label">正则测试区</div><div class="form-field"><textarea class="form-textarea" placeholder="输入测试样例，验证当前显式规则"></textarea></div></div>
+                <div class="sub-title">正则规则参数</div>
+                <div class="form-row"><div class="form-label required">正则表达式</div><div class="form-field"><textarea class="form-textarea">(?i)(ignore|disregard).{0,20}(previous|above).{0,20}(instruction|prompt)</textarea></div></div>
+                <div class="form-row"><div class="form-label">测试样例</div><div class="form-field"><textarea class="form-textarea" placeholder="输入测试样例，验证当前正则规则"></textarea></div></div>
+              </div>
+            </div>
+
+            <div id="implPanel-glob" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">Glob 匹配参数</div>
+                <div class="form-row"><div class="form-label required">名称模式</div><div class="form-field"><input class="form-control" value="read_*, search_*, ticket_*"></div></div>
+                <div class="field-hint">工具白名单使用 Glob/Fnmatch 通配符，不支持复杂布尔表达式。</div>
               </div>
             </div>
 
@@ -328,59 +337,27 @@
               </div>
             </div>
 
-            <div id="implPanel-model" class="config-panel">
+            <div id="implPanel-sampling" class="config-panel">
               <div class="sub-card">
-                <div class="sub-title">模型规则参数</div>
+                <div class="sub-title">概率采样参数</div>
                 <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label">模型名称</div><div class="form-field"><select class="form-select"><option>risk-classifier</option><option>prompt-guard</option><option>tool-risk-scorer</option></select></div></div>
-                  <div class="form-row"><div class="form-label">模型版本</div><div class="form-field"><select class="form-select"><option>v2.3.1</option><option>v2.2.0</option></select></div></div>
-                  <div class="form-row"><div class="form-label">输入字段</div><div class="form-field"><input class="form-control" value="prompt, tool_name, tool_args"></div></div>
-                  <div class="form-row"><div class="form-label">置信度阈值</div><div class="form-field"><input class="form-control" value="0.75"></div></div>
-                  <div class="form-row"><div class="form-label">超时</div><div class="form-field"><input class="form-control" value="800ms"></div></div>
-                  <div class="form-row"><div class="form-label">模型异常兜底</div><div class="form-field"><select class="form-select"><option>告警</option><option>放行</option><option>阻断</option></select></div></div>
+                  <div class="form-row"><div class="form-label">采样率</div><div class="form-field"><input class="form-control" value="0.3"></div></div>
+                  <div class="form-row"><div class="form-label">强制采样阈值</div><div class="form-field"><input class="form-control" value="4000"></div></div>
                 </div>
-                <div class="form-row"><div class="form-label">输出标签映射</div><div class="form-field"><textarea class="form-textarea" placeholder="示例：critical -&gt; 阻断；high -&gt; 审批；medium -&gt; 告警"></textarea></div></div>
-              </div>
-            </div>
-
-            <div id="implPanel-service" class="config-panel">
-              <div class="sub-card">
-                <div class="sub-title">外部服务规则参数</div>
-                <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label">服务名称</div><div class="form-field"><select class="form-select"><option>external-risk-check</option><option>internal-audit-api</option></select></div></div>
-                  <div class="form-row"><div class="form-label">请求地址</div><div class="form-field"><input class="form-control" value="https://risk-check.internal/api/v1/check"></div></div>
-                  <div class="form-row"><div class="form-label">请求超时</div><div class="form-field"><input class="form-control" value="1000ms"></div></div>
-                  <div class="form-row"><div class="form-label">重试次数</div><div class="form-field"><input class="form-control" value="2"></div></div>
-                </div>
-                <div class="form-row"><div class="form-label">响应映射</div><div class="form-field"><textarea class="form-textarea" placeholder="示例：DENY -&gt; 阻断；REVIEW -&gt; 审批；ALLOW -&gt; 放行"></textarea></div></div>
-                <div class="form-row"><div class="form-label">服务失败兜底</div><div class="form-field"><select class="form-select"><option>告警</option><option>放行</option><option>阻断</option></select></div></div>
-              </div>
-            </div>
-
-            <div id="implPanel-flow" class="config-panel">
-              <div class="sub-card">
-                <div class="sub-title">流程规则参数</div>
-                <div class="form-grid-2">
-                  <div class="form-row"><div class="form-label">审批流程</div><div class="form-field"><select class="form-select"><option>high-risk-tool-approval</option><option>prod-risk-review</option></select></div></div>
-                  <div class="form-row"><div class="form-label">审批角色</div><div class="form-field"><input class="form-control" value="安全管理员, 业务负责人"></div></div>
-                  <div class="form-row"><div class="form-label">审批时限</div><div class="form-field"><input class="form-control" value="30 分钟"></div></div>
-                  <div class="form-row"><div class="form-label">超时动作</div><div class="form-field"><select class="form-select"><option>默认拒绝</option><option>默认放行</option><option>升级</option></select></div></div>
-                </div>
-                <div class="form-row"><div class="form-label">升级流程</div><div class="form-field"><select class="form-select"><option>none</option><option>secondary-review</option></select></div></div>
               </div>
             </div>
           </div>
 
           <div class="section-block">
             <div class="section-title">C. 处置逻辑</div>
-            <div class="section-desc">定义命中后的动作、告警、审批与 fallback 行为。</div>
+            <div class="section-desc">定义命中后的 Alert、Block、Shadow 动作和阻断提示文案。</div>
             <div class="form-grid-2">
-              <div class="form-row"><div class="form-label required">主动作</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 阻断</label><label class="checkbox-item"><input type="checkbox" checked> 告警</label><label class="checkbox-item"><input type="checkbox"> 审批</label><label class="checkbox-item"><input type="checkbox"> 脱敏</label><label class="checkbox-item"><input type="checkbox"> 降级</label></div></div></div>
+              <div class="form-row"><div class="form-label required">主动作</div><div class="form-field"><select class="form-select"><option>alert</option><option>block</option><option>shadow</option></select></div></div>
               <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div>
-              <div class="form-row"><div class="form-label">审批流</div><div class="form-field"><select class="form-select"><option>high-risk-tool-approval</option><option>prod-content-review</option></select></div></div>
-              <div class="form-row"><div class="form-label">Fallback 动作</div><div class="form-field"><select class="form-select"><option>告警</option><option>放行</option><option>阻断</option></select></div></div>
+              <div class="form-row"><div class="form-label">高风险默认动作</div><div class="form-field"><select class="form-select"><option>alert</option><option>block</option><option>shadow</option></select></div></div>
+              <div class="form-row"><div class="form-label">严重风险默认动作</div><div class="form-field"><select class="form-select"><option>block</option><option>alert</option><option>shadow</option></select></div></div>
             </div>
-            <div class="form-row"><div class="form-label">提示文案</div><div class="form-field"><textarea class="form-textarea">请求触发企业安全规则，已被限制处理。如需继续，请联系安全管理员。</textarea></div></div>
+            <div class="form-row"><div class="form-label">拦截话术</div><div class="form-field"><textarea class="form-textarea">请求触发企业安全策略，已被限制处理。如需继续，请联系安全管理员。</textarea></div></div>
           </div>
 
           <div class="section-block">
@@ -442,10 +419,12 @@
   <script src="../../js/common.js"></script>
   <script>
     const hookPointOptions = {
-      tool: ['probe-tool-before', 'probe-tool-after'],
-      lifecycle: ['probe-lifecycle', 'probe-scheduler'],
-      network: ['probe-network-out', 'probe-network-in'],
-      telemetry: ['probe-telemetry-export', 'probe-telemetry-buffer']
+      tool: ['mcp-call-tool'],
+      security: ['security-tagger'],
+      pii: ['pii-redactor'],
+      quota: ['rate-limiter'],
+      telemetry: ['sampler', 'otlp-exporter'],
+      trace: ['trace-recorder']
     };
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -459,29 +438,29 @@
     function openRuleModal(id) {
       document.getElementById('ruleModalTitle').textContent = id ? '编辑规则项' : '新建规则项';
       if (id === 'rule-002') {
-        document.getElementById('ruleName').value = 'Agent 死循环熔断';
+        document.getElementById('ruleName').value = 'Token 预算限流';
         document.getElementById('ruleId').value = 'rule-002';
-        document.getElementById('ruleType').value = 'collect';
-        document.getElementById('ruleDomain').value = 'lifecycle';
+        document.getElementById('ruleType').value = 'quota';
+        document.getElementById('ruleDomain').value = 'quota';
         document.getElementById('implType').value = 'threshold';
       } else if (id === 'rule-003') {
-        document.getElementById('ruleName').value = '高危工具审批';
+        document.getElementById('ruleName').value = '工具白名单与参数约束';
         document.getElementById('ruleId').value = 'rule-003';
         document.getElementById('ruleType').value = 'tool';
         document.getElementById('ruleDomain').value = 'tool';
-        document.getElementById('implType').value = 'model';
+        document.getElementById('implType').value = 'glob';
       } else if (id === 'rule-004') {
-        document.getElementById('ruleName').value = '未备案域名外联拦截';
+        document.getElementById('ruleName').value = 'PII 邮箱与手机号脱敏';
         document.getElementById('ruleId').value = 'rule-004';
-        document.getElementById('ruleType').value = 'access';
-        document.getElementById('ruleDomain').value = 'network';
-        document.getElementById('implType').value = 'service';
+        document.getElementById('ruleType').value = 'dlp';
+        document.getElementById('ruleDomain').value = 'pii';
+        document.getElementById('implType').value = 'regex';
       } else {
         document.getElementById('ruleName').value = '关键操作审计';
         document.getElementById('ruleId').value = 'rule-001';
         document.getElementById('ruleType').value = 'audit';
         document.getElementById('ruleDomain').value = 'tool';
-        document.getElementById('implType').value = 'explicit';
+        document.getElementById('implType').value = 'regex';
       }
       updateHookPointOptions();
       updateRulePanels();

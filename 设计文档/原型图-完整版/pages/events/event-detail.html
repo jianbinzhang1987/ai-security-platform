@@ -54,7 +54,7 @@
               <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value" id="agentName">代码审查工作流 / ReviewChain.invoke</div></div>
               <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
               <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value" id="resourceName">external.example/upload</div></div>
-              <!--<div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>-->
+              <div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>
               <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value" id="detectorName">tool-boundary-detector</div></div>
               <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value mono" id="ruleVersion">tool-boundary-v1.8.2</div></div>
             </div>
@@ -93,6 +93,7 @@
           <div class="card-body">
             <div class="desc-list">
               <div class="desc-item"><div class="desc-label">处置说明</div><div class="desc-value" id="fpReason">暂无，当前事件已确认进入处理中。</div></div>
+              <div class="desc-item"><div class="desc-label">风险接受说明</div><div class="desc-value" id="acceptReason">暂无，如业务确认接受风险需关联审批编号。</div></div>
             </div>
           </div>
         </div>
@@ -103,6 +104,10 @@
           <div class="card-header"><div class="card-title">处置动作</div></div>
           <div class="card-body">
             <div class="action-grid">
+              <button class="btn btn-default" onclick="openModal('assignModal')">指派负责人</button>
+              <button class="btn btn-warning" onclick="openModal('actionModal')">下发限制</button>
+              <button class="btn btn-info" onclick="openModal('falsePositiveModal')">标记误报</button>
+              <button class="btn btn-default" onclick="openModal('acceptRiskModal')">接受风险</button>
               <button class="btn btn-primary" onclick="openModal('progressModal')">处置登记</button>
               <button class="btn btn-default" onclick="toastSuccess('事件摘要已生成')">生成摘要</button>
             </div>

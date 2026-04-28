@@ -30,7 +30,7 @@
     .wizard-step .txt { font-size:13px; font-weight:600; color:#303133; }
     .step-pane { display:none; }
     .step-pane.active { display:block; }
-    .choice-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+    .choice-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
     .choice-card { border:1px solid #E4E7ED; border-radius:8px; padding:14px; background:#fff; cursor:pointer; }
     .choice-card.active { border-color:#409EFF; background:#f5faff; }
     .choice-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:4px; }
@@ -85,10 +85,9 @@
         <span class="form-label">模板来源</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>高危工具审批模板</option>
+          <option>工具管控与基线防护模板</option>
           <option>运行熔断模板</option>
           <option>遥测采集治理模板</option>
-          <option>外联访问约束模板</option>
           <option>数据脱敏模板</option>
         </select>
       </div>
@@ -97,7 +96,7 @@
         <select class="form-select">
           <option value="">全部</option>
           <option>工具管控</option>
-          <option>访问控制</option>
+          <option>数据防泄露</option>
           <option>采集控制</option>
           <option>运行控制</option>
           <option>审计控制</option>
@@ -126,8 +125,8 @@
           <tbody>
             <tr>
               <td><strong>基础探针安全包</strong><div class="meta-sub">pkg-001</div></td>
-              <td>高危工具审批模板</td>
-              <td><div class="type-tags"><span class="type-tag">工具管控</span><span class="type-tag">访问控制</span><span class="type-tag">审计控制</span></div></td>
+              <td>工具管控与基线防护模板</td>
+              <td><div class="type-tags"><span class="type-tag">工具管控</span><span class="type-tag">数据防泄露</span><span class="type-tag">审计控制</span></div></td>
               <td>8</td>
               <td><span class="tag tag-success">v3</span></td>
               <td>6</td>
@@ -176,7 +175,7 @@
         <div class="wizard-steps">
           <div class="wizard-step active" id="wizardStep1"><div class="idx">STEP 1</div><div class="txt">选择场景模板</div></div>
           <div class="wizard-step" id="wizardStep2"><div class="idx">STEP 2</div><div class="txt">选择策略强度</div></div>
-          <div class="wizard-step" id="wizardStep3"><div class="idx">STEP 3</div><div class="txt">设置通知与审批</div></div>
+          <div class="wizard-step" id="wizardStep3"><div class="idx">STEP 3</div><div class="txt">设置通知与灰度</div></div>
           <div class="wizard-step" id="wizardStep4"><div class="idx">STEP 4</div><div class="txt">预览生成内容</div></div>
           <div class="wizard-step" id="wizardStep5"><div class="idx">STEP 5</div><div class="txt">高级配置</div></div>
         </div>
@@ -188,38 +187,42 @@
               <div class="section-desc">普通用户先选场景模板，再由系统自动生成推荐规则组合和默认参数。</div>
               <div class="choice-grid">
                 <div class="choice-card active" data-template="customer" onclick="selectTemplate('customer', this)">
-                  <div class="choice-title">高危工具审批模板</div>
-                  <div class="choice-desc">覆盖高危工具执行审批、外联访问约束和关键审计记录，适用于高风险探针场景。</div>
+                  <div class="choice-title">工具管控与基线防护模板</div>
+                  <div class="choice-desc">覆盖工具白名单、未知工具动作和关键审计记录，适用于高风险探针场景。</div>
                 </div>
                 <div class="choice-card" data-template="rd" onclick="selectTemplate('rd', this)">
                   <div class="choice-title">运行熔断模板</div>
-                  <div class="choice-desc">覆盖死循环熔断、异常重试抑制和高频工具调用限制，适用于运行稳定性保障。</div>
+                  <div class="choice-desc">覆盖 Token 预算、工具频控和超额阻断，适用于运行稳定性保障。</div>
                 </div>
                 <div class="choice-card" data-template="rag" onclick="selectTemplate('rag', this)">
                   <div class="choice-title">遥测采集治理模板</div>
                   <div class="choice-desc">覆盖采样率控制、敏感字段脱敏和保留策略，适用于探针遥测治理。</div>
+                </div>
+                <div class="choice-card" data-template="pii" onclick="selectTemplate('pii', this)">
+                  <div class="choice-title">数据脱敏与合规模板</div>
+                  <div class="choice-desc">覆盖 PII 脱敏、密钥扫描和注入防御，适用于数据合规与凭据防泄露场景。</div>
                 </div>
               </div>
               <div class="form-grid-2" style="margin-top:14px;">
                 <div class="form-row"><div class="form-label required">策略包名称</div><div class="form-field"><input id="packageName" class="form-control" value="基础探针安全包" required></div></div>
                 <div class="form-row"><div class="form-label">默认适用环境</div><div class="form-field"><select class="form-select"><option>生产</option><option>测试</option><option>全部</option></select></div></div>
               </div>
-              <div class="form-row"><div class="form-label">策略包说明</div><div class="form-field"><textarea id="packageDesc" class="form-textarea">用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。</textarea></div></div>
+              <div class="form-row"><div class="form-label">策略包说明</div><div class="form-field"><textarea id="packageDesc" class="form-textarea">用于探针侧工具白名单、未知工具动作和运行审计的基础防护，默认只作用于探针运行时。</textarea></div></div>
             </div>
           </div>
 
           <div class="step-pane" id="stepPane2">
             <div class="section-block">
               <div class="section-title">选择策略强度</div>
-              <div class="section-desc">通过策略强度快速决定阻断、告警和审批的默认组合。</div>
+              <div class="section-desc">通过策略强度快速决定 Alert、Block、Shadow 的默认组合。</div>
               <div class="choice-grid">
                 <div class="choice-card active" data-level="standard" onclick="selectLevel('standard', this)">
                   <div class="choice-title">标准</div>
-                  <div class="choice-desc">平衡误报与拦截，默认开启高风险阻断和中高风险告警。</div>
+                  <div class="choice-desc">平衡误报与拦截，默认高风险告警、严重风险阻断。</div>
                 </div>
                 <div class="choice-card" data-level="strict" onclick="selectLevel('strict', this)">
                   <div class="choice-title">严格</div>
-                  <div class="choice-desc">默认扩大阻断面，高危工具强制审批，适合生产核心场景。</div>
+                  <div class="choice-desc">默认扩大阻断面，严重风险直接阻断，适合生产核心场景。</div>
                 </div>
                 <div class="choice-card" data-level="observe" onclick="selectLevel('observe', this)">
                   <div class="choice-title">观察</div>
@@ -227,23 +230,24 @@
                 </div>
               </div>
               <div class="simple-grid" style="margin-top:14px;">
-                <div class="form-row"><div class="form-label">阻断策略</div><div class="form-field"><select id="decisionBlock" class="form-select"><option>高风险阻断</option><option>高风险 + 中风险阻断</option><option>仅告警不阻断</option></select></div></div>
-                <div class="form-row"><div class="form-label">脱敏强度</div><div class="form-field"><select id="decisionMask" class="form-select"><option>标准脱敏</option><option>严格脱敏</option><option>仅标记不脱敏</option></select></div></div>
+                <div class="form-row"><div class="form-label">高风险默认动作</div><div class="form-field"><select id="decisionBlock" class="form-select"><option value="alert">Alert</option><option value="block">Block</option><option value="shadow">Shadow</option></select></div></div>
+                <div class="form-row"><div class="form-label">严重风险默认动作</div><div class="form-field"><select id="decisionMask" class="form-select"><option value="block">Block</option><option value="alert">Alert</option><option value="shadow">Shadow</option></select></div></div>
                 <div class="form-row"><div class="form-label">通知级别</div><div class="form-field"><select id="decisionAlert" class="form-select"><option>高风险即时通知</option><option>中高风险通知</option><option>仅聚合通知</option></select></div></div>
-                <div class="form-row"><div class="form-label">审批策略</div><div class="form-field"><select id="decisionApproval" class="form-select"><option>高危工具需审批</option><option>所有工具无需审批</option><option>外联工具需审批</option></select></div></div>
+                <div class="form-row"><div class="form-label">未知工具动作</div><div class="form-field"><select id="decisionApproval" class="form-select"><option value="shadow">Shadow 观察</option><option value="alert">Alert 告警</option><option value="block">Block 阻断</option></select></div></div>
               </div>
+              <div class="form-row"><div class="form-label">拦截话术</div><div class="form-field"><textarea id="blockReplyTemplate" class="form-textarea">请求触发企业安全策略，已被限制处理。如需继续，请联系安全管理员。</textarea></div></div>
             </div>
           </div>
 
           <div class="step-pane" id="stepPane3">
             <div class="section-block">
-              <div class="section-title">设置通知与审批</div>
+              <div class="section-title">设置通知与灰度</div>
               <div class="section-desc">普通用户只需要调整关键开关和绑定范围，不直接配置复杂规则实现。</div>
               <div class="simple-grid">
                 <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div>
-                <div class="form-row"><div class="form-label">审批流</div><div class="form-field"><select class="form-select"><option>high-risk-tool-approval</option><option>prod-content-review</option><option>none</option></select></div></div>
                 <div class="form-row"><div class="form-label">绑定范围</div><div class="form-field"><input class="form-control" placeholder="如：客服类接入应用 / prod 环境"></div></div>
-                <div class="form-row"><div class="form-label">灰度比例</div><div class="form-field"><select class="form-select"><option>100%</option><option>50%</option><option>10%</option></select></div></div>
+                <div class="form-row"><div class="form-label">灰度实例</div><div class="form-field"><input class="form-control" value="quality-gray-01, copilot-prod-02"></div></div>
+                <div class="form-row"><div class="form-label">配置生效方式</div><div class="form-field"><select class="form-select"><option>配置订阅实时生效</option><option>保存为草稿</option></select></div></div>
               </div>
               <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="说明策略包用途、绑定范围和本次变更原因"></textarea></div></div>
             </div>
@@ -257,18 +261,20 @@
                 <div class="preview-card">
                   <div class="preview-title">策略包摘要</div>
                   <table class="kv-table">
-                    <tr><td>场景模板</td><td id="previewTemplate">高危工具审批模板</td></tr>
+                    <tr><td>场景模板</td><td id="previewTemplate">工具管控与基线防护模板</td></tr>
                     <tr><td>策略强度</td><td id="previewLevel">标准</td></tr>
-                    <tr><td>阻断策略</td><td id="previewBlock">高风险阻断</td></tr>
+                    <tr><td>高风险动作</td><td id="previewBlock">Alert</td></tr>
+                    <tr><td>严重风险动作</td><td id="previewCritical">Block</td></tr>
                     <tr><td>通知级别</td><td id="previewAlert">高风险即时通知</td></tr>
-                    <tr><td>审批策略</td><td id="previewApproval">高危工具需审批</td></tr>
+                    <tr><td>未知工具动作</td><td id="previewApproval">Shadow 观察</td></tr>
+                    <tr><td>关键参数</td><td id="previewParams">采样率 30% / Token 预算 100000</td></tr>
                   </table>
                 </div>
                 <div class="preview-card">
                   <div class="preview-title">系统将生成的推荐规则</div>
                   <ul class="preview-list" id="previewRules">
-                    <li>高危工具审批</li>
-                    <li>未备案域名外联拦截</li>
+                    <li>工具白名单与参数约束</li>
+                    <li>未知工具 Shadow 观察</li>
                     <li>关键操作审计</li>
                   </ul>
                 </div>
@@ -286,10 +292,12 @@
                   <table class="data-table select-table">
                     <thead><tr><th></th><th>规则项</th><th>类型</th><th>探针能力域</th><th>实现方式</th></tr></thead>
                     <tbody>
-                      <tr><td><input type="checkbox" checked></td><td>高危工具审批</td><td>工具管控</td><td>工具调用审查</td><td>模型规则</td></tr>
-                      <tr><td><input type="checkbox" checked></td><td>未备案域名外联拦截</td><td>访问控制</td><td>外联访问约束</td><td>外部服务规则</td></tr>
-                      <tr><td><input type="checkbox" checked></td><td>Agent 死循环熔断</td><td>运行控制</td><td>运行状态保护</td><td>阈值规则</td></tr>
-                      <tr><td><input type="checkbox"></td><td>探针遥测采样治理</td><td>采集控制</td><td>遥测采集控制</td><td>流程规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>工具白名单与参数约束</td><td>工具管控</td><td>MCP call_tool 拦截</td><td>Glob + 参数校验</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>PII 脱敏规则</td><td>数据防泄露</td><td>pii-redactor</td><td>Regex 规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>注入防御规则</td><td>注入防御</td><td>security-tagger</td><td>Regex 规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>密钥扫描规则</td><td>密钥扫描</td><td>security-tagger</td><td>Regex 规则</td></tr>
+                      <tr><td><input type="checkbox" checked></td><td>Token 预算限流</td><td>限流配额</td><td>rate-limiter</td><td>阈值规则</td></tr>
+                      <tr><td><input type="checkbox"></td><td>探针遥测采样治理</td><td>采集控制</td><td>sampler</td><td>概率采样</td></tr>
                     </tbody>
                   </table>
                 </div>
@@ -299,7 +307,9 @@
                 <div class="section-title" style="margin-bottom:8px;">专家参数</div>
                 <div class="simple-grid">
                   <div class="form-row"><div class="form-label">规则实现方式暴露</div><div class="form-field"><select class="form-select"><option>隐藏</option><option>只读显示</option><option>允许编辑</option></select></div></div>
-                  <div class="form-row"><div class="form-label">Fallback 策略</div><div class="form-field"><select class="form-select"><option>告警</option><option>放行</option><option>阻断</option></select></div></div>
+                  <div class="form-row"><div class="form-label">未知工具动作</div><div class="form-field"><select class="form-select"><option>shadow</option><option>alert</option><option>block</option></select></div></div>
+                  <div class="form-row"><div class="form-label">采样率</div><div class="form-field"><input class="form-control" value="0.3"></div></div>
+                  <div class="form-row"><div class="form-label">Token 预算</div><div class="form-field"><input class="form-control" value="100000"></div></div>
                 </div>
               </div>
             </div>
@@ -327,7 +337,7 @@
             <span class="tag tag-success">已启用</span>
           </div>
           <div class="meta-sub">创建人：安全管理员 | 时间：2026-04-20 10:40</div>
-          <div style="margin-top:8px;">变更说明：新增 1 条运行控制规则，强化高危工具审批约束。</div>
+          <div style="margin-top:8px;">变更说明：新增 1 条工具参数约束规则，未知工具默认进入 Shadow 观察。</div>
           <div style="margin-top:10px;"><button class="btn btn-link" type="button" onclick="toastSuccess('已打开版本内容')">查看内容</button><button class="btn btn-link" type="button" onclick="openDistributionPage()">查看绑定</button></div>
         </div>
         <div class="version-card">
@@ -336,7 +346,7 @@
             <span class="tag tag-warning">待下发</span>
           </div>
           <div class="meta-sub">创建人：周敏 | 时间：2026-04-18 15:20</div>
-          <div style="margin-top:8px;">变更说明：优化内容安全阈值，保留旧版工具审批规则。</div>
+          <div style="margin-top:8px;">变更说明：优化内容安全阈值，补充 PII 脱敏与密钥扫描规则。</div>
           <div style="margin-top:10px;"><button class="btn btn-link" type="button" onclick="toastSuccess('已打开版本内容')">查看内容</button><button class="btn btn-link" type="button" onclick="openDistributionPage()">绑定到应用</button></div>
         </div>
       </div>
@@ -376,19 +386,28 @@
 
     const templateMeta = {
       customer: {
-        name: '高危工具审批模板',
-        desc: '用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。',
-        rules: ['高危工具审批', '未备案域名外联拦截', '关键操作审计']
+        name: '工具管控与基线防护模板',
+        desc: '用于探针侧工具白名单、未知工具动作和运行审计的基础防护，默认只作用于探针运行时。',
+        rules: ['工具白名单与参数约束', '未知工具 Shadow 观察', '关键操作审计'],
+        params: '采样率 30% / Token 预算 100000 / 未知工具 shadow'
       },
       rd: {
         name: '运行熔断模板',
         desc: '适用于高频任务与复杂 Agent 编排场景，默认启用死循环熔断与异常重试抑制。',
-        rules: ['Agent 死循环熔断', '高频工具调用限制', '异常重试抑制']
+        rules: ['Token 预算限流', '高频工具调用限制', '异常重试抑制'],
+        params: 'max_calls_per_minute 20 / Token 预算 100000'
       },
       rag: {
         name: '遥测采集治理模板',
         desc: '适用于探针遥测治理场景，默认加强采样率控制、脱敏和保留周期约束。',
-        rules: ['探针遥测采样治理', '敏感字段脱敏', '日志保留周期控制']
+        rules: ['探针遥测采样治理', '强制采样阈值 4000 tokens', '本地 Trace 存储上限 1000'],
+        params: '采样率 30% / 强制采样阈值 4000 / gRPC 导出'
+      },
+      pii: {
+        name: '数据脱敏与合规模板',
+        desc: '适用于数据合规与凭据防泄露场景，默认启用 PII 脱敏、密钥扫描和注入防御。',
+        rules: ['PII 脱敏规则', '密钥扫描规则', '注入防御规则'],
+        params: 'PII 脱敏开启 / 密钥扫描开启 / 注入防御开启'
       }
     };
 
@@ -423,7 +442,7 @@
         currentTemplate = 'customer';
         currentLevel = 'standard';
         document.getElementById('packageName').value = '基础探针安全包';
-        document.getElementById('packageDesc').value = '用于探针侧高风险工具、外联访问和运行审计的基础防护，默认只作用于探针运行时。';
+        document.getElementById('packageDesc').value = templateMeta.customer.desc;
       }
       refreshWizardSelections();
       syncPreview();
@@ -453,8 +472,11 @@
       } else if (template === 'rd') {
         document.getElementById('packageName').value = '探针运行审计包';
         document.getElementById('packageDesc').value = templateMeta.rd.desc;
+      } else if (template === 'pii') {
+        document.getElementById('packageName').value = '数据脱敏与合规包';
+        document.getElementById('packageDesc').value = templateMeta.pii.desc;
       } else {
-        document.getElementById('packageName').value = '知识问答防护包';
+        document.getElementById('packageName').value = '探针遥测治理包';
         document.getElementById('packageDesc').value = templateMeta.rag.desc;
       }
       syncPreview();
@@ -468,20 +490,20 @@
       el.classList.add('active');
 
       if (level === 'strict') {
-        document.getElementById('decisionBlock').value = '高风险 + 中风险阻断';
-        document.getElementById('decisionMask').value = '严格脱敏';
+        document.getElementById('decisionBlock').value = 'block';
+        document.getElementById('decisionMask').value = 'block';
         document.getElementById('decisionAlert').value = '中高风险通知';
-        document.getElementById('decisionApproval').value = '高危工具需审批';
+        document.getElementById('decisionApproval').value = 'block';
       } else if (level === 'observe') {
-        document.getElementById('decisionBlock').value = '仅告警不阻断';
-        document.getElementById('decisionMask').value = '仅标记不脱敏';
+        document.getElementById('decisionBlock').value = 'shadow';
+        document.getElementById('decisionMask').value = 'shadow';
         document.getElementById('decisionAlert').value = '仅聚合通知';
-        document.getElementById('decisionApproval').value = '所有工具无需审批';
+        document.getElementById('decisionApproval').value = 'shadow';
       } else {
-        document.getElementById('decisionBlock').value = '高风险阻断';
-        document.getElementById('decisionMask').value = '标准脱敏';
+        document.getElementById('decisionBlock').value = 'alert';
+        document.getElementById('decisionMask').value = 'block';
         document.getElementById('decisionAlert').value = '高风险即时通知';
-        document.getElementById('decisionApproval').value = '高危工具需审批';
+        document.getElementById('decisionApproval').value = 'shadow';
       }
       syncPreview();
     }
@@ -489,9 +511,11 @@
     function syncPreview() {
       document.getElementById('previewTemplate').textContent = templateMeta[currentTemplate].name;
       document.getElementById('previewLevel').textContent = levelMeta[currentLevel];
-      document.getElementById('previewBlock').textContent = document.getElementById('decisionBlock').value;
+      document.getElementById('previewBlock').textContent = document.getElementById('decisionBlock').selectedOptions[0].textContent;
+      document.getElementById('previewCritical').textContent = document.getElementById('decisionMask').selectedOptions[0].textContent;
       document.getElementById('previewAlert').textContent = document.getElementById('decisionAlert').value;
-      document.getElementById('previewApproval').textContent = document.getElementById('decisionApproval').value;
+      document.getElementById('previewApproval').textContent = document.getElementById('decisionApproval').selectedOptions[0].textContent;
+      document.getElementById('previewParams').textContent = templateMeta[currentTemplate].params;
       document.getElementById('previewRules').innerHTML = templateMeta[currentTemplate].rules.map(function(item) {
         return '<li>' + item + '</li>';
       }).join('');

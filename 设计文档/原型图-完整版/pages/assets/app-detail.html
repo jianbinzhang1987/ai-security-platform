@@ -46,11 +46,11 @@
     <div class="page-header">
       <div>
         <div class="page-title header-title">
-          智能客服 Copilot
-          <span class="tag tag-success">正常</span>
-          <span class="tag tag-primary mono">app_copilot_service</span>
+          <span id="detailAppName">智能客服 Copilot</span>
+          <span class="tag tag-success" id="detailAccessStatus">正常</span>
+          <span class="tag tag-primary mono" id="detailAppId">app_copilot_service</span>
         </div>
-        <div class="page-subtitle">部门：客服中心 | 负责人：周敏 | Collector 在线率：98.7% | 最后上报：2026-04-15 17:21:09</div>
+        <div class="page-subtitle" id="detailSubtitle">部门：客服中心 | 负责人：周敏 | Collector 在线率：98.7% | 最后上报：2026-04-15 17:21:09</div>
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-default" onclick="navigateTo('pages/assets/app-list.html','接入应用',null)">返回列表</button>
@@ -90,7 +90,10 @@
           <div class="tab-item" data-tab="agents">智能体 / 节点</div>
           <div class="tab-item" data-tab="resources">工具与资源</div>
           <div class="tab-item" data-tab="risks">风险事件</div>
+          <div class="tab-item" data-tab="config">接入配置</div>
+          <div class="tab-item" data-tab="access">接入指引</div>
           <div class="tab-item" data-tab="instances">运行实例</div>
+          <div class="tab-item" data-tab="coverage">策略覆盖检查</div>
         </div>
 
         <div id="appTabContent">
@@ -192,7 +195,7 @@
             </div>
           </div>
 
-          <!--<div class="tab-pane" data-tab="access">
+          <div class="tab-pane" data-tab="access">
             <div class="alert-box alert-info"><span class="alert-icon">i</span><span>探针通过 app_id 与 Collector Endpoint 自动注册。平台以首次 Span 上报作为接入激活信号。</span></div>
             <div class="desc-list">
               <div class="desc-item"><div class="desc-label">app_id</div><div class="desc-value mono">app_copilot_service</div></div>
@@ -256,7 +259,7 @@ external_http_post</textarea></div></div>
                 </tbody></table></div>
               </div>
             </div>
-          </div>-->
+          </div>
 
           <div class="tab-pane" data-tab="resources">
             <div class="resource-grid">
@@ -348,6 +351,34 @@ external_http_post</textarea></div></div>
 
   <script src="../../js/common.js"></script>
   <script>
+    var currentAppId = new URLSearchParams(window.location.search).get('app_id') || 'app_copilot_service';
+    var appProfiles = {
+      app_copilot_service: { name: '智能客服 Copilot', status: '正常', statusTag: 'tag-success', dept: '客服中心', owner: '周敏', health: '98.7%', last: '2026-04-15 17:21:09', instances: '18 个实例在线，0 个离线', traces: '42.1万', risks: '5', alerts: '3' },
+      app_rd_code_review: { name: '研发代码审查助手', status: '告警', statusTag: 'tag-warning', dept: '研发部', owner: '李航', health: '85.4%', last: '2026-04-15 17:18:44', instances: '6 个实例在线，1 个版本滞后', traces: '12.4万', risks: '19', alerts: '8' },
+      app_knowledge_rag: { name: '企业知识库问答', status: '正常', statusTag: 'tag-success', dept: '运营中心', owner: '陈卓', health: '99.1%', last: '2026-04-15 17:20:31', instances: '12 个实例在线，0 个离线', traces: '26.8万', risks: '3', alerts: '1' },
+      app_finance_audit: { name: '财务票据审计助手', status: '离线', statusTag: 'tag-danger', dept: '财务部', owner: '王岚', health: '0%', last: '2026-04-14 22:13:08', instances: '0 个实例在线，探针离线', traces: '0', risks: '0', alerts: '1' },
+      app_contract_agent: { name: '合同风险审查工作流', status: '待接入', statusTag: 'tag-info', dept: '法务部', owner: '赵宁', health: '未上报', last: '-', instances: '未注册实例', traces: '0', risks: '-', alerts: '0' }
+    };
+
+    function applyAppProfile() {
+      var profile = appProfiles[currentAppId] || appProfiles.app_copilot_service;
+      document.getElementById('detailAppName').textContent = profile.name;
+      document.getElementById('detailAccessStatus').textContent = profile.status;
+      document.getElementById('detailAccessStatus').className = 'tag ' + profile.statusTag;
+      document.getElementById('detailAppId').textContent = currentAppId;
+      document.getElementById('detailSubtitle').textContent = '部门：' + profile.dept + ' | 负责人：' + profile.owner + ' | Collector 在线率：' + profile.health + ' | 最后上报：' + profile.last;
+      var cards = document.querySelectorAll('.stat-card');
+      if (cards[0]) cards[0].querySelector('.stat-card-footer').textContent = profile.instances;
+      if (cards[1]) cards[1].querySelector('.stat-card-value').textContent = profile.traces;
+      if (cards[2]) cards[2].querySelector('.stat-card-value').textContent = profile.risks;
+      if (cards[3]) cards[3].querySelector('.stat-card-value').textContent = profile.alerts;
+      var appIdInputs = document.querySelectorAll('input.mono[readonly]');
+      appIdInputs.forEach(function(input) {
+        if (input.value === 'app_copilot_service') input.value = currentAppId;
+      });
+    }
+
+    applyAppProfile();
     initTabs('appTabNav', 'appTabContent', 'overview');
 
     if (typeof updateBreadcrumb === 'function') {
@@ -359,7 +390,7 @@ external_http_post</textarea></div></div>
     }
 
     function goObserve() {
-      navigateTo('pages/monitor/trace-list.html', '风险溯源工作台', null);
+      navigateTo('pages/monitor/trace-list.html?app_id=' + encodeURIComponent(currentAppId), '风险溯源工作台', null);
     }
 
     function saveEdit() {

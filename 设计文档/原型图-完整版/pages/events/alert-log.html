@@ -86,6 +86,7 @@
               <th>TTL</th>
               <th>操作人</th>
               <th>审批</th>
+              <th>动作状态</th>
               <th>回滚状态</th>
               <th style="width:130px;">操作</th>
             </tr>
@@ -93,7 +94,7 @@
           <tbody>
             <tr>
               <td>ACT-20260416-018</td>
-              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A018')">EVT-2026-A018</button></td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-00018')">EVT-2026-00018</button></td>
               <td><span class="mono">TRC-20260416-018</span><br><span class="form-hint mono">sp_04_tool</span></td>
               <td>研发代码审查助手<br><span class="form-hint">external_http_post</span></td>
               <td><span class="tag tag-warning">限制</span></td>
@@ -101,12 +102,13 @@
               <td>1 小时</td>
               <td>张安全</td>
               <td>APR-20260416-003</td>
+              <td><span class="tag tag-warning">action_status: executing</span></td>
               <td><span class="tag tag-success">可回滚</span></td>
-              <td><button class="btn btn-link" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button><button class="btn btn-link warning" onclick="toastSuccess('回滚申请已提交')">回滚</button></td>
+              <td><button class="btn btn-link" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button><button class="btn btn-link warning" onclick="openRollbackModal('ACT-20260416-018','EVT-2026-00018')">回滚</button></td>
             </tr>
             <tr>
               <td>ACT-20260416-012</td>
-              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A012')">EVT-2026-A012</button></td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-00012')">EVT-2026-00012</button></td>
               <td><span class="mono">TRC-20260416-012</span><br><span class="form-hint mono">sp_06_output</span></td>
               <td>人事档案助理<br><span class="form-hint">hr_profile_reader</span></td>
               <td><span class="tag tag-info">通知</span></td>
@@ -114,12 +116,13 @@
               <td>-</td>
               <td>系统</td>
               <td>-</td>
+              <td><span class="tag tag-success">action_status: success</span></td>
               <td><span class="tag tag-info">无需回滚</span></td>
               <td><button class="btn btn-link" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></td>
             </tr>
             <tr>
               <td>ACT-20260415-041</td>
-              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-A041')">EVT-2026-A041</button></td>
+              <td><button class="btn btn-link" onclick="goEvent('EVT-2026-00009')">EVT-2026-00009</button></td>
               <td><span class="mono">TRC-20260415-041</span><br><span class="form-hint mono">sp_03_llm</span></td>
               <td>智能客服 Copilot<br><span class="form-hint">crm_search</span></td>
               <td><span class="tag tag-success">恢复</span></td>
@@ -127,6 +130,7 @@
               <td>-</td>
               <td>李运营</td>
               <td>APR-20260415-011</td>
+              <td><span class="tag tag-success">action_status: success</span></td>
               <td><span class="tag tag-info">已完成</span></td>
               <td><button class="btn btn-link" onclick="goTrace('TRC-20260415-041','sp_03_llm')">溯源</button></td>
             </tr>
@@ -134,6 +138,21 @@
         </table>
       </div>
       <div id="pagination"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="rollbackModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">发起回滚 (<span id="rollbackActionId"></span>)</div><div class="modal-close" onclick="closeModal('rollbackModal')">×</div></div>
+      <div class="modal-body">
+        <form id="rollbackForm">
+          <div class="form-row"><div class="form-label">关联事件</div><div class="form-field"><input class="form-control" id="rollbackEventId" readonly></div></div>
+          <div class="form-row"><div class="form-label required">回滚原因</div><div class="form-field"><select class="form-select" required><option value="">请选择原因</option><option>业务影响已消除</option><option>限制范围过大，需要恢复后重新下发</option><option>审批要求回滚</option><option>事件关闭后自动恢复</option></select></div></div>
+          <div class="form-row"><div class="form-label required">approval_id</div><div class="form-field"><input class="form-control" required placeholder="APR-20260416-ROLLBACK"></div></div>
+          <div class="form-row"><div class="form-label required">回滚说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明回滚范围、预期生效时间和验证方式"></textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('rollbackModal')">取消</button><button class="btn btn-primary" onclick="submitRollback()">提交回滚</button></div>
     </div>
   </div>
 
@@ -153,6 +172,19 @@
     }
     function goEvent(id) {
       navigateTo('pages/events/event-detail.html?id=' + encodeURIComponent(id), '风险事件详情', 'event-detail.html?id=' + encodeURIComponent(id));
+    }
+    function openRollbackModal(actionId, eventId) {
+      document.getElementById('rollbackActionId').textContent = actionId;
+      document.getElementById('rollbackEventId').value = eventId;
+      document.getElementById('rollbackForm').reset();
+      document.getElementById('rollbackEventId').value = eventId;
+      openModal('rollbackModal');
+    }
+    function submitRollback() {
+      if (validateForm('rollbackForm')) {
+        toastSuccess(document.getElementById('rollbackActionId').textContent + ' 回滚申请已提交，rollback_status: pending');
+        closeModal('rollbackModal');
+      }
     }
   </script>
 </body>

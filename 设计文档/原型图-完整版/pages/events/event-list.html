@@ -58,8 +58,10 @@
       </div>
       <div class="search-item">
         <span class="form-label">事件状态</span>
-        <select class="form-select">
+        <select class="form-select" id="filterEventStatus">
           <option value="" selected>全部</option>
+          <option value="pending">待确认</option>
+          <option value="processing">处理中</option>
           <option>已处置</option>
           <option>误报</option>
           <option>接受风险</option>
@@ -76,17 +78,17 @@
         </select>
       </div>
       <div class="search-item">
-        <span class="form-label">Trace / Span</span>
-        <input class="form-control" placeholder="trace_id / span_id">
+        <span class="form-label">trace_id</span>
+        <input class="form-control" id="filterTraceId" placeholder="TRC-20260416-018">
       </div>
       <div class="search-item">
-        <span class="form-label">负责人</span>
-        <select class="form-select">
+        <span class="form-label">owner_id</span>
+        <select class="form-select" id="filterOwnerId">
           <option value="">全部</option>
           <option>未分配</option>
-          <option>张安全</option>
-          <option>李运营</option>
-          <option>王合规</option>
+          <option value="u_sec_001">张安全</option>
+          <option value="u_ops_002">李运营</option>
+          <option value="u_comp_003">王合规</option>
         </select>
       </div>
       <div class="search-btns">
@@ -96,13 +98,17 @@
       </div>
       <div class="advanced-filters" id="eventAdvancedFilters">
         <div class="search-item">
-          <span class="form-label">接入应用</span>
-          <select class="form-select">
+          <span class="form-label">app_id</span>
+          <select class="form-select" id="filterAppId">
             <option value="">全部应用</option>
-            <option>app_rd_code_review</option>
-            <option>app_hr_profile</option>
-            <option>app_copilot_service</option>
+            <option value="app_rd_code_review">app_rd_code_review</option>
+            <option value="app_hr_profile">app_hr_profile</option>
+            <option value="app_copilot_service">app_copilot_service</option>
           </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">span_id</span>
+          <input class="form-control" id="filterSpanId" placeholder="sp_04_tool">
         </div>
         <div class="search-item">
           <span class="form-label">所属部门</span>
@@ -138,6 +144,7 @@
           <button class="btn btn-primary btn-sm" id="btnBatchAssign" onclick="openAssignModal('batch')" disabled>批量指派</button>
           <button class="btn btn-warning btn-sm" id="btnBatchConfirm" onclick="openConfirmModal('batch')" disabled>批量确认</button>
           <button class="btn btn-info btn-sm" id="btnBatchFp" onclick="openFalsePositiveModal('batch')" disabled>批量标记误报</button>
+          <button class="btn btn-default btn-sm" id="btnBatchClose" onclick="openFinalCloseModal('batch')" disabled>批量关闭</button>
         </div>
         <div class="table-toolbar-right"><span class="tag tag-primary">每个事件必须能回溯 trace_id / span_id</span></div>
       </div>
@@ -147,6 +154,7 @@
             <tr>
               <th style="width:40px;"><input type="checkbox" id="checkAll" onchange="toggleAllCheckbox(this, 'eventTable');checkBtnState()"></th>
               <th>事件编号</th>
+              <th>Trace / Span</th>
               <th>发生时间</th>
               <th>关联对象</th>
               <th>风险等级</th>
@@ -154,6 +162,7 @@
               <th>证据要点</th>
               <th>状态</th>
               <th>负责人</th>
+              <th>最近处置动作</th>
               <th style="width:220px;">操作</th>
             </tr>
           </thead>
@@ -161,38 +170,44 @@
             <tr data-id="EVT-2026-00018">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00018" onchange="checkBtnState()"></td>
               <td><span class="event-id">EVT-2026-00018</span></td>
+              <td><span class="mono">TRC-20260416-018</span><br><span class="form-hint mono">sp_04_tool</span></td>
               <td><span class="event-time">04-16 10:25</span><div class="form-hint">最新发生</div></td>
-              <td>研发代码审查助手<br><span class="form-hint">external_http_post</span></td>
+              <td>研发代码审查助手<br><span class="form-hint">app_id: app_rd_code_review</span><br><span class="form-hint">external_http_post</span></td>
               <td><span class="tag tag-danger">高风险</span></td>
               <td>工具能力边界越界</td>
               <td><div class="evidence-tags"><span class="tag tag-danger">未声明工具</span><span class="tag tag-warning">外联数据流</span><span class="tag tag-info">已脱敏</span></div><div class="evidence-summary">Tool Input 包含内部仓库路径片段。</div></td>
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_finance_023', sessionId: 'sess-fin-20381', eventType: 'PII 外发尝试', tab: 'events' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button></div></td>
+              <td><span class="tag tag-warning">ACT-20260416-018 建议限制</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00018')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00018')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00018')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00018')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button></div></td>
             </tr>
             <tr data-id="EVT-2026-00012">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00012" onchange="checkBtnState()"></td>
               <td><span class="event-id">EVT-2026-00012</span></td>
+              <td><span class="mono">TRC-20260416-012</span><br><span class="form-hint mono">sp_06_output</span></td>
               <td><span class="event-time">04-16 09:48</span><div class="form-hint">持续 12 分钟</div></td>
-              <td>人事档案助理<br><span class="form-hint">hr_profile_reader</span></td>
+              <td>人事档案助理<br><span class="form-hint">app_id: app_hr_profile</span><br><span class="form-hint">hr_profile_reader</span></td>
               <td><span class="tag tag-warning">中风险</span></td>
               <td>敏感数据输出</td>
               <td><div class="evidence-tags"><span class="tag tag-warning">手机号片段</span><span class="tag tag-info">Raw 需授权</span></div><div class="evidence-summary">响应输出包含个人信息片段。</div></td>
               <td><span class="status-badge status-confirmed"></span>已处置</td>
               <td>李运营</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')">指派</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')">处置登记</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_finance_023', sessionId: 'sess-fin-20381', eventType: 'PII 外发尝试', tab: 'sessions' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></div></td>
+              <td><span class="tag tag-info">ACT-20260416-012 已通知</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00012')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00012')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00012')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00012')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></div></td>
             </tr>
             <tr data-id="EVT-2026-00009">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00009" onchange="checkBtnState()"></td>
               <td><span class="event-id">EVT-2026-00009</span></td>
+              <td><span class="mono">TRC-20260416-009</span><br><span class="form-hint mono">sp_02_llm</span></td>
               <td><span class="event-time">04-16 09:12</span><div class="form-hint">已复核</div></td>
-              <td>智能客服 Copilot<br><span class="form-hint">crm_search</span></td>
+              <td>智能客服 Copilot<br><span class="form-hint">app_id: app_copilot_service</span><br><span class="form-hint">crm_search</span></td>
               <td><span class="tag tag-primary">低风险</span></td>
               <td>提示词风险</td>
               <td><div class="evidence-tags"><span class="tag tag-info">低置信度</span><span class="tag tag-success">已入样本</span></div><div class="evidence-summary">人工复核后标记为误报样本。</div></td>
               <td><span class="status-badge status-fp"></span>误报</td>
               <td>张安全</td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')">处置登记</button><button class="btn btn-link" onclick="goSessionAudit({ userId: 'u_cs_119', sessionId: 'sess-cs-11807', eventType: '提示词注入', tab: 'users' })">会话审计</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button></div></td>
+              <td><span class="tag tag-success">FP-SAMPLE-009 规则优化</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button></div></td>
             </tr>
           </tbody>
         </table>
@@ -271,6 +286,35 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="acceptRiskModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">接受风险审批 (<span id="acceptTarget"></span>)</div><div class="modal-close" onclick="closeModal('acceptRiskModal')">×</div></div>
+      <div class="modal-body">
+        <form id="acceptRiskForm">
+          <div class="form-row"><div class="form-label required">approval_id</div><div class="form-field"><input class="form-control" id="acceptApprovalId" required placeholder="APR-20260416-003"></div></div>
+          <div class="form-row"><div class="form-label required">有效期</div><div class="form-field"><select class="form-select" required><option value="">请选择有效期</option><option>7 天</option><option>30 天</option><option>90 天</option></select></div></div>
+          <div class="form-row"><div class="form-label required">补偿控制</div><div class="form-field"><select class="form-select" required><option value="">请选择补偿控制</option><option>限制高危工具调用</option><option>提高采样率并加强审计</option><option>只允许指定业务窗口访问</option></select></div></div>
+          <div class="form-row"><div class="form-label required">接受原因</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明业务原因、风险知情人和到期复核安排"></textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('acceptRiskModal')">取消</button><button class="btn btn-primary" onclick="submitAcceptRiskForm()">提交接受风险</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="finalCloseModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">关闭风险事件 (<span id="finalCloseTarget"></span>)</div><div class="modal-close" onclick="closeModal('finalCloseModal')">×</div></div>
+      <div class="modal-body">
+        <form id="finalCloseForm">
+          <div class="form-row"><div class="form-label required">关闭结论</div><div class="form-field"><select class="form-select" required><option value="">请选择关闭结论</option><option>处置完成，风险已消除</option><option>误报确认，已进入规则优化</option><option>业务接受风险，审批有效</option><option>重复事件，已合并到主事件</option></select></div></div>
+          <div class="form-row"><div class="form-label required">复核人</div><div class="form-field"><select class="form-select" required><option value="">请选择复核人</option><option>张安全</option><option>王合规</option><option>安全运营值班长</option></select></div></div>
+          <div class="form-row"><div class="form-label required">关闭说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="填写最终关闭结论、证据复核情况和关联 action_id / approval_id"></textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('finalCloseModal')">取消</button><button class="btn btn-primary" onclick="submitFinalCloseForm()">确认关闭</button></div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
   <script>
     var currentActionTarget = '';
@@ -302,6 +346,7 @@
       document.getElementById('btnBatchAssign').disabled = checked.length === 0;
       document.getElementById('btnBatchConfirm').disabled = checked.length === 0;
       document.getElementById('btnBatchFp').disabled = checked.length === 0;
+      document.getElementById('btnBatchClose').disabled = checked.length === 0;
     }
     function selectedIds() { return getCheckedIds('eventTable'); }
     function targetText(target) { return target === 'batch' ? selectedIds().length + ' 个事件' : target; }
@@ -351,6 +396,33 @@
       if (validateForm('fpForm')) {
         toastSuccess(targetText(currentActionTarget) + ' 已标记误报并进入审计记录');
         closeModal('falsePositiveModal');
+        clearSelection();
+      }
+    }
+    function openAcceptRiskModal(target) {
+      currentActionTarget = target;
+      document.getElementById('acceptTarget').textContent = targetText(target);
+      document.getElementById('acceptRiskForm').reset();
+      openModal('acceptRiskModal');
+    }
+    function submitAcceptRiskForm() {
+      if (validateForm('acceptRiskForm')) {
+        var approvalId = document.getElementById('acceptApprovalId').value;
+        toastSuccess(targetText(currentActionTarget) + ' 已接受风险，approval_id: ' + approvalId);
+        closeModal('acceptRiskModal');
+        clearSelection();
+      }
+    }
+    function openFinalCloseModal(target) {
+      currentActionTarget = target;
+      document.getElementById('finalCloseTarget').textContent = targetText(target);
+      document.getElementById('finalCloseForm').reset();
+      openModal('finalCloseModal');
+    }
+    function submitFinalCloseForm() {
+      if (validateForm('finalCloseForm')) {
+        toastSuccess(targetText(currentActionTarget) + ' 已关闭，关闭结论写入状态变更记录');
+        closeModal('finalCloseModal');
         clearSelection();
       }
     }
