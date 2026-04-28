@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>平台运维告警</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .condition-box { background:#f5f7fa; border:1px solid #EBEEF5; border-radius:4px; padding:10px; font-family:Consolas, monospace; font-size:12px; line-height:1.8; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">平台运维告警</div>
+        <div class="page-subtitle">管理平台基础设施、采集链路和通知通道相关的系统级告警规则。业务策略的告警配置已并入策略包管理页。</div>
+      </div>
+      <button class="btn btn-primary" type="button" onclick="openAlertRuleModal()">新增告警</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>规则名称</th>
+              <th>触发条件</th>
+              <th>聚合窗口</th>
+              <th>响应动作</th>
+              <th>状态</th>
+              <th style="width:200px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Collector 心跳离线</td>
+              <td>heartbeat_lost &gt; 3m</td>
+              <td>3 分钟</td>
+              <td>通知平台管理员 + 创建运维事件</td>
+              <td><span class="tag tag-warning">灰度</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('Collector 心跳离线')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('Collector 心跳离线')">测试</button></td>
+            </tr>
+            <tr>
+              <td>写入链路错误率过高</td>
+              <td>storage_error_rate &gt; 5%</td>
+              <td>5 分钟</td>
+              <td>飞书通知 + 升级值班人</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('写入链路错误率过高')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('写入链路错误率过高')">测试</button></td>
+            </tr>
+            <tr>
+              <td>通知渠道持续失败</td>
+              <td>channel_delivery_failed count &gt;= 10</td>
+              <td>10 分钟</td>
+              <td>通知平台管理员 + 标记渠道异常</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('通知渠道持续失败')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('通知渠道持续失败')">测试</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="alertRuleModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">新增 / 编辑平台运维告警</div>
+        <div class="modal-close" onclick="closeModal('alertRuleModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="alertRuleForm">
+          <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input id="alertRuleName" class="form-control" value="Collector 心跳离线" required></div></div>
+          <div class="form-row"><div class="form-label">监控指标</div><div class="form-field"><select class="form-select"><option>heartbeat_lost</option><option>storage_error_rate</option><option>channel_delivery_failed</option><option>queue_backlog</option></select></div></div>
+          <div class="form-row"><div class="form-label">条件表达式</div><div class="form-field"><input class="form-control" value="heartbeat_lost > 3m"></div></div>
+          <div class="form-row"><div class="form-label">聚合窗口</div><div class="form-field"><select class="form-select"><option>3 分钟</option><option>5 分钟</option><option>10 分钟</option><option>15 分钟</option></select></div></div>
+          <div class="form-row"><div class="form-label">响应动作</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 创建运维事件</label><label class="checkbox-item"><input type="checkbox" checked> 飞书通知</label><label class="checkbox-item"><input type="checkbox"> 短信升级</label><label class="checkbox-item"><input type="checkbox"> 标记渠道异常</label></div></div></div>
+          <div class="form-row"><div class="form-label">启用状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>灰度</option><option>停用</option></select></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('alertRuleModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitAlertRule()">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="testModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title">规则测试：<span id="testRuleName"></span></div>
+        <div class="modal-close" onclick="closeModal('testModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">样本告警</div><div class="form-field"><input class="form-control" value="OPS-ALERT-2026-0018"></div></div>
+        <div class="condition-box">输入：collector_id=collector-sh-02, heartbeat_lost=5m
+结果：命中
+动作：创建运维事件、飞书通知值班群</div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('testModal')">关闭</button><button class="btn btn-primary" type="button" onclick="toastSuccess('测试结果已保存')">保存测试结果</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '平台运维' }, { label: '平台运维告警' }]);
+      }
+    });
+
+    function openAlertRuleModal(name) {
+      document.getElementById('alertRuleName').value = name || 'Collector 心跳离线';
+      openModal('alertRuleModal');
+    }
+
+    function submitAlertRule() {
+      closeModal('alertRuleModal');
+      toastSuccess('平台运维告警已保存');
+    }
+
+    function openTestModal(name) {
+      document.getElementById('testRuleName').textContent = name;
+      openModal('testModal');
+    }
+  </script>
+</body>
+</html>

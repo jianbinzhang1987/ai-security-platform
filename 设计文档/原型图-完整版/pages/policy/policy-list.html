@@ -1,0 +1,159 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>检测规则配置</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .rule-meta { color:#909399; font-size:12px; margin-top:4px; }
+    .sample-box { background:#f5f7fa; border:1px solid #EBEEF5; border-radius:4px; padding:10px; line-height:1.8; font-family:Consolas, monospace; font-size:12px; }
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">检测规则配置</div>
+        <div class="page-subtitle">管理风险检测规则的启停、版本、应用绑定、干跑验证和命中统计。</div>
+      </div>
+      <button class="btn btn-primary" onclick="openRuleModal()">新增规则</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">启用规则</div><div class="v" style="color:#67C23A;">42</div></div>
+      <div class="stat-lite"><div class="k">灰度规则</div><div class="v" style="color:#E6A23C;">6</div></div>
+      <div class="stat-lite"><div class="k">近 7 日命中</div><div class="v">18,204</div></div>
+      <div class="stat-lite"><div class="k">误报样本</div><div class="v" style="color:#409EFF;">112</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">规则名称</span><input type="text" class="form-control" placeholder="规则 ID / 名称"></div>
+      <div class="search-item">
+        <span class="form-label">风险类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>Prompt 风险</option>
+          <option>敏感数据输出</option>
+          <option>工具能力边界越界</option>
+          <option>意图偏移</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>灰度</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table" id="ruleTable">
+          <thead>
+            <tr>
+              <th>规则</th>
+              <th>风险类型</th>
+              <th>等级</th>
+              <th>置信度阈值</th>
+              <th>版本</th>
+              <th>绑定应用</th>
+              <th>近 7 日命中</th>
+              <th>误报</th>
+              <th>状态</th>
+              <th style="width:210px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>未声明工具调用检测</strong><div class="rule-meta">tool-boundary-v1</div></td>
+              <td>工具能力边界越界</td>
+              <td><span class="tag tag-danger">高</span></td>
+              <td>0.85</td>
+              <td>v1.8.2</td>
+              <td>24 个应用</td>
+              <td>328</td>
+              <td>6</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('未声明工具调用检测')">干跑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>敏感字段输出检测</strong><div class="rule-meta">sensitive-output-v2</div></td>
+              <td>敏感数据输出</td>
+              <td><span class="tag tag-warning">中</span></td>
+              <td>0.78</td>
+              <td>v2.4.1</td>
+              <td>36 个应用</td>
+              <td>1,204</td>
+              <td>21</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('敏感字段输出检测')">干跑</button><button class="btn btn-link warning">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>Prompt 异常指令检测</strong><div class="rule-meta">prompt-risk-v3</div></td>
+              <td>Prompt 风险</td>
+              <td><span class="tag tag-warning">中</span></td>
+              <td>0.72</td>
+              <td>v3.4.2</td>
+              <td>灰度 8 个应用</td>
+              <td>642</td>
+              <td>38</td>
+              <td><span class="tag tag-warning">灰度</span></td>
+              <td><button class="btn btn-link" onclick="openRuleModal()">编辑</button><button class="btn btn-link" onclick="openDryRunModal('Prompt 异常指令检测')">干跑</button><button class="btn btn-link">发布</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ruleModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">新增 / 编辑检测规则</div><div class="modal-close" onclick="closeModal('ruleModal')">×</div></div>
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input class="form-control" value="未声明工具调用检测" required></div></div>
+          <div class="form-row"><div class="form-label required">风险类型</div><div class="form-field"><select class="form-select" required><option>工具能力边界越界</option><option>Prompt 风险</option><option>敏感数据输出</option><option>意图偏移</option></select></div></div>
+          <div class="form-row"><div class="form-label">风险等级</div><div class="form-field"><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div></div>
+          <div class="form-row"><div class="form-label">置信度阈值</div><div class="form-field"><input class="form-control" value="0.85"></div></div>
+          <div class="form-row"><div class="form-label">绑定应用</div><div class="form-field"><select class="form-select"><option>全部生产应用</option><option>指定应用</option><option>灰度应用</option></select></div></div>
+          <div class="form-row"><div class="form-label">检测条件</div><div class="form-field"><textarea class="form-textarea">tool.declared=false AND span_kind=tool AND tool.name IS NOT NULL</textarea></div></div>
+          <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="说明本版本的规则调整原因"></textarea></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('ruleModal')">取消</button><button class="btn btn-primary" onclick="submitRule()">保存为新版本</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="dryRunModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">规则干跑验证：<span id="dryRunTitle"></span></div><div class="modal-close" onclick="closeModal('dryRunModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">样本 Trace</div><div class="form-field"><input class="form-control" value="TRC-20260416-018"></div></div>
+        <div class="form-row"><div class="form-label">样本 Span</div><div class="form-field"><input class="form-control" value="sp_04_tool"></div></div>
+        <div class="sample-box">命中结果：true<br>置信度：0.91<br>证据字段：tool.input<br>证据摘要：未声明工具 external_http_post 发起外联数据流。</div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('dryRunModal')">关闭</button><button class="btn btn-primary" onclick="toastSuccess('干跑结果已保存为样本')">保存样本</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '规则策略' }, { label: '检测规则配置' }]);
+    });
+    function searchData() { toastSuccess('检测规则列表已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function openRuleModal() { openModal('ruleModal'); }
+    function submitRule() { closeModal('ruleModal'); toastSuccess('检测规则已保存为新版本'); }
+    function openDryRunModal(name) { document.getElementById('dryRunTitle').textContent = name; openModal('dryRunModal'); }
+  </script>
+</body>
+</html>

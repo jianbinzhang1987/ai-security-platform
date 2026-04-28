@@ -1,0 +1,111 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>操作审计日志</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">操作审计日志</div>
+        <div class="page-subtitle">记录用户、系统和策略相关操作，支持按操作人、模块、结果和时间查询。</div>
+      </div>
+      <button class="btn btn-default" onclick="exportData()">导出审计日志</button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">操作人</span><input type="text" class="form-control" placeholder="姓名、邮箱或系统账号"></div>
+      <div class="search-item">
+        <span class="form-label">模块</span>
+        <select class="form-select">
+          <option value="">全部模块</option>
+          <option value="系统">系统管理</option>
+          <option value="策略">规则策略</option>
+          <option value="处置">事件处置</option>
+          <option value="接入">应用接入</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">结果</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>成功</option>
+          <option>失败</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left" style="color:#606266;font-size:13px;">
+          审计日志采用追加写入和权限控制方式保存，普通用户仅可查询授权范围内记录。
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>日志 ID</th>
+              <th>操作人</th>
+              <th>操作类型</th>
+              <th>操作对象</th>
+              <th>发生时间</th>
+              <th>结果</th>
+              <th>客户端 IP</th>
+              <th style="width:100px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ADT-20260414-001</td>
+              <td>王丹</td>
+              <td><span class="tag tag-warning">禁用用户</span></td>
+              <td>张三丰 / 只读查看员</td>
+              <td>2026-04-14 09:22:11</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.8.21</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260413-018</td>
+              <td>李四</td>
+              <td><span class="tag tag-primary">发布规则版本</span></td>
+              <td>tool-boundary-v1.8.2</td>
+              <td>2026-04-13 18:30:20</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.10.8</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260410-022</td>
+              <td>系统认证服务</td>
+              <td><span class="tag tag-danger">异常登录尝试</span></td>
+              <td>管理员门户</td>
+              <td>2026-04-10 03:22:10</td>
+              <td><span class="tag tag-danger">失败</span></td>
+              <td>10.20.4.18</td>
+              <td><button class="btn btn-link" onclick="viewAudit()">详情</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof renderPagination === 'function') renderPagination('pagination', 569800, 1, 10, function(p){});
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '系统管理' }, { label: '操作审计日志' }]);
+    });
+    function searchData() { toastSuccess('审计日志已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function exportData() { toastSuccess('审计日志导出任务已创建'); }
+    function viewAudit() { toastSuccess('审计详情已打开'); }
+  </script>
+</body>
+</html>

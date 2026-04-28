@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>服务器列表</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-card-label">服务器总数</div>
+        <div class="stat-card-value">47</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">在线服务器</div>
+        <div class="stat-card-value green">43</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">告警服务器</div>
+        <div class="stat-card-value orange">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">离线服务器</div>
+        <div class="stat-card-value gray" style="color: #909399;">1</div>
+      </div>
+    </div>
+
+    <!-- 搜索栏 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字</span>
+        <input type="text" class="form-control" placeholder="主机名/负责人" style="width: 180px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">所属部门</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="研发部">研发部</option>
+          <option value="产品部">产品部</option>
+          <option value="安全部">安全部</option>
+          <option value="运营部">运营部</option>
+          <option value="数据部">数据部</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">运行状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="在线">在线</option>
+          <option value="离线">离线</option>
+          <option value="告警">告警</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">部门</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option value="客服中心">客服中心</option>
+          <option value="研发部">研发部</option>
+          <option value="运营中心">运营中心</option>
+          <option value="财务部">财务部</option>
+          <option value="法务部">法务部</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <!-- 列表区 -->
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">新增服务器</button>
+          <button class="btn btn-danger btn-sm" id="btnBatchDelete" onclick="batchDelete()" disabled>批量删除</button>
+        </div>
+        <div class="table-toolbar-right">
+          <button class="btn btn-default btn-sm" onclick="exportData()">导出</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table" id="serverTable">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" id="checkAll" onchange="toggleAllCheckbox(this, 'serverTable');checkBtnState()"></th>
+              <th>主机名</th>
+              <th>内网地址</th>
+              <th>所属部门</th>
+              <th>操作系统</th>
+              <th>运行状态</th>
+              <th>应用进程数</th>
+              <th>在线智能体数</th>
+              <th>负责人</th>
+              <th>创建时间</th>
+              <th style="width: 140px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="1">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-01</a></td>
+              <td>10.0.1.12</td>
+              <td>研发部</td>
+              <td>Linux CentOS 7</td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>5</td>
+              <td>12</td>
+              <td>张三</td>
+              <td>2026-01-10 10:23:45</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('生产服务器-01')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('生产服务器-01')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="2">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">生产服务器-02</a></td>
+              <td>10.0.1.13</td>
+              <td>产品部</td>
+              <td>Linux Ubuntu 22.04</td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>3</td>
+              <td>8</td>
+              <td>李四</td>
+              <td>2026-01-12 14:15:22</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('生产服务器-02')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('生产服务器-02')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="3">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">核心调度节点-A</a></td>
+              <td>10.0.2.55</td>
+              <td>研发部</td>
+              <td>Linux CentOS 7</td>
+              <td><span class="tag tag-warning">告警</span></td>
+              <td>8</td>
+              <td>24</td>
+              <td>王五</td>
+              <td>2026-01-15 09:30:00</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('核心调度节点-A')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('核心调度节点-A')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="4">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">数据分析集群-01</a></td>
+              <td>10.0.3.11</td>
+              <td>数据部</td>
+              <td>Linux Ubuntu 22.04</td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>2</td>
+              <td>4</td>
+              <td>赵六</td>
+              <td>2026-02-01 11:20:30</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('数据分析集群-01')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('数据分析集群-01')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="5">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">客服系统专属服务器</a></td>
+              <td>10.0.4.88</td>
+              <td>运营部</td>
+              <td>Windows Server 2019</td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>1</td>
+              <td>5</td>
+              <td>孙七</td>
+              <td>2026-02-10 16:45:10</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('客服系统专属服务器')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('客服系统专属服务器')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="6">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">研发测试服务器-02</a></td>
+              <td>192.168.1.102</td>
+              <td>研发部</td>
+              <td>Linux CentOS 7</td>
+              <td><span class="tag tag-info">离线</span></td>
+              <td>0</td>
+              <td>0</td>
+              <td>周八</td>
+              <td>2026-03-01 10:00:00</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('研发测试服务器-02')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('研发测试服务器-02')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="7">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">北京数据中心节点-03</a></td>
+              <td>10.10.1.33</td>
+              <td>安全部</td>
+              <td>Linux Ubuntu 22.04</td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>4</td>
+              <td>9</td>
+              <td>吴九</td>
+              <td>2026-03-05 13:15:45</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('北京数据中心节点-03')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('北京数据中心节点-03')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="8">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">文档审查处理服务器</a></td>
+              <td>10.0.5.21</td>
+              <td>产品部</td>
+              <td>Linux CentOS 7</td>
+              <td><span class="tag tag-warning">告警</span></td>
+              <td>2</td>
+              <td>6</td>
+              <td>郑十</td>
+              <td>2026-03-10 09:20:10</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="navigateTo('pages/assets/server-detail.html','服务器详情',null)">查看</button>
+                  <button class="btn btn-link" onclick="openEditModal('文档审查处理服务器')">编辑</button>
+                  <button class="btn btn-link danger" onclick="deleteServer('文档审查处理服务器')">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑服务器弹窗 -->
+  <div class="modal-overlay" id="serverModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">新增服务器</div>
+        <div class="modal-close" onclick="closeModal('serverModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="serverForm">
+          <div class="form-row">
+            <div class="form-label required">主机名</div>
+            <div class="form-field">
+              <input type="text" class="form-control" id="f_hostname" placeholder="请输入主机名称" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">操作系统</div>
+            <div class="form-field">
+              <select class="form-select" id="f_os" required>
+                <option value="">请选择操作系统</option>
+                <option value="Linux CentOS 7">Linux CentOS 7</option>
+                <option value="Linux Ubuntu 22.04">Linux Ubuntu 22.04</option>
+                <option value="Windows Server 2019">Windows Server 2019</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">内网地址</div>
+            <div class="form-field">
+              <input type="text" class="form-control" id="f_ip_inner" placeholder="例如：10.0.1.12" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">外网地址</div>
+            <div class="form-field">
+              <input type="text" class="form-control" id="f_ip_outer" placeholder="选填，例如：114.114.114.114">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">所属部门</div>
+            <div class="form-field">
+              <select class="form-select" id="f_dept" required>
+                <option value="">请选择所属部门</option>
+                <option value="研发部">研发部</option>
+                <option value="产品部">产品部</option>
+                <option value="安全部">安全部</option>
+                <option value="运营部">运营部</option>
+                <option value="数据部">数据部</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">负责人</div>
+            <div class="form-field">
+              <input type="text" class="form-control" id="f_owner" placeholder="请输入负责人姓名" required>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">自定义标签</div>
+            <div class="form-field">
+              <div class="tag-input-container" onclick="document.getElementById('tagInput').focus()">
+                <span class="tag tag-info" id="tag_demo" style="display:none;">核心节点 <span class="tag-remove" onclick="this.parentNode.remove()">×</span></span>
+                <input type="text" class="tag-input" id="tagInput" placeholder="输入标签按回车添加" onkeydown="addTag(event)">
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">说明备注</div>
+            <div class="form-field">
+              <textarea class="form-textarea" id="f_remark" placeholder="请输入备注信息"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('serverModal')">取 消</button>
+        <button class="btn btn-primary" onclick="submitServerForm()">确 定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      renderPagination('pagination', 47, 1, 10, function(p) {
+        console.log('翻页至', p);
+      });
+    });
+
+    function searchData() {
+      toastSuccess('查询成功');
+    }
+
+    function resetSearch() {
+      var inputs = document.querySelectorAll('.search-bar input, .search-bar select');
+      inputs.forEach(function(input) { input.value = ''; });
+    }
+
+    function exportData() {
+      toastSuccess('数据导出中，请稍候...');
+    }
+
+    function checkBtnState() {
+      var checked = getCheckedIds('serverTable');
+      document.getElementById('btnBatchDelete').disabled = checked.length === 0;
+    }
+
+    function batchDelete() {
+      var checked = getCheckedIds('serverTable');
+      confirmDelete('选中的 ' + checked.length + ' 台服务器', function() {
+        toastSuccess('批量删除成功');
+        document.getElementById('checkAll').checked = false;
+        checkBtnState();
+      });
+    }
+
+    function deleteServer(name) {
+      confirmDelete(name, function() {
+        toastSuccess('删除成功');
+      });
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = '新增服务器';
+      document.getElementById('serverForm').reset();
+      document.getElementById('tag_demo').style.display = 'none';
+      openModal('serverModal');
+    }
+
+    function openEditModal(name) {
+      document.getElementById('modalTitle').textContent = '编辑服务器';
+      document.getElementById('serverForm').reset();
+      document.getElementById('f_hostname').value = name;
+      document.getElementById('f_os').value = 'Linux CentOS 7';
+      document.getElementById('f_ip_inner').value = '10.0.1.12';
+      document.getElementById('f_dept').value = '研发部';
+      document.getElementById('f_owner').value = '张三';
+      document.getElementById('tag_demo').style.display = 'inline-flex';
+      openModal('serverModal');
+    }
+
+    function addTag(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        var val = e.target.value.trim();
+        if (val) {
+          var tag = document.createElement('span');
+          tag.className = 'tag tag-info';
+          tag.innerHTML = val + ' <span class="tag-remove" onclick="this.parentNode.remove()">×</span>';
+          e.target.parentNode.insertBefore(tag, e.target);
+          e.target.value = '';
+        }
+      }
+    }
+
+    function submitServerForm() {
+      if (validateForm('serverForm')) {
+        toastSuccess(document.getElementById('modalTitle').textContent + '成功');
+        closeModal('serverModal');
+      }
+    }
+
+    function viewDetail(name) {
+      if (typeof navigateTo === 'function') {
+        navigateTo('pages/assets/server-detail.html', '服务器详情', null);
+      } else {
+        window.location.href = 'server-detail.html';
+      }
+    }
+  </script>
+</body>
+</html>

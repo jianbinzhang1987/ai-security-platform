@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>服务运行状态</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <style>
+    .status-dashboard { padding: 15px; }
+    .col-row { display: flex; gap: 15px; margin-bottom: 15px; }
+    .col-card { flex: 1; background: #fff; border-radius: 4px; padding: 15px; box-shadow: 0 1px 4px rgba(0,21,41,.08); }
+    .card-title-ops { font-size: 15px; font-weight: bold; margin-bottom: 15px; border-left: 3px solid #409eff; padding-left: 8px; }
+    .chart-box-ops { width: 100%; height: 260px; }
+    
+    .health-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+    .node-item { width: calc(50% - 5px); border: 1px solid #dcdfe6; padding: 10px; display: flex; justify-content: space-between; align-items: center; border-radius: 4px; }
+    .node-title { font-weight: bold; font-size: 13px; color: #606266; }
+    .node-green { width: 12px; height: 12px; border-radius: 50%; background: #67c23a; box-shadow: 0 0 5px #67c23a; }
+    .node-red { width: 12px; height: 12px; border-radius: 50%; background: #f56c6c; box-shadow: 0 0 5px #f56c6c; animation: blink 1s infinite alternate; }
+
+    @keyframes blink {
+      from { opacity: 1; }
+      to { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="status-dashboard">
+    <div class="col-row">
+      <!-- 节点监控绿盘 -->
+      <div class="col-card" style="flex: 0.8;">
+        <div class="card-title-ops">核心构件健康体检反馈矩阵</div>
+        <div class="health-grid">
+          <div class="node-item"><span class="node-title">分布式探针网关簇</span> <div class="node-green" title="工作良好"></div></div>
+          <div class="node-item"><span class="node-title">缓冲消息管道积压阀</span> <div class="node-green" title="工作良好"></div></div>
+          <div class="node-item"><span class="node-title">结构化时序存储核</span> <div class="node-red" title="告警：写入延迟剧增！"></div></div>
+          <div class="node-item"><span class="node-title">全文检索引擎</span> <div class="node-green" title="工作良好"></div></div>
+          <div class="node-item"><span class="node-title">关系型元数据存放库</span> <div class="node-green" title="工作良好"></div></div>
+          <div class="node-item"><span class="node-title">安全规则测算沙盒网格</span> <div class="node-green" title="工作良好"></div></div>
+        </div>
+        <div style="margin-top: 15px;">
+           <button class="btn btn-danger" onclick="rebootDeadNodes()" style="width:100%; border-radius:20px;">一键强制切断并重启红色异常单元机器</button>
+        </div>
+      </div>
+      
+      <!-- 雷达图：安全网格承受力度 -->
+      <div class="col-card">
+        <div class="card-title-ops">物理层承载压力探射雷达</div>
+        <div id="radarChart" class="chart-box-ops"></div>
+      </div>
+    </div>
+
+    <div class="col-row">
+      <!-- 吞吐量折线图 -->
+      <div class="col-card" style="flex: 2;">
+        <div class="card-title-ops">系统报文进出口吞吐监控心电图</div>
+        <div id="lineChart" class="chart-box-ops" style="height: 300px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 雷达图配置
+      var radarChart = echarts.init(document.getElementById('radarChart'));
+      var radarOption = {
+        tooltip: {},
+        radar: {
+          indicator: [
+            { name: '中央处理器', max: 100},
+            { name: '内存空间占有', max: 100},
+            { name: '磁盘纵深存储', max: 100},
+            { name: '内网带宽吞吐', max: 100},
+            { name: '数据库排队阻塞', max: 100},
+            { name: '前端连接维持', max: 100}
+          ],
+          radius: '65%'
+        },
+        series: [{
+          name: '承受力对比',
+          type: 'radar',
+          data: [
+            {
+              value: [65, 82, 45, 90, 75, 50],
+              name: '高峰时段承受力'
+            }
+          ],
+          itemStyle: { color: '#f5222d' },
+          areaStyle: { opacity: 0.3 }
+        }]
+      };
+      radarChart.setOption(radarOption);
+
+      // 折线图波浪配置
+      var lineChart = echarts.init(document.getElementById('lineChart'));
+      var lineOption = {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['推流输入量', '分析处理完毕'] },
+        grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00']
+        },
+        yAxis: { type: 'value' },
+        series: [
+          {
+            name: '推流输入量',
+            type: 'line',
+            smooth: true,
+            itemStyle: { color: '#fa8c16' },
+            areaStyle: { opacity: 0.1 },
+            data: [1500, 3200, 8500, 6000, 7500, 4800, 2000]
+          },
+          {
+            name: '分析处理完毕',
+            type: 'line',
+            smooth: true,
+            itemStyle: { color: '#67c23a' },
+            areaStyle: { opacity: 0.2 },
+            data: [1400, 3100, 8000, 5800, 7500, 4700, 1950]
+          }
+        ]
+      };
+      lineChart.setOption(lineOption);
+
+      window.addEventListener('resize', function() {
+        radarChart.resize();
+        lineChart.resize();
+      });
+    });
+
+    function rebootDeadNodes() {
+      confirmDelete('针对所有显示异常红灯的物理基座容器发出斩杀令', function(){
+        toastSuccess('杀戮指令下达完毕，容器编排引擎正尝试重新孵化新节点。');
+      })
+    }
+  </script>
+</body>
+</html>
