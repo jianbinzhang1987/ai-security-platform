@@ -17,6 +17,7 @@
     .impl-threshold { background:#fdf6ec; color:#e6a23c; }
     .impl-regex { background:#ecf5ff; color:#409eff; }
     .impl-glob { background:#f0f9eb; color:#67c23a; }
+    .impl-ai { background:#f5f0ff; color:#7c3aed; }
     .quote-list { display:grid; gap:10px; }
     .quote-item { border:1px solid #EBEEF5; border-radius:6px; padding:12px; background:#fff; display:flex; justify-content:space-between; gap:12px; }
     .section-block { border:1px solid #EBEEF5; border-radius:6px; background:#fff; padding:16px; margin-bottom:14px; }
@@ -58,6 +59,7 @@
       <div class="stat-lite"><div class="k">规则项总数</div><div class="v">24</div></div>
       <div class="stat-lite"><div class="k">启用规则项数</div><div class="v" style="color:#67C23A;">20</div></div>
       <div class="stat-lite"><div class="k">正则规则项数</div><div class="v" style="color:#409EFF;">9</div></div>
+      <div class="stat-lite"><div class="k">AI增强规则项数</div><div class="v" style="color:#7c3aed;">3</div></div>
       <div class="stat-lite"><div class="k">已被引用规则项数</div><div class="v" style="color:#E6A23C;">18</div></div>
     </div>
 
@@ -85,6 +87,7 @@
           <option>Glob 匹配</option>
           <option>阈值规则</option>
           <option>概率采样</option>
+          <option>AI增强</option>
         </select>
       </div>
       <div class="search-item">
@@ -135,6 +138,18 @@
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td><strong>Prompt注入语义检测</strong><div class="meta-sub">rule-ai-001</div></td>
+              <td><span class="type-tag">注入防御</span></td>
+              <td><span class="type-tag impl-ai">AI增强</span></td>
+              <td><span class="type-tag target-probe">安全标签处理</span></td>
+              <td>llm-request-before</td>
+              <td>score + alert</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>2</td>
+              <td>2026-04-29 16:30</td>
+              <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-ai-001')">编辑</button><button class="btn btn-link" type="button" onclick="openAiSuggestModal()">AI优化建议</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-ai-001')">查看引用</button></td>
+            </tr>
             <tr>
               <td><strong>关键操作审计</strong><div class="meta-sub">rule-001</div></td>
               <td><span class="type-tag">审计控制</span></td>
@@ -215,7 +230,7 @@
             <div class="section-title">B. 检测逻辑</div>
             <div class="section-desc">统一选择规则实现方式，再按规则类型切换类型化配置区。</div>
             <div class="form-grid-2">
-              <div class="form-row"><div class="form-label required">规则实现方式</div><div class="form-field"><select id="implType" class="form-select" onchange="updateRulePanels()"><option value="regex">正则规则</option><option value="glob">Glob 匹配</option><option value="threshold">阈值规则</option><option value="sampling">概率采样</option></select></div></div>
+              <div class="form-row"><div class="form-label required">规则实现方式</div><div class="form-field"><select id="implType" class="form-select" onchange="updateRulePanels()"><option value="regex">正则规则</option><option value="glob">Glob 匹配</option><option value="threshold">阈值规则</option><option value="sampling">概率采样</option><option value="ai">AI增强</option></select></div></div>
               <div class="form-row"><div class="form-label">输入对象</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> prompt</label><label class="checkbox-item"><input type="checkbox"> completion</label><label class="checkbox-item"><input type="checkbox"> tool_input</label><label class="checkbox-item"><input type="checkbox"> tool_output</label></div></div></div>
             </div>
 
@@ -346,6 +361,21 @@
                 </div>
               </div>
             </div>
+
+            <div id="implPanel-ai" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">AI增强参数</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">模型</div><div class="form-field"><select class="form-select"><option>sec-detector-v1.4</option><option>sec-detector-v1.5-canary</option><option>local-sec-model-v0.9</option></select></div></div>
+                  <div class="form-row"><div class="form-label">Prompt模板</div><div class="form-field"><select class="form-select"><option>prompt-injection-detector-v0.8</option><option>jailbreak-detector-v0.5</option><option>tool-boundary-detector-v0.4</option></select></div></div>
+                  <div class="form-row"><div class="form-label">置信阈值</div><div class="form-field"><input class="form-control" value="0.82"></div></div>
+                  <div class="form-row"><div class="form-label">超时</div><div class="form-field"><input class="form-control" value="3000 ms"></div></div>
+                  <div class="form-row"><div class="form-label">降级行为</div><div class="form-field"><select class="form-select"><option>规则结果优先，AI超时跳过</option><option>标记人工复核</option><option>仅记录AI错误</option></select></div></div>
+                  <div class="form-row"><div class="form-label">输出字段</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险标签</label><label class="checkbox-item"><input type="checkbox" checked> 命中片段</label><label class="checkbox-item"><input type="checkbox" checked> 判断理由</label><label class="checkbox-item"><input type="checkbox" checked> 反例提示</label></div></div></div>
+                </div>
+                <div class="field-hint">AI增强规则仍受规则引擎托管，模型不可直接执行处置动作，输出只参与评分融合与人工研判。</div>
+              </div>
+            </div>
           </div>
 
           <div class="section-block">
@@ -416,6 +446,31 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="aiSuggestModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">AI优化建议</div><div class="modal-close" onclick="closeModal('aiSuggestModal')">×</div></div>
+      <div class="modal-body">
+        <div class="section-block">
+          <div class="section-title">样本分析</div>
+          <table class="kv-table">
+            <tr><td>近7日误报样本</td><td>18 条，集中在“业务话术改写”场景</td></tr>
+            <tr><td>近7日漏报样本</td><td>5 条，集中在“编码绕过”和“多轮诱导”</td></tr>
+            <tr><td>建议动作</td><td>提高角色扮演类权重，降低普通改写话术权重</td></tr>
+          </table>
+        </div>
+        <div class="section-block">
+          <div class="section-title">干跑验证结果</div>
+          <table class="data-table">
+            <thead><tr><th>指标</th><th>当前版本</th><th>建议版本</th><th>变化</th></tr></thead>
+            <tbody><tr><td>误报率</td><td>7.8%</td><td>5.1%</td><td><span class="tag tag-success">下降</span></td></tr><tr><td>漏报率</td><td>9.4%</td><td>8.7%</td><td><span class="tag tag-success">下降</span></td></tr><tr><td>平均耗时</td><td>1840ms</td><td>1930ms</td><td><span class="tag tag-warning">+90ms</span></td></tr></tbody>
+          </table>
+        </div>
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>AI优化建议不能直接发布，需走正式审批流程并记录影响面估算。</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('aiSuggestModal')">关闭</button><button class="btn btn-primary" type="button" onclick="toastSuccess('已创建AI规则优化审批单');closeModal('aiSuggestModal')">创建审批单</button></div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
   <script>
     const hookPointOptions = {
@@ -437,7 +492,13 @@
 
     function openRuleModal(id) {
       document.getElementById('ruleModalTitle').textContent = id ? '编辑规则项' : '新建规则项';
-      if (id === 'rule-002') {
+      if (id === 'rule-ai-001') {
+        document.getElementById('ruleName').value = 'Prompt注入语义检测';
+        document.getElementById('ruleId').value = 'rule-ai-001';
+        document.getElementById('ruleType').value = 'injection';
+        document.getElementById('ruleDomain').value = 'security';
+        document.getElementById('implType').value = 'ai';
+      } else if (id === 'rule-002') {
         document.getElementById('ruleName').value = 'Token 预算限流';
         document.getElementById('ruleId').value = 'rule-002';
         document.getElementById('ruleType').value = 'quota';
@@ -508,6 +569,9 @@
 
     function openQuoteModal() {
       openModal('quoteModal');
+    }
+    function openAiSuggestModal() {
+      openModal('aiSuggestModal');
     }
   </script>
 </body>

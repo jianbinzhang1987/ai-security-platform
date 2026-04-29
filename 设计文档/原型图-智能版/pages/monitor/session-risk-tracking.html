@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>会话风险追踪</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .tracking-layout { display:grid; grid-template-columns: 360px minmax(0, 1fr) 360px; gap:16px; align-items:start; }
+    .session-list { display:grid; gap:10px; }
+    .session-card { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; cursor:pointer; }
+    .session-card.active { border-color:#409EFF; background:#F5FAFF; box-shadow:0 0 0 2px rgba(64,158,255,.08); }
+    .session-title { display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+    .session-meta { color:#909399; font-size:12px; line-height:1.7; }
+    .risk-curve { height:220px; border:1px solid #EBEEF5; border-radius:4px; background:#fff; padding:16px 12px 28px; display:flex; align-items:flex-end; gap:10px; }
+    .turn-bar { flex:1; min-width:34px; border-radius:4px 4px 0 0; background:#409EFF; position:relative; cursor:pointer; }
+    .turn-bar.low { background:#67C23A; }
+    .turn-bar.mid { background:#E6A23C; }
+    .turn-bar.high { background:#F56C6C; }
+    .turn-bar.active { outline:2px solid #303133; outline-offset:2px; }
+    .turn-bar::after { content: attr(data-turn); position:absolute; left:50%; bottom:-22px; transform:translateX(-50%); color:#909399; font-size:12px; }
+    .turn-grid { display:grid; gap:10px; margin-top:14px; }
+    .turn-item { display:grid; grid-template-columns:72px 1fr auto; gap:12px; border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; align-items:start; }
+    .turn-item.risk { border-color:#F5C2C2; background:#FFF7F7; }
+    .turn-index { color:#606266; font-weight:600; }
+    .turn-text { color:#303133; line-height:1.7; }
+    .ai-panel { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; margin-bottom:12px; }
+    .ai-panel-title { font-weight:600; color:#303133; margin-bottom:8px; display:flex; justify-content:space-between; gap:8px; }
+    .ai-kv { display:grid; grid-template-columns:96px 1fr; gap:8px; font-size:13px; line-height:1.8; }
+    .ai-kv .k { color:#909399; }
+    .reason-list { margin:0; padding-left:18px; color:#606266; line-height:1.8; }
+    .mono { font-family:Consolas, "Courier New", monospace; }
+    @media (max-width: 1500px) {
+      .tracking-layout { grid-template-columns: 320px minmax(0, 1fr); }
+      .side-panel { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">会话风险追踪</div>
+        <div class="page-subtitle">按同一会话聚合多轮输入、模型响应和工具调用，识别会话内风险累积与关键转折点。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="toastSuccess('会话风险明细已导出')">导出明细</button>
+        <button class="btn btn-primary" onclick="goEventDetail()">查看关联事件</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">时间范围</span><select class="form-select"><option>今日</option><option selected>近 7 天</option><option>近 30 天</option></select></div>
+      <div class="search-item"><span class="form-label">接入应用</span><select class="form-select"><option>全部应用</option><option selected>研发代码审查助手</option><option>智能客服 Copilot</option></select></div>
+      <div class="search-item"><span class="form-label">AI状态</span><select class="form-select"><option>全部</option><option>success</option><option>timeout</option><option>circuit_open</option><option>skipped_by_policy</option></select></div>
+      <div class="search-item"><span class="form-label">session_id</span><input class="form-control mono" value="SES-20260416-018"></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('会话风险已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="tracking-layout">
+      <div class="card">
+        <div class="card-header"><div class="card-title">高风险会话</div><span class="tag tag-danger">Top 20</span></div>
+        <div class="card-body">
+          <div class="session-list">
+            <div class="session-card active">
+              <div class="session-title"><strong>SES-20260416-018</strong><span class="tag tag-danger">高</span></div>
+              <div class="session-meta">研发代码审查助手 · 8 轮 · 关键转折：第 5 轮<br>规则+AI联合检出 · ai_status=success</div>
+            </div>
+            <div class="session-card">
+              <div class="session-title"><strong>SES-20260416-012</strong><span class="tag tag-warning">中</span></div>
+              <div class="session-meta">人事档案助理 · 5 轮 · 响应输出复核<br>规则检出 · ai_status=skipped_by_policy</div>
+            </div>
+            <div class="session-card">
+              <div class="session-title"><strong>SES-20260416-009</strong><span class="tag tag-primary">低</span></div>
+              <div class="session-meta">智能客服 Copilot · 3 轮 · 低置信待复核<br>规则检出 · 已标记误报</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">会话内风险曲线</div><div><span class="tag tag-info">Turn 1-8</span> <span class="tag tag-danger">关键转折点</span></div></div>
+          <div class="card-body">
+            <div class="risk-curve">
+              <div class="turn-bar low" data-turn="T1" style="height:22%;"></div>
+              <div class="turn-bar low" data-turn="T2" style="height:28%;"></div>
+              <div class="turn-bar mid" data-turn="T3" style="height:44%;"></div>
+              <div class="turn-bar mid" data-turn="T4" style="height:58%;"></div>
+              <div class="turn-bar high active" data-turn="T5" style="height:86%;"></div>
+              <div class="turn-bar high" data-turn="T6" style="height:78%;"></div>
+              <div class="turn-bar mid" data-turn="T7" style="height:54%;"></div>
+              <div class="turn-bar mid" data-turn="T8" style="height:48%;"></div>
+            </div>
+            <div class="turn-grid">
+              <div class="turn-item"><div class="turn-index">Turn 3</div><div class="turn-text">用户要求“只做配置检查”，模型开始规划读取仓库配置。</div><span class="tag tag-warning">0.44</span></div>
+              <div class="turn-item"><div class="turn-index">Turn 4</div><div class="turn-text">模型计划调用 repo_reader 与 external_http_post，风险开始累积。</div><span class="tag tag-warning">0.58</span></div>
+              <div class="turn-item risk"><div class="turn-index">Turn 5</div><div class="turn-text">Tool Input 包含 external.example/upload 与 repo_path=internal/payment，形成工具边界越界关键证据。</div><span class="tag tag-danger">0.86</span></div>
+              <div class="turn-item"><div class="turn-index">Turn 6</div><div class="turn-text">响应输出包含内部仓库路径摘要，已脱敏展示并关联风险事件。</div><span class="tag tag-danger">0.78</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <div class="card">
+          <div class="card-header"><div class="card-title">AI累积研判</div><span class="tag tag-success">success</span></div>
+          <div class="card-body">
+            <div class="ai-panel">
+              <div class="ai-panel-title">风险结论 <span class="tag tag-danger">高风险</span></div>
+              <div class="ai-kv"><div class="k">检测来源</div><div>规则+AI联合检出</div><div class="k">攻击/风险类型</div><div>工具能力边界越界</div><div class="k">置信度</div><div>0.91</div><div class="k">模型版本</div><div class="mono">sec-detector-v1.4</div></div>
+            </div>
+            <div class="ai-panel">
+              <div class="ai-panel-title">关键转折点</div>
+              <ul class="reason-list">
+                <li>Turn 4 出现外部 HTTP POST 工具计划。</li>
+                <li>Turn 5 工具输入包含内部仓库路径。</li>
+                <li>Turn 6 输出摘要出现内部路径信息，已触发脱敏。</li>
+              </ul>
+            </div>
+            <div class="ai-panel">
+              <div class="ai-panel-title">降级与安全约束</div>
+              <div class="ai-kv"><div class="k">数据级别</div><div>L1 内部</div><div class="k">Raw访问</div><div>需审批后查看</div><div class="k">超时策略</div><div>规则优先，AI超时跳过</div></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="goEventDetail()">进入事件详情</button>
+              <button class="btn btn-default" onclick="goTrace()">查看溯源</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '安全监控' }, { label: '会话风险追踪' }]);
+      }
+    });
+    function goEventDetail() {
+      navigateTo('pages/events/event-detail.html?id=EVT-2026-00018', '风险事件详情', '../events/event-detail.html?id=EVT-2026-00018');
+    }
+    function goTrace() {
+      navigateTo('pages/monitor/trace-list.html?trace_id=TRC-20260416-018', '风险溯源工作台', 'trace-list.html?trace_id=TRC-20260416-018');
+    }
+  </script>
+</body>
+</html>

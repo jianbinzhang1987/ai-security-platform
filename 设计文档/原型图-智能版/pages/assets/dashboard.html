@@ -31,6 +31,12 @@
     .coverage-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .coverage-item { border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; background: #fff; }
     .coverage-title { display: flex; justify-content: space-between; margin-bottom: 8px; color: #606266; }
+    .ai-source-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; }
+    .ai-source-card { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; cursor:pointer; }
+    .ai-source-card:hover { border-color:#B3D8FF; box-shadow:0 6px 16px rgba(64,158,255,.08); }
+    .ai-source-card .source-value { font-size:22px; font-weight:700; margin:6px 0; }
+    .source-label { color:#909399; font-size:12px; }
+    .status-row { display:grid; grid-template-columns:100px 1fr 44px; gap:8px; align-items:center; margin-bottom:10px; color:#606266; }
     .todo-list { display: grid; gap: 10px; }
     .todo-item { border-left: 3px solid #E6A23C; background: #fff; border-radius: 4px; padding: 10px 12px; display: flex; justify-content: space-between; gap: 12px; align-items: center; }
     .todo-item.high { border-left-color: #F56C6C; }
@@ -57,6 +63,30 @@
       <div class="risk-card" onclick="goPage('../events/event-list.html?event_status=resolved','风险事件')" style="cursor:pointer;"><div class="label">已处置风险</div><div class="value green">89</div><div class="hint">平均闭环 38 分钟</div></div>
       <div class="risk-card" onclick="goPage('../ops/collector-config.html?instance_status=degraded','数据采集器配置')" style="cursor:pointer;"><div class="label">采集异常应用</div><div class="value red">7</div><div class="hint">含 2 个生产应用</div></div>
       <div class="risk-card" onclick="goPage('coverage.html','监控覆盖度')" style="cursor:pointer;"><div class="label">规则覆盖缺口</div><div class="value blue">12</div><div class="hint">工具边界规则 5 项</div></div>
+    </div>
+
+    <div class="dashboard-grid" style="margin-bottom:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">AI检测来源统计</div><button class="btn btn-link" onclick="goPage('../events/event-list.html','风险事件')">查看事件</button></div>
+        <div class="card-body">
+          <div class="ai-source-grid">
+            <div class="ai-source-card" onclick="goPage('../events/event-list.html?detection_source=rule','风险事件')"><div class="source-label">规则检出</div><div class="source-value blue">86</div><div class="rank-meta">硬规则基线命中</div></div>
+            <div class="ai-source-card" onclick="goPage('../events/event-list.html?detection_source=ai_model','风险事件')"><div class="source-label">AI检出</div><div class="source-value orange">31</div><div class="rank-meta">语义检测补充</div></div>
+            <div class="ai-source-card" onclick="goPage('../events/event-list.html?detection_source=rule_and_ai','风险事件')"><div class="source-label">联合检出</div><div class="source-value red">37</div><div class="rank-meta">规则+AI共同命中</div></div>
+            <div class="ai-source-card" onclick="goPage('../events/event-list.html?ai_status=skipped','风险事件')"><div class="source-label">AI跳过</div><div class="source-value">19</div><div class="rank-meta">策略/数据级别跳过</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">AI状态分布</div><button class="btn btn-link" onclick="goPage('../monitor/session-risk-tracking.html','会话风险追踪')">会话追踪</button></div>
+        <div class="card-body">
+          <div class="status-row"><span>success</span><div class="progress-bar"><div class="progress-fill green" style="width:72%;"></div></div><strong>72%</strong></div>
+          <div class="status-row"><span>pending</span><div class="progress-bar"><div class="progress-fill blue" style="width:9%;"></div></div><strong>9%</strong></div>
+          <div class="status-row"><span>timeout</span><div class="progress-bar"><div class="progress-fill orange" style="width:6%;"></div></div><strong>6%</strong></div>
+          <div class="status-row"><span>circuit_open</span><div class="progress-bar"><div class="progress-fill orange" style="width:3%;"></div></div><strong>3%</strong></div>
+          <div class="status-row"><span>skipped</span><div class="progress-bar"><div class="progress-fill blue" style="width:10%;"></div></div><strong>10%</strong></div>
+        </div>
+      </div>
     </div>
 
     <div class="dashboard-grid">

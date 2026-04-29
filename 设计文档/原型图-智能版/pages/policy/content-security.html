@@ -29,6 +29,11 @@
     .sort-link { cursor:pointer; color:#909399; font-weight:600; }
     .sort-link:hover { color:#409EFF; }
     .status-cell { display:flex; align-items:center; gap:8px; }
+    .ai-config-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; }
+    .ai-config-card { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .ai-config-card .label { color:#909399; font-size:12px; margin-bottom:6px; }
+    .ai-config-card .value { color:#303133; font-weight:600; }
+    .fusion-box { border:1px solid #B3D8FF; background:#F5FAFF; border-radius:4px; padding:12px; margin-bottom:12px; }
   </style>
 </head>
 <body class="page-content">
@@ -40,6 +45,7 @@
       </div>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-default" type="button" onclick="openSimModal()">样例模拟</button>
+        <button class="btn btn-default" type="button" onclick="openFusionModal()">检测融合设置</button>
         <button class="btn btn-default" type="button" onclick="openDictDrawer()">敏感词库</button>
         <button class="btn btn-primary" type="button" onclick="openPolicyModal('prompt')">新建内容策略</button>
       </div>
@@ -56,6 +62,9 @@
     </div>
     <div class="stat-grid">
       <div class="stat-lite clickable" onclick="openRecordDrawer('内容策略统计')"><div class="k">内容策略</div><div class="v">28</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('AI检测策略统计')"><div class="k">AI检测策略</div><div class="v" style="color:#409EFF;">12</div><div class="meta-sub">启用 9 / 观察 3</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('AI跳过与降级统计')"><div class="k">AI跳过/降级</div><div class="v" style="color:#E6A23C;">37</div><div class="meta-sub">近 7 日</div></div>
+      <div class="stat-lite clickable" onclick="openRecordDrawer('AI检测成本统计')"><div class="k">Token预算使用</div><div class="v" style="color:#67C23A;">68%</div><div class="meta-sub">租户月预算</div></div>
     </div>
 
     <div class="search-bar">
@@ -94,10 +103,10 @@
           <div class="tab-pane show" data-tab="prompt">
             <div class="table-wrapper">
               <table class="data-table">
-                <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('策略名称')">策略名称</span></th><th>作用对象</th><th>规则包 / 模型</th><th>检测能力</th><th><span class="sort-link" onclick="sortToast('默认动作')">默认动作</span></th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
+                <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('策略名称')">策略名称</span></th><th>作用对象</th><th>规则包 / 模型</th><th>检测方式</th><th>检测能力</th><th><span class="sort-link" onclick="sortToast('默认动作')">默认动作</span></th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td><input type="checkbox"></td><td><strong>全局提示词攻击基线</strong><div class="meta-sub">gw-pa-001 · v6 · 已发布 · 优先级 10</div></td><td>全部 AI 路由</td><td>基础提示词攻击防护包</td><td><div class="type-tags"><span class="type-tag">越狱</span><span class="type-tag">提示词注入</span><span class="type-tag">系统提示词套取</span><span class="type-tag">上下文污染</span></div></td><td><span class="tag tag-danger action-tag">BLOCK（拦截）</span></td><td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '全局提示词攻击基线')"><span class="toggle-track"></span></label><span class="tag tag-success">已启用</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('prompt')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer()">版本</button><button class="btn btn-link" onclick="openSimModal()">模拟</button><button class="btn btn-link danger" onclick="confirmDelete('全局提示词攻击基线', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
-                  <tr><td><input type="checkbox"></td><td><strong>测试环境观察策略</strong><div class="meta-sub">gw-pa-003 · v1 · 已停用</div></td><td>ai-request-safety-guard-test</td><td>轻量日志观察包</td><td><div class="type-tags"><span class="type-tag">角色绕过</span><span class="type-tag">模板诱导</span></div></td><td><span class="tag tag-info action-tag">LOG_ONLY（仅记录）</span></td><td><div class="status-cell"><label class="toggle"><input type="checkbox" onchange="toggleStatus(this, '测试环境观察策略')"><span class="toggle-track"></span></label><span class="tag">已停用</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('prompt')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer()">版本</button><button class="btn btn-link" onclick="confirmAction('启用测试环境观察策略', '策略已启用')">启用</button><button class="btn btn-link danger" onclick="confirmDelete('测试环境观察策略', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>全局提示词攻击基线</strong><div class="meta-sub">gw-pa-001 · v6 · 已发布 · 优先级 10</div></td><td>全部 AI 路由</td><td>基础提示词攻击防护包</td><td><span class="tag tag-primary">规则+AI</span><div class="meta-sub">近同步AI，超时3s</div></td><td><div class="type-tags"><span class="type-tag">越狱</span><span class="type-tag">提示词注入</span><span class="type-tag">系统提示词套取</span><span class="type-tag">上下文污染</span></div></td><td><span class="tag tag-danger action-tag">BLOCK（拦截）</span></td><td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '全局提示词攻击基线')"><span class="toggle-track"></span></label><span class="tag tag-success">已启用</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('prompt')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer()">版本</button><button class="btn btn-link" onclick="openSimModal()">模拟</button><button class="btn btn-link danger" onclick="confirmDelete('全局提示词攻击基线', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>测试环境观察策略</strong><div class="meta-sub">gw-pa-003 · v1 · 已停用</div></td><td>ai-request-safety-guard-test</td><td>轻量日志观察包</td><td><span class="tag tag-info">规则</span><div class="meta-sub">AI未配置</div></td><td><div class="type-tags"><span class="type-tag">角色绕过</span><span class="type-tag">模板诱导</span></div></td><td><span class="tag tag-info action-tag">LOG_ONLY（仅记录）</span></td><td><div class="status-cell"><label class="toggle"><input type="checkbox" onchange="toggleStatus(this, '测试环境观察策略')"><span class="toggle-track"></span></label><span class="tag">已停用</span></div></td><td><button class="btn btn-link" onclick="openPolicyModal('prompt')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer()">版本</button><button class="btn btn-link" onclick="confirmAction('启用测试环境观察策略', '策略已启用')">启用</button><button class="btn btn-link danger" onclick="confirmDelete('测试环境观察策略', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -169,11 +178,37 @@
             <div class="form-row"><div class="form-label">引擎超时降级</div><div class="form-field"><select class="form-select"><option>BLOCK（拦截）</option><option>PASS（放行）</option><option>LOG_ONLY（仅记录）</option></select></div></div>
           </div>
           <div id="dynamicFields" class="field-panel"></div>
+          <div class="field-panel">
+            <div class="field-panel-title">AI检测配置</div>
+            <div class="form-grid">
+              <div class="form-row"><div class="form-label">启用AI检测</div><div class="form-field"><label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label><div class="meta-sub">关闭后 ai_status=not_configured</div></div></div>
+              <div class="form-row"><div class="form-label">模型选择</div><div class="form-field"><select class="form-select"><option>sec-detector-v1.4（生产）</option><option>sec-detector-v1.5-canary</option><option>local-sec-model-v0.9</option></select></div></div>
+              <div class="form-row"><div class="form-label">置信度阈值</div><div class="form-field"><input class="form-control" value="0.82"><div class="meta-sub">低于阈值进入人工复核或仅记录</div></div></div>
+              <div class="form-row"><div class="form-label">检测超时</div><div class="form-field"><input class="form-control" value="3000 ms"><div class="meta-sub">超时后仅采用规则结果</div></div></div>
+              <div class="form-row"><div class="form-label">降级策略</div><div class="form-field"><select class="form-select"><option>规则优先，AI超时跳过</option><option>低风险跳过AI</option><option>熔断后转人工复核</option></select></div></div>
+              <div class="form-row"><div class="form-label">数据级别上限</div><div class="form-field"><select class="form-select"><option>L1 内部，可脱敏后外部模型</option><option>L2 敏感，仅私有化模型</option><option>L3 机密，仅本地模型</option></select></div></div>
+            </div>
+          </div>
           <div class="form-row"><div class="form-label required">处置动作</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 拦截</label><label class="checkbox-item"><input type="checkbox" checked> 脱敏 / 隐藏</label><label class="checkbox-item"><input type="checkbox"> 改写返回</label><label class="checkbox-item"><input type="checkbox" checked> 异常会话提示</label><label class="checkbox-item"><input type="checkbox" checked> 写入审计</label></div></div></div>
           <div class="form-row"><div class="form-label">策略说明</div><div class="form-field"><textarea class="form-textarea">覆盖进出网关的数据流安全检测，对敏感词匹配内容进行拦截、隐藏敏感内容或提示异常会话。</textarea></div></div>
         </form>
       </div>
       <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('policyModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitPolicy()">保存</button></div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="fusionModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">检测融合设置</div><div class="modal-close" onclick="closeModal('fusionModal')">×</div></div>
+      <div class="modal-body">
+        <div class="fusion-box">P0.5b 推荐采用“规则优先 + AI追加”机制。规则引擎保持同步基线，AI结果异步或近同步追加，不阻断规则链路。</div>
+        <div class="ai-config-grid">
+          <div class="ai-config-card"><div class="label">融合策略</div><div class="value">规则优先 + AI追加</div></div>
+          <div class="ai-config-card"><div class="label">取高策略</div><div class="value">AI置信度 > 0.82</div></div>
+          <div class="ai-config-card"><div class="label">熔断阈值</div><div class="value">错误率 > 20%</div></div>
+        </div>
+        <div class="form-row" style="margin-top:12px;"><div class="form-label">AI跳过条件</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 低风险场景</label><label class="checkbox-item"><input type="checkbox" checked> L3机密且无本地模型</label><label class="checkbox-item"><input type="checkbox" checked> 租户Token预算耗尽</label></div></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('fusionModal')">取消</button><button class="btn btn-primary" type="button" onclick="toastSuccess('检测融合设置已保存');closeModal('fusionModal')">保存</button></div>
     </div>
   </div>
   <div class="modal-overlay" id="simModal">
@@ -208,6 +243,7 @@
       renderPolicyFields();
       openModal('policyModal');
     }
+    function openFusionModal() { openModal('fusionModal'); }
     function renderPolicyFields() {
       var domain = document.getElementById('securityDomain').value;
       var html = '';
