@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>溯源调查看板</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .trace-search { align-items: flex-start; }
+    .trace-search .form-select, .trace-search .form-control { min-width: 150px; }
+    .trace-search .trace-query { min-width: 260px; }
+    .trace-search .advanced-filters { display: none; width: 100%; flex-wrap: wrap; gap: 12px; padding-top: 4px; }
+    .trace-search.expanded .advanced-filters { display: flex; }
+    .filter-toggle { min-width: 96px; }
+    .trace-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; margin-top: 16px; }
+    .trace-card { background: #fff; border: 1px solid #EBEEF5; border-radius: 4px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+    .trace-card:hover { border-color: #409EFF; box-shadow: 0 2px 12px 0 rgba(0,0,0,.05); }
+    .trace-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .trace-card-title { font-weight: 600; font-size: 15px; color: #303133; }
+    .trace-card-body { font-size: 13px; color: #606266; line-height: 1.8; }
+    .trace-card-footer { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #EBEEF5; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #909399; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险溯源工作台</div>
+        <div class="page-subtitle">所有的溯源调查任务看板。点击进入单条 Trace 进行深度分析还原。</div>
+      </div>
+    </div>
+
+    <div class="search-bar trace-search">
+      <div class="search-item">
+        <span class="form-label">时间范围</span>
+        <select class="form-select" id="traceTimeRange">
+          <option>今日</option>
+          <option>昨日</option>
+          <option selected>近 7 天</option>
+          <option>自定义</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">接入应用</span>
+        <select class="form-select" id="traceApp">
+          <option value="">全部应用</option>
+          <option>研发代码审查助手</option>
+          <option>人事档案助理</option>
+          <option>智能客服 Copilot</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险等级</span>
+        <select class="form-select" id="traceRiskLevel">
+          <option value="">全部</option>
+          <option>高风险</option>
+          <option>中风险</option>
+          <option>低风险</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">Trace ID / Span ID</span>
+        <input class="form-control mono trace-query" id="traceQuery" placeholder="输入 Trace ID 或 Span ID">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary">查询</button>
+        <button class="btn btn-default">重置</button>
+        <button class="btn btn-default filter-toggle" onclick="this.parentElement.parentElement.classList.toggle('expanded')">更多筛选</button>
+      </div>
+      <div class="advanced-filters" id="advancedFilters">
+        <div class="search-item">
+          <span class="form-label">风险类型</span>
+          <select class="form-select" id="traceRiskType">
+            <option value="">全部</option>
+            <option>工具能力边界越界</option>
+            <option>敏感数据输出</option>
+            <option>提示词风险</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">关联事件</span>
+          <input class="form-control" placeholder="输入事件编号 (如 EVT-2026-...)">
+        </div>
+      </div>
+    </div>
+
+    <div class="trace-grid">
+      <div class="trace-card" onclick="window.location.href='trace-list.html'">
+        <div class="trace-card-header">
+          <div>
+            <div class="trace-card-title mono">TRC-20260416-018</div>
+            <div style="margin-top:4px;"><span class="tag tag-danger">高风险</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:#909399;font-size:12px;">2026-04-16 10:25:33</div>
+            <div style="margin-top:4px;font-size:12px;">7 个 Span</div>
+          </div>
+        </div>
+        <div class="trace-card-body">
+          <div><span style="color:#909399;display:inline-block;width:60px;">应用:</span>研发代码审查助手</div>
+          <div><span style="color:#909399;display:inline-block;width:60px;">类型:</span>工具能力边界越界</div>
+          <div style="margin-top:6px;">工具外联数据流需确认，命中未声明工具 <code>external_http_post</code>。</div>
+        </div>
+        <div class="trace-card-footer">
+          <div>关联事件: <span class="mono" style="color:#409EFF;">EVT-2026-00018</span></div>
+          <div><button class="btn btn-link" style="padding:0;">进入溯源分析</button></div>
+        </div>
+      </div>
+
+      <div class="trace-card" onclick="window.location.href='trace-list.html'">
+        <div class="trace-card-header">
+          <div>
+            <div class="trace-card-title mono">TRC-20260416-012</div>
+            <div style="margin-top:4px;"><span class="tag tag-warning">中风险</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:#909399;font-size:12px;">2026-04-16 09:48:11</div>
+            <div style="margin-top:4px;font-size:12px;">5 个 Span</div>
+          </div>
+        </div>
+        <div class="trace-card-body">
+          <div><span style="color:#909399;display:inline-block;width:60px;">应用:</span>人事档案助理</div>
+          <div><span style="color:#909399;display:inline-block;width:60px;">类型:</span>敏感数据输出</div>
+          <div style="margin-top:6px;">敏感字段输出过多，响应输出包含个人信息片段。</div>
+        </div>
+        <div class="trace-card-footer">
+          <div>关联事件: <span class="mono" style="color:#409EFF;">EVT-2026-00012</span></div>
+          <div><button class="btn btn-link" style="padding:0;">进入溯源分析</button></div>
+        </div>
+      </div>
+
+      <div class="trace-card" onclick="window.location.href='trace-list.html'">
+        <div class="trace-card-header">
+          <div>
+            <div class="trace-card-title mono">TRC-20260416-009</div>
+            <div style="margin-top:4px;"><span class="tag tag-primary">低风险</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:#909399;font-size:12px;">2026-04-16 09:12:04</div>
+            <div style="margin-top:4px;font-size:12px;">12 个 Span</div>
+          </div>
+        </div>
+        <div class="trace-card-body">
+          <div><span style="color:#909399;display:inline-block;width:60px;">应用:</span>智能客服 Copilot</div>
+          <div><span style="color:#909399;display:inline-block;width:60px;">类型:</span>提示词风险</div>
+          <div style="margin-top:6px;">疑似规则误报。</div>
+        </div>
+        <div class="trace-card-footer">
+          <div>关联事件: <span class="mono" style="color:#409EFF;">EVT-2026-00009</span></div>
+          <div><button class="btn btn-link" style="padding:0;">进入溯源分析</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '安全监控' }, { label: '风险溯源工作台' }]);
+      }
+    });
+  </script>
+</body>
+</html>

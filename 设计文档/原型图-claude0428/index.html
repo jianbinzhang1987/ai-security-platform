@@ -186,12 +186,7 @@
                 height: 1px;
                 background: #ebeef5;
                 margin: 4px 0;
-            }
-
-            /* P0 MVP 菜单收敛：非 P0 页面仅在导航中屏蔽，页面文件与入口配置保留 */
-            .nav-hidden-p0 {
-                display: none !important;
-            }
+            }
 
             .nav-subgroup {
                 margin: 6px 0;
@@ -377,65 +372,86 @@
                         >
                             接入应用
                         </div>
+                    </div>
+
+                                        <!-- 安全扫描 -->
+                    <div class="nav-parent" onclick="toggleNav(this)">
+                        <svg
+                            class="nav-icon"
+                            viewBox="0 0 16 16"
+                            fill="none"
+                            width="16"
+                            height="16"
+                        >
+                            <circle
+                                cx="6.5"
+                                cy="6.5"
+                                r="5"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                            />
+                            <path
+                                d="M10.5 10.5L14.5 14.5"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                            />
+                            <path
+                                d="M4 6.5h5M6.5 4v5"
+                                stroke="currentColor"
+                                stroke-width="1"
+                                stroke-linecap="round"
+                            />
+                        </svg>
+                        <span class="nav-label">安全扫描</span>
+                        <span class="nav-arrow"></span>
+                    </div>
+                    <div class="nav-children">
                         <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/assets/tool-exposure.html"
-                            data-label="工具与权限"
+                            class="nav-item"
+                            data-page="pages/scan/prompt-scan.html"
+                            data-label="Prompt扫描"
                             onclick="
                                 loadPage(
-                                    'pages/assets/tool-exposure.html',
-                                    '工具与权限',
+                                    'pages/scan/prompt-scan.html',
+                                    'Prompt扫描',
                                     this,
                                 )
                             "
                         >
-                            工具与权限
+                            Prompt扫描
                         </div>
                         <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/assets/coverage.html"
-                            data-label="监控覆盖度"
+                            class="nav-item"
+                            data-page="pages/scan/skill-scan.html"
+                            data-label="Skill扫描"
                             onclick="
                                 loadPage(
-                                    'pages/assets/coverage.html',
-                                    '监控覆盖度',
+                                    'pages/scan/skill-scan.html',
+                                    'Skill扫描',
                                     this,
                                 )
                             "
                         >
-                            监控覆盖度
+                            Skill扫描
                         </div>
                         <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/assets/device-register.html"
-                            data-label="接入审批"
+                            class="nav-item"
+                            data-page="pages/scan/mcp-scan.html"
+                            data-label="MCP扫描"
                             onclick="
                                 loadPage(
-                                    'pages/assets/device-register.html',
-                                    '接入审批',
+                                    'pages/scan/mcp-scan.html',
+                                    'MCP扫描',
                                     this,
                                 )
                             "
                         >
-                            接入审批
-                        </div>
-                        <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/assets/topology.html"
-                            data-label="资产拓扑"
-                            onclick="
-                                loadPage(
-                                    'pages/assets/topology.html',
-                                    '资产拓扑',
-                                    this,
-                                )
-                            "
-                        >
-                            资产拓扑
+                            MCP扫描
                         </div>
                     </div>
 
-                    <!-- 安全监控 -->
+<!-- 安全监控 -->
                     <div class="nav-parent" onclick="toggleNav(this)">
                         <svg
                             class="nav-icon"
@@ -475,34 +491,6 @@
                             "
                         >
                             风险溯源工作台
-                        </div>
-                        <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/monitor/prompt-search.html"
-                            data-label="内容检索"
-                            onclick="
-                                loadPage(
-                                    'pages/monitor/prompt-search.html',
-                                    '内容检索',
-                                    this,
-                                )
-                            "
-                        >
-                            内容检索
-                        </div>
-                        <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/monitor/saved-views.html"
-                            data-label="意图偏离分析台"
-                            onclick="
-                                loadPage(
-                                    'pages/monitor/saved-views.html',
-                                    '意图偏离分析台',
-                                    this,
-                                )
-                            "
-                        >
-                            意图偏离分析台
                         </div>
                     </div>
 
@@ -732,50 +720,6 @@
                             通知渠道管理
                         </div>
                     </div>
-
-                    <!-- 报告中心 -->
-                    <div class="nav-parent nav-hidden-p0" onclick="toggleNav(this)">
-                        <svg
-                            class="nav-icon"
-                            viewBox="0 0 16 16"
-                            fill="none"
-                            width="16"
-                            height="16"
-                        >
-                            <rect
-                                x="2"
-                                y="1"
-                                width="12"
-                                height="14"
-                                rx="1.5"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                            />
-                            <path
-                                d="M5 5h6M5 8h6M5 11h4"
-                                stroke="currentColor"
-                                stroke-width="1.3"
-                                stroke-linecap="round"
-                            />
-                        </svg>
-                        <span class="nav-label">报告中心</span>
-                        <span class="nav-arrow"></span>
-                    </div>
-                    <div class="nav-children nav-hidden-p0">
-                        <div
-                            class="nav-item"
-                            data-page="pages/report/report-list.html"
-                            data-label="安全报告"
-                            onclick="
-                                loadPage(
-                                    'pages/report/report-list.html',
-                                    '安全报告',
-                                    this,
-                                )
-                            "
-                        >
-                            安全报告
-                        </div>
                         <div
                             class="nav-item"
                             data-page="pages/report/report-new.html"
@@ -834,20 +778,6 @@
                     </div>
                     <div class="nav-children">
                         <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/system/tenant-list.html"
-                            data-label="租户管理"
-                            onclick="
-                                loadPage(
-                                    'pages/system/tenant-list.html',
-                                    '租户管理',
-                                    this,
-                                )
-                            "
-                        >
-                            租户管理
-                        </div>
-                        <div
                             class="nav-item"
                             data-page="pages/system/user-list.html"
                             data-label="用户与权限"
@@ -860,20 +790,6 @@
                             "
                         >
                             用户与权限
-                        </div>
-                        <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/system/api-keys.html"
-                            data-label="API Key 管理"
-                            onclick="
-                                loadPage(
-                                    'pages/system/api-keys.html',
-                                    'API Key 管理',
-                                    this,
-                                )
-                            "
-                        >
-                            API Key 管理
                         </div>
                         <div
                             class="nav-item"
@@ -890,20 +806,6 @@
                             操作审计日志
                         </div>
                         <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/ops/service-status.html"
-                            data-label="服务运行状态"
-                            onclick="
-                                loadPage(
-                                    'pages/ops/service-status.html',
-                                    '服务运行状态',
-                                    this,
-                                )
-                            "
-                        >
-                            服务运行状态
-                        </div>
-                        <div
                             class="nav-item"
                             data-page="pages/ops/collector-config.html"
                             data-label="数据采集器配置"
@@ -916,20 +818,6 @@
                             "
                         >
                             数据采集器配置
-                        </div>
-                        <div
-                            class="nav-item nav-hidden-p0"
-                            data-page="pages/ops/deploy-config.html"
-                            data-label="平台路由与部署"
-                            onclick="
-                                loadPage(
-                                    'pages/ops/deploy-config.html',
-                                    '平台路由与部署',
-                                    this,
-                                )
-                            "
-                        >
-                            平台路由与部署
                         </div>
                     </div>
                 </nav>

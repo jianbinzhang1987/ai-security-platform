@@ -1,0 +1,15 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>报告订阅</title><link rel="stylesheet" href="../../css/style.css"></head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header"><div><div class="page-title">报告订阅</div><div class="page-subtitle">配置周期生成、收件人和分享范围。</div></div><button class="btn btn-primary" onclick="toastSuccess('订阅已创建')">新增订阅</button></div>
+    <div class="card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>订阅名称</th><th>周期</th><th>报告模板</th><th>收件人</th><th>状态</th><th>操作</th></tr></thead><tbody>
+      <tr><td>安全运营日报</td><td>每天 09:00</td><td>全局态势日报</td><td>SOC 群组</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+      <tr><td>应用负责人周报</td><td>每周一 10:00</td><td>应用安全周报</td><td>应用负责人</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
+    </tbody></table></div></div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告订阅' }]);</script>
+</body>
+</html>

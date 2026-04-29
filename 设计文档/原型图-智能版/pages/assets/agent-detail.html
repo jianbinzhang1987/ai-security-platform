@@ -1,0 +1,510 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>关联策略详情</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="sub-page">
+
+  <!-- 页面头部 -->
+  <div class="page-header">
+    <div>
+      <div class="page-title" style="display:flex;align-items:center;gap:12px;">
+        生产服务器-01
+        <span class="tag tag-success">在线</span>
+      </div>
+      <div class="page-subtitle">协议类型: 192.168.1.10 | 负责人: 张三</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-default" onclick="openModal('editModal')">编辑基本信息</button>
+      <button class="btn btn-warning" onclick="confirmOffline()">手动下线</button>
+      <button class="btn btn-primary" onclick="openModal('deployModal')">下发策略</button>
+    </div>
+  </div>
+
+  <!-- 统计卡片 -->
+  <div class="stat-cards">
+    <div class="stat-card">
+      <div class="stat-card-label">已部署关联策略</div>
+      <div class="stat-card-value">5</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">在线智能体数</div>
+      <div class="stat-card-value blue">12</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">今日安全事件</div>
+      <div class="stat-card-value red">3</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-card-label">当前生效策略</div>
+      <div class="stat-card-value orange">8</div>
+    </div>
+  </div>
+
+  <!-- 选项卡 -->
+  <div class="card">
+    <div class="card-body">
+      <div class="tab-nav" id="detailTabNav">
+        <div class="tab-item active" data-tab="tab-base">基本信息</div>
+        <div class="tab-item" data-tab="tab-apps">关联策略</div>
+        <div class="tab-item" data-tab="tab-agents">智能体汇总</div>
+        <div class="tab-item" data-tab="tab-policies">生效策略</div>
+      </div>
+
+      <div id="detailTabContent">
+        <!-- 基本信息 -->
+        <div class="tab-pane show" data-tab="tab-base">
+          <div class="desc-list">
+            <div class="desc-item">
+              <div class="desc-label">智能体名称</div>
+              <div class="desc-value">生产服务器-01</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">协议类型</div>
+              <div class="desc-value">192.168.1.10</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">外网地址</div>
+              <div class="desc-value">123.56.78.90</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">操作系统</div>
+              <div class="desc-value">Linux CentOS 7</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">所属部门</div>
+              <div class="desc-value">研发部</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">负责人</div>
+              <div class="desc-value">张三</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">创建时间</div>
+              <div class="desc-value">2023-10-01 10:00:00</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">最后心跳时间</div>
+              <div class="desc-value">2023-10-27 15:30:12</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">硬件架构</div>
+              <div class="desc-value">x86_64</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">唯一标识</div>
+              <div class="desc-value" style="font-family:monospace;">mac:00-16-3e-00-11-22</div>
+            </div>
+            <div class="desc-item">
+              <div class="desc-label">备注说明</div>
+              <div class="desc-value">承载主要客户服务智能体</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 关联策略 -->
+        <div class="tab-pane" data-tab="tab-apps">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <div class="search-item">
+                <input type="text" class="form-control" placeholder="搜索智能体名称">
+              </div>
+              <button class="btn btn-primary btn-sm">查询</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>智能体名称</th>
+                  <th>开发框架</th>
+                  <th>部署环境</th>
+                  <th>运行实例数</th>
+                  <th>智能体数</th>
+                  <th>运行状态</th>
+                  <th>最后心跳时间</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">智能客服系统</a></td>
+                  <td>LangChain框架</td>
+                  <td><span class="tag tag-primary">生产环境</span></td>
+                  <td>3</td>
+                  <td>5</td>
+                  <td><span class="tag tag-success">在线</span></td>
+                  <td>2023-10-27 15:30:10</td>
+                  <td>
+                    <div class="table-action-col">
+                      <button class="btn btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">查看</button>
+                      <button class="btn btn-link warning" onclick="confirmOfflineApp('智能客服系统')">下线</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">文档分析助手</a></td>
+                  <td>大模型原生调用</td>
+                  <td><span class="tag tag-primary">生产环境</span></td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td><span class="tag tag-success">在线</span></td>
+                  <td>2023-10-27 15:30:11</td>
+                  <td>
+                    <div class="table-action-col">
+                      <button class="btn btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">查看</button>
+                      <button class="btn btn-link warning" onclick="confirmOfflineApp('文档分析助手')">下线</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">销售预测智能体</a></td>
+                  <td>智能体框架</td>
+                  <td><span class="tag tag-info">测试环境</span></td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td><span class="tag tag-danger">离线</span></td>
+                  <td>2023-10-26 18:20:00</td>
+                  <td>
+                    <div class="table-action-col">
+                      <button class="btn btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">查看</button>
+                      <button class="btn btn-link warning" onclick="confirmOfflineApp('销售预测智能体')">下线</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">财务审计助手</a></td>
+                  <td>LangChain框架</td>
+                  <td><span class="tag tag-primary">生产环境</span></td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td><span class="tag tag-success">在线</span></td>
+                  <td>2023-10-27 15:30:05</td>
+                  <td>
+                    <div class="table-action-col">
+                      <button class="btn btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">查看</button>
+                      <button class="btn btn-link warning" onclick="confirmOfflineApp('财务审计助手')">下线</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">数据报告生成器</a></td>
+                  <td>大模型原生调用</td>
+                  <td><span class="tag tag-primary">生产环境</span></td>
+                  <td>1</td>
+                  <td>1</td>
+                  <td><span class="tag tag-warning">告警</span></td>
+                  <td>2023-10-27 15:30:12</td>
+                  <td>
+                    <div class="table-action-col">
+                      <button class="btn btn-link" onclick="navigateTo('pages/assets/policy-detail.html','关联策略详情',null)">查看</button>
+                      <button class="btn btn-link warning" onclick="confirmOfflineApp('数据报告生成器')">下线</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 智能体汇总 -->
+        <div class="tab-pane" data-tab="tab-agents">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <div class="search-item">
+                <input type="text" class="form-control" placeholder="搜索智能体名称">
+              </div>
+              <button class="btn btn-primary btn-sm">查询</button>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>智能体名称</th>
+                  <th>类型</th>
+                  <th>所属应用</th>
+                  <th>当前状态</th>
+                  <th>今日调用量</th>
+                  <th>今日安全事件</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">售前咨询智能体</a></td>
+                  <td><span class="tag tag-primary">对话型</span></td>
+                  <td>智能客服系统</td>
+                  <td><span class="tag tag-success">活跃</span></td>
+                  <td>856</td>
+                  <td><span style="color:#F56C6C;font-weight:600;">2</span></td>
+                  <td><button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">查看</button></td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">售后支持智能体</a></td>
+                  <td><span class="tag tag-primary">对话型</span></td>
+                  <td>智能客服系统</td>
+                  <td><span class="tag tag-success">活跃</span></td>
+                  <td>412</td>
+                  <td>0</td>
+                  <td><button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">查看</button></td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">发票解析助手</a></td>
+                  <td><span class="tag tag-success">任务型</span></td>
+                  <td>财务审计助手</td>
+                  <td><span class="tag tag-info">空闲</span></td>
+                  <td>128</td>
+                  <td>0</td>
+                  <td><button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">查看</button></td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">市场日报生成器</a></td>
+                  <td><span class="tag tag-warning">工作流型</span></td>
+                  <td>数据报告生成器</td>
+                  <td><span class="tag tag-success">活跃</span></td>
+                  <td>45</td>
+                  <td><span style="color:#F56C6C;font-weight:600;">1</span></td>
+                  <td><button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">查看</button></td>
+                </tr>
+                <tr>
+                  <td><a href="javascript:void(0)" class="btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">合同风险审查员</a></td>
+                  <td><span class="tag tag-danger">审核型</span></td>
+                  <td>文档分析助手</td>
+                  <td><span class="tag tag-info">空闲</span></td>
+                  <td>310</td>
+                  <td>0</td>
+                  <td><button class="btn btn-link" onclick="navigateTo('pages/assets/agent-detail.html','智能体详情',null)">查看</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 生效策略 -->
+        <div class="tab-pane" data-tab="tab-policies">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>策略名称</th>
+                  <th>策略类型</th>
+                  <th>生效范围</th>
+                  <th>下发时间</th>
+                  <th>操作人</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>全量数据采集策略</td>
+                  <td><span class="tag tag-info">采集策略</span></td>
+                  <td>全部服务器</td>
+                  <td>2023-10-20 09:00:00</td>
+                  <td>系统管理员</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+                <tr>
+                  <td>基础注入检测规则</td>
+                  <td><span class="tag tag-warning">检测策略</span></td>
+                  <td>全部服务器</td>
+                  <td>2023-10-20 09:10:00</td>
+                  <td>安全管理员</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+                <tr>
+                  <td>手机号脱敏规则</td>
+                  <td><span class="tag tag-primary">脱敏策略</span></td>
+                  <td>全部服务器</td>
+                  <td>2023-10-20 09:15:00</td>
+                  <td>安全管理员</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+                <tr>
+                  <td>客服系统专属拦截词</td>
+                  <td><span class="tag tag-danger">护栏策略</span></td>
+                  <td>本服务器及下属应用</td>
+                  <td>2023-10-25 14:20:00</td>
+                  <td>安全运营工程师</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+                <tr>
+                  <td>财务工具白名单</td>
+                  <td><span class="tag tag-success">工具策略</span></td>
+                  <td>本服务器及下属应用</td>
+                  <td>2023-10-26 10:00:00</td>
+                  <td>安全管理员</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+                <tr>
+                  <td>高风险事件短信告警</td>
+                  <td><span class="tag tag-dark">告警策略</span></td>
+                  <td>全部服务器</td>
+                  <td>2023-10-20 10:00:00</td>
+                  <td>安全管理员</td>
+                  <td><button class="btn btn-link">查看详情</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 编辑基本信息弹窗 -->
+  <div class="modal-overlay" id="editModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">编辑服务器信息</div>
+        <div class="modal-close" onclick="closeModal('editModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-label required">智能体名称</div>
+          <div class="form-field">
+            <input type="text" class="form-control" value="生产服务器-01" id="e_name">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label required">操作系统</div>
+          <div class="form-field">
+            <select class="form-select" id="e_os">
+              <option value="Linux CentOS 7" selected>Linux CentOS 7</option>
+              <option value="Linux Ubuntu 22.04">Linux Ubuntu 22.04</option>
+              <option value="Windows Server 2019">Windows Server 2019</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label required">协议类型</div>
+          <div class="form-field">
+            <input type="text" class="form-control" value="192.168.1.10" id="e_ip">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">外网地址</div>
+          <div class="form-field">
+            <input type="text" class="form-control" value="123.56.78.90">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label required">所属部门</div>
+          <div class="form-field">
+            <select class="form-select" id="e_dept">
+              <option value="研发部" selected>研发部</option>
+              <option value="产品部">产品部</option>
+              <option value="安全部">安全部</option>
+              <option value="运营部">运营部</option>
+              <option value="数据部">数据部</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label required">负责人</div>
+          <div class="form-field">
+            <input type="text" class="form-control" value="张三" id="e_owner">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label">说明备注</div>
+          <div class="form-field">
+            <textarea class="form-textarea">承载主要客户服务智能体</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('editModal')">取 消</button>
+        <button class="btn btn-primary" onclick="submitEdit()">确 认</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下发策略弹窗 -->
+  <div class="modal-overlay" id="deployModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title">下发策略到该服务器</div>
+        <div class="modal-close" onclick="closeModal('deployModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-label required">选择策略</div>
+          <div class="form-field">
+            <select class="form-select">
+              <option value="">请选择要下发的策略</option>
+              <option value="1">财务专用脱敏策略</option>
+              <option value="2">严格指令注入拦截</option>
+              <option value="3">关键链路高频限制</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-label required">生效方式</div>
+          <div class="form-field">
+            <div class="radio-group">
+              <label class="radio-item"><input type="radio" name="deployTime" checked> 立即生效</label>
+              <label class="radio-item"><input type="radio" name="deployTime"> 定时生效</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('deployModal')">取 消</button>
+        <button class="btn btn-primary" onclick="submitDeploy()">确 认</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    // 初始化选项卡
+    initTabs('detailTabNav', 'detailTabContent', 'tab-base');
+
+    // 面包屑设置
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        {label:'资产管理'},
+        {label:'服务器管理', page:'pages/assets/server-list.html'},
+        {label:'关联策略详情'}
+      ]);
+    }
+
+    // 提交编辑
+    function submitEdit() {
+      var ok = true;
+      ['e_name','e_os','e_ip','e_dept','e_owner'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(!el.value) { form_control_error(el); ok=false; }
+        else { form_control_clear(el); }
+      });
+      if (!ok) { toastError('请填写必填项'); return; }
+      closeModal('editModal');
+      toastSuccess('修改保存成功');
+    }
+
+    // 手动下线
+    function confirmOffline() {
+      showConfirm('确定要手动下线该服务器吗？下线后将停止接收该服务器的数据。', function(){
+        toastSuccess('下线指令已下发');
+      }, '下线确认');
+    }
+
+    // 下线应用
+    function confirmOfflineApp(name) {
+      showConfirm('确定要下线关联策略"'+name+'"吗？', function(){
+        toastSuccess('应用已下线');
+      });
+    }
+
+    // 下发策略
+    function submitDeploy() {
+      closeModal('deployModal');
+      toastSuccess('策略下发成功');
+    }
+  </script>
+</body>
+</html>

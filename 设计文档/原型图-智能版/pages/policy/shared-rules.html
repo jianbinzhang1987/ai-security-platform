@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>高级规则项</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
+    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
+    .stat-lite .k { color:#909399; font-size:12px; }
+    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
+    .meta-sub { color:#909399; font-size:12px; margin-top:4px; }
+    .type-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f4f4f5; color:#606266; }
+    .target-gateway { background:#e1f3d8; color:#67c23a; }
+    .target-probe { background:#e6f1fc; color:#409eff; }
+    .impl-tag { background:#f0f9eb; color:#67c23a; }
+    .impl-threshold { background:#fdf6ec; color:#e6a23c; }
+    .impl-regex { background:#ecf5ff; color:#409eff; }
+    .impl-glob { background:#f0f9eb; color:#67c23a; }
+    .quote-list { display:grid; gap:10px; }
+    .quote-item { border:1px solid #EBEEF5; border-radius:6px; padding:12px; background:#fff; display:flex; justify-content:space-between; gap:12px; }
+    .section-block { border:1px solid #EBEEF5; border-radius:6px; background:#fff; padding:16px; margin-bottom:14px; }
+    .section-block:last-child { margin-bottom:0; }
+    .section-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center; }
+    .section-desc { font-size:12px; color:#909399; margin-top:-6px; margin-bottom:12px; }
+    .form-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .sub-card { border:1px dashed #E4E7ED; border-radius:6px; padding:14px; background:#fafafa; margin-top:12px; }
+    .sub-card:first-child { margin-top:0; }
+    .sub-title { font-size:13px; font-weight:600; color:#606266; margin-bottom:10px; }
+    .field-hint { font-size:12px; color:#909399; margin-top:6px; }
+    .kv-table { width:100%; border-collapse:collapse; }
+    .kv-table td { border-bottom:1px solid #F5F7FA; padding:10px 0; font-size:13px; vertical-align:top; }
+    .kv-table td:first-child { width:150px; color:#909399; }
+    .kv-table tr:last-child td { border-bottom:none; }
+    .logic-row { display:grid; grid-template-columns:1.1fr .7fr 1.2fr auto; gap:10px; margin-bottom:10px; }
+    .logic-row:last-child { margin-bottom:0; }
+    .config-panel { display:none; }
+    .config-panel.active { display:block; }
+    .status-strip { display:flex; flex-wrap:wrap; gap:8px; }
+    .modal-box.modal-xl { width: 1100px; max-width: calc(100vw - 60px); }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">高级规则项</div>
+        <div class="page-subtitle">面向专家用户维护探针侧原子规则项，支持类型化配置与多种规则实现方式，为探针策略包提供可复用能力。</div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-default" type="button" onclick="openPackagePage()">查看策略包管理</button>
+        <button class="btn btn-default" type="button" onclick="openQuoteModal('rule-001')">查看引用</button>
+        <button class="btn btn-primary" type="button" onclick="openRuleModal()">新建规则项</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-lite"><div class="k">规则项总数</div><div class="v">24</div></div>
+      <div class="stat-lite"><div class="k">启用规则项数</div><div class="v" style="color:#67C23A;">20</div></div>
+      <div class="stat-lite"><div class="k">正则规则项数</div><div class="v" style="color:#409EFF;">9</div></div>
+      <div class="stat-lite"><div class="k">已被引用规则项数</div><div class="v" style="color:#E6A23C;">18</div></div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">规则项名称</span><input class="form-control" placeholder="规则项名称 / rule_id"></div>
+      <div class="search-item">
+        <span class="form-label">规则类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>内容安全</option>
+          <option>数据防泄露</option>
+          <option>注入防御</option>
+          <option>密钥扫描</option>
+          <option>工具管控</option>
+          <option>限流配额</option>
+          <option>采集控制</option>
+          <option>审计控制</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">实现方式</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>正则规则</option>
+          <option>Glob 匹配</option>
+          <option>阈值规则</option>
+          <option>概率采样</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">探针能力域</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>工具调用审查</option>
+          <option>安全标签处理</option>
+          <option>PII 脱敏处理</option>
+          <option>限流配额处理</option>
+          <option>遥测采集控制</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">被引用状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>已引用</option>
+          <option>未引用</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" type="button" onclick="toastSuccess('规则项列表已刷新')">查询</button><button class="btn btn-default" type="button">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>规则项名称</th>
+              <th>规则类型</th>
+              <th>实现方式</th>
+              <th>探针能力域</th>
+              <th>探针处理节点</th>
+              <th>动作策略</th>
+              <th>状态</th>
+              <th>被策略包引用数</th>
+              <th>最近更新时间</th>
+              <th style="width:240px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>关键操作审计</strong><div class="meta-sub">rule-001</div></td>
+              <td><span class="type-tag">审计控制</span></td>
+              <td><span class="type-tag impl-tag">显式规则</span></td>
+              <td><span class="type-tag target-probe">工具调用审查</span></td>
+              <td>probe-tool-before</td>
+              <td>审计 + 告警</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>3</td>
+              <td>2026-04-20 10:20</td>
+              <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-001')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-001')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已复制规则项')">复制</button></td>
+            </tr>
+            <tr>
+              <td><strong>Token 预算限流</strong><div class="meta-sub">rule-002</div></td>
+              <td><span class="type-tag">限流配额</span></td>
+              <td><span class="type-tag impl-threshold">阈值规则</span></td>
+              <td><span class="type-tag target-probe">限流配额处理</span></td>
+              <td>rate-limiter</td>
+              <td>block / alert</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>2</td>
+              <td>2026-04-20 09:48</td>
+              <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-002')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-002')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已停用规则项')">停用</button></td>
+            </tr>
+            <tr>
+              <td><strong>工具白名单与参数约束</strong><div class="meta-sub">rule-003</div></td>
+              <td><span class="type-tag">工具管控</span></td>
+              <td><span class="type-tag impl-glob">Glob 匹配</span></td>
+              <td><span class="type-tag target-probe">工具调用审查</span></td>
+              <td>mcp-call-tool</td>
+              <td>shadow + alert</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>4</td>
+              <td>2026-04-20 11:06</td>
+              <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-003')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-003')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已复制规则项')">复制</button></td>
+            </tr>
+            <tr>
+              <td><strong>PII 邮箱与手机号脱敏</strong><div class="meta-sub">rule-004</div></td>
+              <td><span class="type-tag">数据防泄露</span></td>
+              <td><span class="type-tag impl-regex">正则规则</span></td>
+              <td><span class="type-tag target-probe">PII 脱敏处理</span></td>
+              <td>pii-redactor</td>
+              <td>mask / remove</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>5</td>
+              <td>2026-04-19 18:32</td>
+              <td><button class="btn btn-link" type="button" onclick="openRuleModal('rule-004')">编辑</button><button class="btn btn-link" type="button" onclick="openQuoteModal('rule-004')">查看引用</button><button class="btn btn-link" type="button" onclick="toastSuccess('已启用规则项')">启用</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ruleModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header">
+        <div class="modal-title" id="ruleModalTitle">新建规则项</div>
+        <div class="modal-close" onclick="closeModal('ruleModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="section-block">
+            <div class="section-title">A. 基础信息</div>
+            <div class="section-desc">定义规则项名称、规则类型、探针能力域与处理节点，形成统一骨架。</div>
+            <div class="form-grid-2">
+              <div class="form-row"><div class="form-label required">规则项名称</div><div class="form-field"><input id="ruleName" class="form-control" value="关键操作审计" required></div></div>
+              <div class="form-row"><div class="form-label">规则项编码</div><div class="form-field"><input id="ruleId" class="form-control" value="rule-001"></div></div>
+              <div class="form-row"><div class="form-label required">规则类型</div><div class="form-field"><select id="ruleType" class="form-select" onchange="updateRulePanels()"><option value="tool">工具管控</option><option value="dlp">数据防泄露</option><option value="injection">注入防御</option><option value="secret">密钥扫描</option><option value="quota">限流配额</option><option value="collect">采集控制</option><option value="audit">审计控制</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针能力域</div><div class="form-field"><select id="ruleDomain" class="form-select" onchange="updateHookPointOptions()"><option value="tool">工具调用审查</option><option value="security">安全标签处理</option><option value="pii">PII 脱敏处理</option><option value="quota">限流配额处理</option><option value="telemetry">遥测采集控制</option><option value="trace">本地 Trace 记录</option></select></div></div>
+              <div class="form-row"><div class="form-label required">探针处理节点</div><div class="form-field"><select id="hookPoint" class="form-select"><option value="mcp-call-tool">mcp-call-tool</option></select></div></div>
+              <div class="form-row"><div class="form-label">风险等级</div><div class="form-field"><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div></div>
+            </div>
+            <div class="form-row"><div class="form-label">规则说明</div><div class="form-field"><textarea class="form-textarea">用于识别探针侧关键工具调用，并在执行前补充审计记录与风险标记。</textarea></div></div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-title">B. 检测逻辑</div>
+            <div class="section-desc">统一选择规则实现方式，再按规则类型切换类型化配置区。</div>
+            <div class="form-grid-2">
+              <div class="form-row"><div class="form-label required">规则实现方式</div><div class="form-field"><select id="implType" class="form-select" onchange="updateRulePanels()"><option value="regex">正则规则</option><option value="glob">Glob 匹配</option><option value="threshold">阈值规则</option><option value="sampling">概率采样</option></select></div></div>
+              <div class="form-row"><div class="form-label">输入对象</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> prompt</label><label class="checkbox-item"><input type="checkbox"> completion</label><label class="checkbox-item"><input type="checkbox"> tool_input</label><label class="checkbox-item"><input type="checkbox"> tool_output</label></div></div></div>
+            </div>
+
+            <div id="typePanel-injection" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">注入防御类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">注入防御开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label">规则名称</div><div class="form-field"><input class="form-control" value="ignore-previous-instructions"></div></div>
+                </div>
+                <div class="form-row"><div class="form-label">检测正则</div><div class="form-field"><textarea class="form-textarea">(?i)(ignore|disregard).{0,20}(previous|above).{0,20}(instruction|prompt)</textarea></div></div>
+              </div>
+            </div>
+
+            <div id="typePanel-dlp" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">PII 脱敏类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">全局脱敏开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input class="form-control" value="CN Mobile Mask"></div></div>
+                  <div class="form-row"><div class="form-label required">处置动作</div><div class="form-field"><select class="form-select"><option>mask</option><option>hash</option><option>remove</option></select></div></div>
+                  <div class="form-row"><div class="form-label">启停状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>停用</option></select></div></div>
+                </div>
+                <div class="form-row"><div class="form-label required">匹配正则</div><div class="form-field"><textarea class="form-textarea">(?<!\d)1[3-9]\d{9}(?!\d)</textarea></div></div>
+                <div class="field-hint">内置规则示例：Email 掩码、中国手机号掩码、OpenAI API Key 移除、Anthropic API Key 移除、AWS Access Key 哈希。</div>
+              </div>
+            </div>
+
+            <div id="typePanel-secret" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">密钥扫描类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">密钥扫描开关</div><div class="form-field"><select class="form-select"><option>开启</option><option>关闭</option></select></div></div>
+                  <div class="form-row"><div class="form-label">规则名称</div><div class="form-field"><input class="form-control" value="openai-api-key-remove"></div></div>
+                  <div class="form-row"><div class="form-label">处置动作</div><div class="form-field"><select class="form-select"><option>remove</option><option>mask</option><option>hash</option></select></div></div>
+                  <div class="form-row"><div class="form-label">启停状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>停用</option></select></div></div>
+                </div>
+                <div class="form-row"><div class="form-label">匹配正则</div><div class="form-field"><textarea class="form-textarea">sk-[A-Za-z0-9]{20,}</textarea></div></div>
+              </div>
+            </div>
+
+            <div id="typePanel-tool" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">工具管控类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label required">工具名称 Glob</div><div class="form-field"><input class="form-control" value="read_*, search_*, ticket_*"></div></div>
+                  <div class="form-row"><div class="form-label">未知工具动作</div><div class="form-field"><select class="form-select"><option>shadow</option><option>alert</option><option>block</option></select></div></div>
+                  <div class="form-row"><div class="form-label">调用频率上限</div><div class="form-field"><input class="form-control" value="20"></div></div>
+                  <div class="form-row"><div class="form-label">最大字符串长度</div><div class="form-field"><input class="form-control" value="2048"></div></div>
+                </div>
+                <div class="form-row"><div class="form-label">允许参数</div><div class="form-field"><input class="form-control" value="query,ticket_id"></div></div>
+                <div class="form-row"><div class="form-label">必填参数</div><div class="form-field"><input class="form-control" value="query"></div></div>
+              </div>
+            </div>
+
+            <div id="typePanel-quota" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">限流配额类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">工具频控</div><div class="form-field"><input class="form-control" value="20"></div></div>
+                  <div class="form-row"><div class="form-label">Token 预算</div><div class="form-field"><input class="form-control" value="100000"></div></div>
+                  <div class="form-row"><div class="form-label">超额动作</div><div class="form-field"><select class="form-select"><option>block</option><option>alert</option><option>shadow</option></select></div></div>
+                  <div class="form-row"><div class="form-label">预算提示</div><div class="form-field"><input class="form-control" value="当前 SDK Token 预算无自动重置"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="typePanel-collect" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">采集控制类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">采样率</div><div class="form-field"><input class="form-control" value="30%"></div></div>
+                  <div class="form-row"><div class="form-label">强制采样阈值</div><div class="form-field"><input class="form-control" value="4000"></div></div>
+                  <div class="form-row"><div class="form-label">导出协议</div><div class="form-field"><select class="form-select"><option>gRPC</option><option>HTTP+Protobuf</option></select></div></div>
+                  <div class="form-row"><div class="form-label">缓冲区容量</div><div class="form-field"><input class="form-control" value="10000"></div></div>
+                  <div class="form-row"><div class="form-label">Prompt 截断长度</div><div class="form-field"><input class="form-control" value="4096"></div></div>
+                  <div class="form-row"><div class="form-label">Response 截断长度</div><div class="form-field"><input class="form-control" value="2048"></div></div>
+                  <div class="form-row"><div class="form-label">本地 Trace 上限</div><div class="form-field"><input class="form-control" value="1000"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="typePanel-audit" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">审计控制类型配置</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">审计级别</div><div class="form-field"><select class="form-select"><option>完整</option><option>摘要</option><option>元数据</option></select></div></div>
+                  <div class="form-row"><div class="form-label">本地 Trace 上限</div><div class="form-field"><input class="form-control" value="1000"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="implPanel-regex" class="config-panel active">
+              <div class="sub-card">
+                <div class="sub-title">正则规则参数</div>
+                <div class="form-row"><div class="form-label required">正则表达式</div><div class="form-field"><textarea class="form-textarea">(?i)(ignore|disregard).{0,20}(previous|above).{0,20}(instruction|prompt)</textarea></div></div>
+                <div class="form-row"><div class="form-label">测试样例</div><div class="form-field"><textarea class="form-textarea" placeholder="输入测试样例，验证当前正则规则"></textarea></div></div>
+              </div>
+            </div>
+
+            <div id="implPanel-glob" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">Glob 匹配参数</div>
+                <div class="form-row"><div class="form-label required">名称模式</div><div class="form-field"><input class="form-control" value="read_*, search_*, ticket_*"></div></div>
+                <div class="field-hint">工具白名单使用 Glob/Fnmatch 通配符，不支持复杂布尔表达式。</div>
+              </div>
+            </div>
+
+            <div id="implPanel-threshold" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">阈值规则参数</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">阈值对象</div><div class="form-field"><select class="form-select"><option>风险分值</option><option>调用次数</option><option>频次</option><option>长度</option></select></div></div>
+                  <div class="form-row"><div class="form-label">阈值值</div><div class="form-field"><input class="form-control" value="0.80"></div></div>
+                  <div class="form-row"><div class="form-label">比较符</div><div class="form-field"><select class="form-select"><option>&gt;=</option><option>&gt;</option><option>&lt;=</option><option>&lt;</option></select></div></div>
+                  <div class="form-row"><div class="form-label">时间窗口</div><div class="form-field"><select class="form-select"><option>1 分钟</option><option>5 分钟</option><option>1 小时</option></select></div></div>
+                </div>
+                <div class="form-row"><div class="form-label">超限恢复条件</div><div class="form-field"><input class="form-control" placeholder="如：连续 30 分钟未再命中后恢复"></div></div>
+              </div>
+            </div>
+
+            <div id="implPanel-sampling" class="config-panel">
+              <div class="sub-card">
+                <div class="sub-title">概率采样参数</div>
+                <div class="form-grid-2">
+                  <div class="form-row"><div class="form-label">采样率</div><div class="form-field"><input class="form-control" value="0.3"></div></div>
+                  <div class="form-row"><div class="form-label">强制采样阈值</div><div class="form-field"><input class="form-control" value="4000"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-title">C. 处置逻辑</div>
+            <div class="section-desc">定义命中后的 Alert、Block、Shadow 动作和阻断提示文案。</div>
+            <div class="form-grid-2">
+              <div class="form-row"><div class="form-label required">主动作</div><div class="form-field"><select class="form-select"><option>alert</option><option>block</option><option>shadow</option></select></div></div>
+              <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div>
+              <div class="form-row"><div class="form-label">高风险默认动作</div><div class="form-field"><select class="form-select"><option>alert</option><option>block</option><option>shadow</option></select></div></div>
+              <div class="form-row"><div class="form-label">严重风险默认动作</div><div class="form-field"><select class="form-select"><option>block</option><option>alert</option><option>shadow</option></select></div></div>
+            </div>
+            <div class="form-row"><div class="form-label">拦截话术</div><div class="form-field"><textarea class="form-textarea">请求触发企业安全策略，已被限制处理。如需继续，请联系安全管理员。</textarea></div></div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-title">D. 生效控制</div>
+            <div class="section-desc">控制优先级、启停、生效范围和变更说明。</div>
+            <div class="form-grid-2">
+              <div class="form-row"><div class="form-label required">优先级</div><div class="form-field"><input class="form-control" value="40"></div></div>
+              <div class="form-row"><div class="form-label required">启停状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>停用</option></select></div></div>
+              <div class="form-row"><div class="form-label">生效范围</div><div class="form-field"><input class="form-control" placeholder="如：客服类应用 / prod 环境"></div></div>
+              <div class="form-row"><div class="form-label">例外名单</div><div class="form-field"><input class="form-control" placeholder="如：internal-test, gray-sandbox"></div></div>
+            </div>
+            <div class="form-row"><div class="form-label required">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="说明本次规则变更原因与影响范围" required></textarea></div></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" type="button" onclick="closeModal('ruleModal')">取消</button>
+        <button class="btn btn-default" type="button" onclick="submitRule('draft')">保存草稿</button>
+        <button class="btn btn-primary" type="button" onclick="submitRule('enabled')">保存并启用</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="quoteModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">规则项引用详情</div>
+        <div class="modal-close" onclick="closeModal('quoteModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="quote-list">
+          <div class="quote-item">
+            <div>
+              <strong>基础安全包</strong>
+              <div class="meta-sub">当前版本 v3</div>
+            </div>
+            <table class="kv-table">
+              <tr><td>绑定应用数</td><td><span class="tag tag-success">6 个</span></td></tr>
+              <tr><td>下发状态</td><td>全部已同步</td></tr>
+              <tr><td>最近使用版本</td><td>v3</td></tr>
+            </table>
+          </div>
+          <div class="quote-item">
+            <div>
+              <strong>增强审计包</strong>
+              <div class="meta-sub">当前版本 v2</div>
+            </div>
+            <table class="kv-table">
+              <tr><td>绑定应用数</td><td><span class="tag tag-warning">4 个</span></td></tr>
+              <tr><td>下发状态</td><td>灰度中</td></tr>
+              <tr><td>最近使用版本</td><td>v2</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    const hookPointOptions = {
+      tool: ['mcp-call-tool'],
+      security: ['security-tagger'],
+      pii: ['pii-redactor'],
+      quota: ['rate-limiter'],
+      telemetry: ['sampler', 'otlp-exporter'],
+      trace: ['trace-recorder']
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '探针策略管理' }, { label: '高级规则项' }]);
+      }
+      updateRulePanels();
+      updateHookPointOptions();
+    });
+
+    function openRuleModal(id) {
+      document.getElementById('ruleModalTitle').textContent = id ? '编辑规则项' : '新建规则项';
+      if (id === 'rule-002') {
+        document.getElementById('ruleName').value = 'Token 预算限流';
+        document.getElementById('ruleId').value = 'rule-002';
+        document.getElementById('ruleType').value = 'quota';
+        document.getElementById('ruleDomain').value = 'quota';
+        document.getElementById('implType').value = 'threshold';
+      } else if (id === 'rule-003') {
+        document.getElementById('ruleName').value = '工具白名单与参数约束';
+        document.getElementById('ruleId').value = 'rule-003';
+        document.getElementById('ruleType').value = 'tool';
+        document.getElementById('ruleDomain').value = 'tool';
+        document.getElementById('implType').value = 'glob';
+      } else if (id === 'rule-004') {
+        document.getElementById('ruleName').value = 'PII 邮箱与手机号脱敏';
+        document.getElementById('ruleId').value = 'rule-004';
+        document.getElementById('ruleType').value = 'dlp';
+        document.getElementById('ruleDomain').value = 'pii';
+        document.getElementById('implType').value = 'regex';
+      } else {
+        document.getElementById('ruleName').value = '关键操作审计';
+        document.getElementById('ruleId').value = 'rule-001';
+        document.getElementById('ruleType').value = 'audit';
+        document.getElementById('ruleDomain').value = 'tool';
+        document.getElementById('implType').value = 'regex';
+      }
+      updateHookPointOptions();
+      updateRulePanels();
+      openModal('ruleModal');
+    }
+
+    function updateHookPointOptions() {
+      const target = document.getElementById('ruleDomain').value;
+      const hookPoint = document.getElementById('hookPoint');
+      const current = hookPoint.value;
+      hookPoint.innerHTML = hookPointOptions[target].map(function(item) {
+        return '<option value="' + item + '">' + item + '</option>';
+      }).join('');
+      if (hookPointOptions[target].indexOf(current) >= 0) {
+        hookPoint.value = current;
+      }
+    }
+
+    function updateRulePanels() {
+      const type = document.getElementById('ruleType').value;
+      const impl = document.getElementById('implType').value;
+
+      document.querySelectorAll('[id^="typePanel-"]').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll('[id^="implPanel-"]').forEach(function(el) {
+        el.classList.remove('active');
+      });
+
+      const typePanel = document.getElementById('typePanel-' + type);
+      const implPanel = document.getElementById('implPanel-' + impl);
+      if (typePanel) typePanel.classList.add('active');
+      if (implPanel) implPanel.classList.add('active');
+    }
+
+    function submitRule(mode) {
+      if (!validateForm('ruleForm')) return;
+      closeModal('ruleModal');
+      toastSuccess(mode === 'enabled' ? '规则项已保存并启用' : '规则项草稿已保存');
+    }
+
+    function openPackagePage() {
+      navigateTo('pages/policy/unified-protection.html', '策略包管理', null);
+    }
+
+    function openQuoteModal() {
+      openModal('quoteModal');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,504 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>接入应用管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .app-name-cell { display: flex; flex-direction: column; gap: 3px; }
+    .app-id { font-family: Consolas, monospace; color: #909399; font-size: 12px; }
+    .coverage { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+    .coverage .progress-bar { flex: 1; margin-top: 0; }
+    .copy-line { display: flex; gap: 8px; align-items: center; }
+    .copy-line .form-control { flex: 1; font-family: Consolas, monospace; color: #606266; }
+    .inline-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">接入应用管理</div>
+        <div class="page-subtitle">以 app_id 为主资产对象，统一承载责任归属、自动注册实例、策略包绑定覆盖和安全统计。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="goBindingPage()">查看绑定与下发</button>
+        <button class="btn btn-default" onclick="exportData()">导出清单</button>
+        <button class="btn btn-primary" onclick="openAddModal()">新增接入应用</button>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="stat-card-label">已接入应用</div>
+        <div class="stat-card-value blue">128</div>
+        <div class="stat-card-footer">7 个待接入或离线</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">在线探针实例</div>
+        <div class="stat-card-value green">436</div>
+        <div class="stat-card-footer">自动注册，在线率 98.2%</div>
+      </div>
+      <!--<div class="stat-card">
+        <div class="stat-card-label">Trace 完整率</div>
+        <div class="stat-card-value orange">94%</div>
+        <div class="stat-card-footer">17 个应用存在断链缺口</div>
+      </div>-->
+      <div class="stat-card">
+        <div class="stat-card-label">未处置风险</div>
+        <div class="stat-card-value red">54</div>
+        <div class="stat-card-footer">高风险 37 个，涉及 12 个应用</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">应用标识：</span>
+        <input type="text" class="form-control" id="searchKeyword" placeholder="app_id / 应用名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">所属部门：</span>
+        <input type="text" class="form-control" id="searchDept" placeholder="输入部门名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">语言框架：</span>
+        <select class="form-select" id="searchFramework">
+          <option value="">全部</option>
+          <option>Python / LangChain</option>
+          <option>Java / Spring AI</option>
+          <option>Node.js / OpenAI SDK</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">运行状态：</span>
+        <select class="form-select" id="searchStatus">
+          <option value="">全部</option>
+          <option>正常</option>
+          <option>告警</option>
+          <option>限制中</option>
+          <option>离线</option>
+          <option>待接入</option>
+          <option>已归档</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险等级：</span>
+        <select class="form-select" id="searchRisk">
+          <option value="">全部</option>
+          <option>高危</option>
+          <option>中危</option>
+          <option>低危</option>
+          <option>无风险</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <button class="btn btn-success" onclick="openGuideModal()">接入指引</button>
+          <button class="btn btn-warning" id="btnBatchPolicy" onclick="batchBindPolicy()" disabled>批量绑定策略包</button>
+          <button class="btn btn-info" id="btnBatchBlock" onclick="batchBlock()" disabled>批量限制</button>
+          <button class="btn btn-danger" id="btnBatchDisable" onclick="batchDisable()" disabled>批量停用</button>
+        </div>
+        <div class="table-toolbar-right">
+          <span class="tag tag-primary">主资产对象：app_id</span>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table" id="appTable">
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleAllCheckbox(this, 'appTable');checkBtnState()"></th>
+              <th>接入应用</th>
+              <th>状态</th>
+              <th>所属部门</th>
+              <th>负责人</th>
+              <th>活跃实例</th>
+              <th>近 24h Trace</th>
+              <th>工具声明</th>
+              <!--<th>Trace 完整率</th>-->
+              <th>近 24h 风险</th>
+              <!--<th>采集健康</th>-->
+              <th>最后上报</th>
+              <th style="width:170px;text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="app_copilot_service">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>
+                <div class="app-name-cell">
+                  <a href="javascript:void(0)" class="btn-link" onclick="goDetail(this)">智能客服 Copilot</a>
+                  <span class="app-id">app_copilot_service</span>
+                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-success">基础安全包 v3</span></div>
+                </div>
+              </td>
+              <td><span class="tag tag-success">正常</span></td>
+              <td>客服中心</td>
+              <td>周敏</td>
+              <td>18</td>
+              <td>42.1万</td>
+              <td>9 / 12</td>
+              <!--<td>96%</td>-->
+              <td><span style="color:#F56C6C;font-weight:600;">12</span></td>
+              <!--<td><span class="tag tag-success">98.7%</span></td>-->
+              <td>2026-04-15 17:21:09</td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail(this)">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link danger" onclick="openBlockModal('app_copilot_service')">限制</button></div></td>
+            </tr>
+            <tr data-id="app_rd_code_review">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>
+                <div class="app-name-cell">
+                  <a href="javascript:void(0)" class="btn-link" onclick="goDetail(this)">研发代码审查助手</a>
+                  <span class="app-id">app_rd_code_review</span>
+                  <div class="inline-meta"><span class="tag tag-primary">prod</span><span class="tag tag-warning">增强审计包 v2 待同步</span></div>
+                </div>
+              </td>
+              <td><span class="tag tag-warning">告警</span></td>
+              <td>研发部</td>
+              <td>李航</td>
+              <td>7</td>
+              <td>12.4万</td>
+              <td>5 / 11</td>
+              <!--<td>81%</td>-->
+              <td><span style="color:#F56C6C;font-weight:600;">19</span></td>
+              <!--<td><span class="tag tag-warning">85.4%</span></td>-->
+              <td>2026-04-15 17:18:44</td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail(this)">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link danger" onclick="openBlockModal('app_rd_code_review')">限制</button></div></td>
+            </tr>
+            <tr data-id="app_knowledge_rag">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>
+                <div class="app-name-cell">
+                  <a href="javascript:void(0)" class="btn-link" onclick="goDetail(this)">企业知识库问答</a>
+                  <span class="app-id">app_knowledge_rag</span>
+                  <div class="inline-meta"><span class="tag tag-primary">staging</span><span class="tag tag-success">知识问答包 v1</span></div>
+                </div>
+              </td>
+              <td><span class="tag tag-success">正常</span></td>
+              <td>运营中心</td>
+              <td>陈卓</td>
+              <td>12</td>
+              <td>26.8万</td>
+              <td>7 / 8</td>
+              <!--<td>98%</td>-->
+              <td>3</td>
+              <!--<td><span class="tag tag-success">99.1%</span></td>-->
+              <td>2026-04-15 17:20:31</td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail(this)">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link danger" onclick="openArchiveModal('app_knowledge_rag')">归档</button></div></td>
+            </tr>
+            <tr data-id="app_finance_audit">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>
+                <div class="app-name-cell">
+                  <a href="javascript:void(0)" class="btn-link" onclick="goDetail(this)">财务票据审计助手</a>
+                  <span class="app-id">app_finance_audit</span>
+                  <div class="inline-meta"><span class="tag tag-info">prod</span><span class="tag tag-danger">探针离线</span></div>
+                </div>
+              </td>
+              <td><span class="tag tag-danger">离线</span></td>
+              <td>财务部</td>
+              <td>王岚</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <!--<td>-</td>-->
+              <td>0</td>
+              <!--<td><span class="tag tag-danger">0%</span></td>-->
+              <td>2026-04-14 22:13:08</td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail(this)">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link" onclick="toastSuccess('恢复接收数据')">恢复</button></div></td>
+            </tr>
+            <tr data-id="app_contract_agent">
+              <td><input type="checkbox" class="row-checkbox" onchange="checkBtnState()"></td>
+              <td>
+                <div class="app-name-cell">
+                  <a href="javascript:void(0)" class="btn-link" onclick="goDetail(this)">合同风险审查工作流</a>
+                  <span class="app-id">app_contract_agent</span>
+                  <div class="inline-meta"><span class="tag tag-info">dev</span><span class="tag tag-info">未注册实例</span></div>
+                </div>
+              </td>
+              <td><span class="tag tag-info">待接入</span></td>
+              <td>法务部</td>
+              <td>赵宁</td>
+              <td>0</td>
+              <td>0</td>
+              <td>0</td>
+              <!--<td>-</td>-->
+              <td>-</td>
+              <!--<td><span class="tag tag-info">未上报</span></td>-->
+              <td>-</td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="goDetail(this)">详情</button><button class="btn btn-link" onclick="openEditModal()">编辑</button><button class="btn btn-link" onclick="openGuideModal()">接入</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 128 条数据，第 1-5 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn">2</button>
+          <button class="page-btn">3</button>
+          <button class="page-btn">...</button>
+          <button class="page-btn">26</button>
+          <button class="page-btn">下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="appModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title" id="appModalTitle">新增接入应用</div>
+        <div class="modal-close" onclick="closeModal('appModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="appForm">
+          <div class="form-row">
+            <div class="form-label required">app_id</div>
+            <div class="form-field">
+              <input id="formAppId" class="form-control" placeholder="如 app_copilot_service" required>
+              <div class="form-hint">用于 SDK 上报鉴权、策略包绑定和事件归属，创建后不建议修改。</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">应用名称</div>
+            <div class="form-field"><input id="formAppName" class="form-control" placeholder="请输入业务可读名称" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">service.name</div>
+            <div class="form-field">
+              <input id="formServiceName" class="form-control" placeholder="例如 customer-copilot" required>
+              <div class="form-hint">探针上报时 OTEL_SERVICE_NAME 的值，用于自动关联运行实例。</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">所属部门</div>
+            <div class="form-field">
+              <input id="formDept" class="form-control" placeholder="请输入所属部门" required>
+              <div class="form-hint">可在系统设置中统一维护部门字典。</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">负责人</div>
+            <div class="form-field"><input id="formOwner" class="form-control" placeholder="请输入责任人" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">语言框架</div>
+            <div class="form-field">
+              <select id="formFramework" class="form-select" required>
+                <option value="">请选择</option>
+                <option>Python / LangChain</option>
+                <option>Java / Spring AI</option>
+                <option>Node.js / OpenAI SDK</option>
+                <option>其他</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">部署环境</div>
+            <div class="form-field">
+              <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" checked> prod</label>
+                <label class="checkbox-item"><input type="checkbox"> staging</label>
+                <label class="checkbox-item"><input type="checkbox"> dev</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">默认策略包</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option>基础安全包 v3</option>
+                <option>增强审计包 v2</option>
+                <option>知识问答包 v1</option>
+                <option>暂不绑定</option>
+              </select>
+              <div class="form-hint">接入应用创建后可在“绑定与下发”页面切换绑定的策略包版本。</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">说明</div>
+            <div class="form-field"><textarea class="form-textarea" placeholder="业务场景、接入范围、SLA 或合规说明"></textarea></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('appModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitApp()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createdAppModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">应用已创建</div>
+        <div class="modal-close" onclick="closeModal('createdAppModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="alert-box alert-success"><span class="alert-icon">✓</span><span>app_id 已创建。探针配置 app_id 与 Collector Endpoint 后，首次 Span 上报会自动完成实例注册。</span></div>
+        <div class="desc-list">
+          <div class="desc-item"><div class="desc-label">app_id</div><div class="desc-value mono">app_contract_agent</div></div>
+          <div class="desc-item"><div class="desc-label">OTLP Endpoint</div><div class="desc-value mono">https://collector.example.com/v1/traces</div></div>
+          <div class="desc-item"><div class="desc-label">注册方式</div><div class="desc-value">探针首次 Span 上报后自动注册</div></div>
+          <div class="desc-item"><div class="desc-label">接入状态</div><div class="desc-value"><span class="tag tag-info">等待首次上报</span></div></div>
+        </div>
+        <div class="code-block" style="margin-top:16px;">
+          <button class="code-copy-btn" onclick="copyCode(this, 'createdAppCode')">复制</button>
+          <pre id="createdAppCode">AGENTSEC_APP_ID=app_contract_agent
+AGENTSEC_ENDPOINT=https://collector.example.com/v1/traces</pre>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" onclick="closeModal('createdAppModal')">知道了</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="guideModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">SDK 接入指引</div>
+        <div class="modal-close" onclick="closeModal('guideModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="steps-wrapper" style="padding:0;margin-bottom:20px;">
+          <div class="step-item done"><div class="step-circle">1</div><div class="step-label">创建 app_id</div></div>
+          <div class="step-item active"><div class="step-circle">2</div><div class="step-label">配置探针</div></div>
+          <div class="step-item"><div class="step-circle">3</div><div class="step-label">自动注册</div></div>
+          <div class="step-item"><div class="step-circle">4</div><div class="step-label">验证上报</div></div>
+        </div>
+        <div class="code-block">
+          <button class="code-copy-btn" onclick="copyCode(this, 'sdkCode')">复制</button>
+          <pre id="sdkCode">export AGENTSEC_APP_ID=app_copilot_service
+export AGENTSEC_ENDPOINT=https://collector.example.com/v1/traces
+
+agentsec-langchain run --service-name customer-copilot</pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="toastSuccess('已发起接入连通性检查')">验证上报</button>
+        <button class="btn btn-default" onclick="closeModal('guideModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="policyBindModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">批量绑定策略包版本</div><div class="modal-close" onclick="closeModal('policyBindModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-info"><span class="alert-icon">i</span><span>系统会把选中的策略包版本绑定到目标接入应用，并在下一轮配置拉取时完成下发。</span></div>
+        <div class="form-row"><div class="form-label">目标策略包</div><div class="form-field"><select class="form-select"><option>基础安全包</option><option>增强审计包</option><option>知识问答包</option></select></div></div>
+        <div class="form-row"><div class="form-label">目标版本</div><div class="form-field"><select class="form-select"><option>v3（已发布）</option><option>v2（灰度）</option><option>v1（历史稳定版）</option></select></div></div>
+        <div class="form-row"><div class="form-label">下发方式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="policyApply" checked> 立即下发到已选应用</label><label class="radio-item"><input type="radio" name="policyApply"> 仅变更绑定，稍后统一下发</label></div></div></div>
+        <div class="form-row"><div class="form-label">变更说明</div><div class="form-field"><textarea class="form-textarea" placeholder="填写本次批量绑定的原因，例如：客服类应用统一切换到基础安全包 v3"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('policyBindModal')">取消</button><button class="btn btn-primary" onclick="submitPolicyBind()">确认绑定</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="blockModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">应用级限制申请</div><div class="modal-close" onclick="closeModal('blockModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-danger"><span class="alert-icon">!</span><span>应用级限制会影响该 app_id 下所有实例，需确认影响范围、TTL 和审批依据。</span></div>
+        <div class="form-row"><div class="form-label">目标 app_id</div><div class="form-field"><input id="blockAppId" class="form-control mono" readonly></div></div>
+        <div class="form-row"><div class="form-label required">处置原因</div><div class="form-field"><textarea id="blockReason" class="form-textarea" placeholder="请输入处置原因和证据依据"></textarea></div></div>
+        <div class="form-row"><div class="form-label">TTL</div><div class="form-field"><select class="form-select"><option>1 小时</option><option>6 小时</option><option>24 小时</option><option>手动恢复</option></select></div></div>
+        <div class="form-row"><div class="form-label">二次确认</div><div class="form-field"><input class="form-control" placeholder="输入审批单号或 MFA 验证码"></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('blockModal')">取消</button><button class="btn btn-danger" onclick="submitBlock()">提交限制申请</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="archiveModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">归档接入应用</div><div class="modal-close" onclick="closeModal('archiveModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>归档后平台停止接收该应用新数据，但历史数据在租户 TTL 到期前仍可查询。</span></div>
+        <div class="form-row"><div class="form-label">目标 app_id</div><div class="form-field"><input id="archiveAppId" class="form-control mono" readonly></div></div>
+        <div class="form-row"><div class="form-label">数据保留</div><div class="form-field"><select class="form-select"><option>按租户默认 TTL：90 天</option><option>延长至 180 天</option><option>延长至 365 天</option></select></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('archiveModal')">取消</button><button class="btn btn-warning" onclick="submitArchive()">确认归档</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '资产中心' },
+        { label: '接入应用' }
+      ]);
+    }
+
+    function goDetail(el) {
+      var row = el && el.closest ? el.closest('tr') : null;
+      var appId = row ? row.getAttribute('data-id') : 'app_copilot_service';
+      navigateTo('pages/assets/app-detail.html?app_id=' + encodeURIComponent(appId), '应用详情', null);
+    }
+
+    function goBindingPage() {
+      navigateTo('pages/policy/distribution-status.html', '绑定与下发', null);
+    }
+
+    function searchData() { toastSuccess('应用列表已刷新'); }
+    function exportData() { toastSuccess('导出任务已创建'); }
+    function resetSearch() {
+      ['searchKeyword', 'searchDept', 'searchFramework', 'searchStatus', 'searchRisk'].forEach(function(id) {
+        document.getElementById(id).value = '';
+      });
+    }
+
+    function checkBtnState() {
+      var checked = getCheckedIds('appTable');
+      document.getElementById('btnBatchPolicy').disabled = checked.length === 0;
+      document.getElementById('btnBatchBlock').disabled = checked.length === 0;
+      document.getElementById('btnBatchDisable').disabled = checked.length === 0;
+    }
+
+    function openAddModal() {
+      document.getElementById('appModalTitle').textContent = '新增接入应用';
+      document.getElementById('appForm').reset();
+      openModal('appModal');
+    }
+
+    function openEditModal() {
+      document.getElementById('appModalTitle').textContent = '编辑接入应用';
+      document.getElementById('formAppId').value = 'app_copilot_service';
+      document.getElementById('formAppName').value = '智能客服 Copilot';
+      document.getElementById('formServiceName').value = 'customer-copilot';
+      document.getElementById('formDept').value = '客服中心';
+      document.getElementById('formOwner').value = '周敏';
+      document.getElementById('formFramework').value = 'Python / LangChain';
+      openModal('appModal');
+    }
+
+    function submitApp() {
+      if (!validateForm('appForm')) return;
+      closeModal('appModal');
+      openModal('createdAppModal');
+    }
+
+    function openGuideModal() { openModal('guideModal'); }
+    function batchBindPolicy() { openModal('policyBindModal'); }
+    function submitPolicyBind() { closeModal('policyBindModal'); toastSuccess('策略包版本已绑定并进入下发流程'); }
+    function openBlockModal(appId) { document.getElementById('blockAppId').value = appId; document.getElementById('blockReason').value = ''; openModal('blockModal'); }
+    function submitBlock() {
+      if (!document.getElementById('blockReason').value) { toastError('请填写处置原因'); return; }
+      closeModal('blockModal');
+      toastSuccess('应用级限制申请已提交并记录审计');
+    }
+    function batchBlock() { openBlockModal('已选择的 app_id'); }
+    function openArchiveModal(appId) { document.getElementById('archiveAppId').value = appId; openModal('archiveModal'); }
+    function submitArchive() { closeModal('archiveModal'); toastSuccess('应用已归档，历史数据保留策略已记录'); }
+    function batchDisable() { showConfirm('确认停用选中的接入应用？停用后不再接受 SDK 上报。', function(){ toastSuccess('已批量停用'); }, '停用确认', 'danger'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>操作审计日志</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">操作审计日志</div>
+        <div class="page-subtitle">记录用户、系统和策略相关操作，支持按操作人、模块、结果和时间查询。</div>
+      </div>
+      <button class="btn btn-default" onclick="exportData()">导出审计日志</button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">操作人</span><input type="text" class="form-control" placeholder="姓名、邮箱或系统账号"></div>
+      <div class="search-item">
+        <span class="form-label">模块</span>
+        <select class="form-select">
+          <option value="">全部模块</option>
+          <option value="系统">系统管理</option>
+          <option value="策略">规则策略</option>
+          <option value="处置">事件处置</option>
+          <option value="接入">应用接入</option>
+          <option value="AI">AI模型与研判</option>
+          <option value="样本">样本回流</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">AI审计类型</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>模型调用</option>
+          <option>AI推理记录</option>
+          <option>AI研判反馈</option>
+          <option>样本回流</option>
+          <option>高敏访问审批</option>
+        </select>
+      </div>
+      <div class="search-item"><span class="form-label">审批编号</span><input type="text" class="form-control" placeholder="APR-20260416-003"></div>
+      <div class="search-item">
+        <span class="form-label">结果</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>成功</option>
+          <option>失败</option>
+        </select>
+      </div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="searchData()">查询</button><button class="btn btn-default" onclick="resetSearch()">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left" style="color:#606266;font-size:13px;">
+          审计日志采用追加写入和权限控制方式保存，普通用户仅可查询授权范围内记录。
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>日志 ID</th>
+              <th>操作人</th>
+              <th>操作类型</th>
+              <th>操作对象</th>
+              <th>数据级别</th>
+              <th>发生时间</th>
+              <th>结果</th>
+              <th>客户端 IP</th>
+              <th style="width:100px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ADT-20260416-AI018</td>
+              <td>ai-model-service</td>
+              <td><span class="tag tag-primary">模型调用</span></td>
+              <td>inference_id: INF-20260416-018</td>
+              <td><span class="tag tag-info">L1 内部</span></td>
+              <td>2026-04-16 10:25:36</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.20.31</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260416-AI018')">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260416-JDG018</td>
+              <td>张安全</td>
+              <td><span class="tag tag-success">AI研判确认</span></td>
+              <td>EVT-2026-00018 / judgement_id: JDG-018</td>
+              <td><span class="tag tag-info">L1 内部</span></td>
+              <td>2026-04-16 10:31:08</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.8.21</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260416-JDG018')">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260416-SMP009</td>
+              <td>李运营</td>
+              <td><span class="tag tag-warning">样本回流</span></td>
+              <td>sample_id: SMP-20260416-009 / 误报样本</td>
+              <td><span class="tag tag-info">L0 公开</span></td>
+              <td>2026-04-16 09:03:12</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.9.12</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260416-SMP009')">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260414-001</td>
+              <td>王丹</td>
+              <td><span class="tag tag-warning">禁用用户</span></td>
+              <td>张三丰 / 只读查看员</td>
+              <td>-</td>
+              <td>2026-04-14 09:22:11</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.8.21</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260414-001')">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260413-018</td>
+              <td>李四</td>
+              <td><span class="tag tag-primary">发布规则版本</span></td>
+              <td>tool-boundary-v1.8.2</td>
+              <td>-</td>
+              <td>2026-04-13 18:30:20</td>
+              <td><span class="tag tag-success">成功</span></td>
+              <td>10.16.10.8</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260413-018')">详情</button></td>
+            </tr>
+            <tr>
+              <td>ADT-20260410-022</td>
+              <td>系统认证服务</td>
+              <td><span class="tag tag-danger">异常登录尝试</span></td>
+              <td>管理员门户</td>
+              <td>-</td>
+              <td>2026-04-10 03:22:10</td>
+              <td><span class="tag tag-danger">失败</span></td>
+              <td>10.20.4.18</td>
+              <td><button class="btn btn-link" onclick="viewAudit('ADT-20260410-022')">详情</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="auditDetailModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">审计详情：<span id="auditDetailId">ADT-20260413-018</span></div><div class="modal-close" onclick="closeModal('auditDetailModal')">×</div></div>
+      <div class="modal-body">
+        <div class="desc-list">
+          <div class="desc-item"><div class="desc-label">操作类型</div><div class="desc-value" id="auditActionType">发布规则版本</div></div>
+          <div class="desc-item"><div class="desc-label">操作对象</div><div class="desc-value mono" id="auditObject">tool-boundary-v1.8.2</div></div>
+          <div class="desc-item"><div class="desc-label">审批编号</div><div class="desc-value mono">APR-20260413-006</div></div>
+          <div class="desc-item"><div class="desc-label">数据级别</div><div class="desc-value" id="auditDataLevel">-</div></div>
+          <div class="desc-item"><div class="desc-label">调用状态</div><div class="desc-value" id="auditCallStatus">-</div></div>
+          <div class="desc-item"><div class="desc-label">客户端 IP</div><div class="desc-value mono">10.16.10.8</div></div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <div class="card-header"><div class="card-title">变更前后对比</div></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>字段</th><th>变更前</th><th>变更后</th></tr></thead>
+              <tbody id="auditDiffBody">
+                <tr><td>rule_version</td><td>v1.8.1</td><td>v1.8.2</td></tr>
+                <tr><td>dispatch_status</td><td>gray</td><td>released</td></tr>
+                <tr><td>runtime_effect</td><td>部分实例生效</td><td>全部在线实例生效</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="margin-top:12px;">
+          <div class="card-header"><div class="card-title">关联日志入口</div></div>
+          <div class="card-body">
+            <button class="btn btn-default" onclick="toastSuccess('状态变更日志已定位到 EVT-2026-00018')">状态变更日志</button>
+            <button class="btn btn-default" onclick="toastSuccess('高敏访问日志已定位到 raw_ref 访问记录')">高敏访问日志</button>
+          </div>
+        </div>
+        <div class="alert-box alert-info" style="margin-top:12px;"><span class="alert-icon">i</span><span>Raw 访问和导出操作会记录访问人、approval_id、raw_ref、用途和时间，普通审计页只展示引用。</span></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('auditDetailModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof renderPagination === 'function') renderPagination('pagination', 569800, 1, 10, function(p){});
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '系统管理' }, { label: '操作审计日志' }]);
+    });
+    function searchData() { toastSuccess('审计日志已刷新'); }
+    function resetSearch() { document.querySelectorAll('.search-bar input, .search-bar select').forEach(function(el){ el.value = ''; }); }
+    function exportData() { toastSuccess('审计日志导出任务已创建'); }
+    function viewAudit(id) {
+      document.getElementById('auditDetailId').textContent = id || 'ADT-20260413-018';
+      document.getElementById('auditDataLevel').textContent = '-';
+      document.getElementById('auditCallStatus').textContent = '-';
+      document.getElementById('auditDiffBody').innerHTML =
+        '<tr><td>rule_version</td><td>v1.8.1</td><td>v1.8.2</td></tr>' +
+        '<tr><td>dispatch_status</td><td>gray</td><td>released</td></tr>' +
+        '<tr><td>runtime_effect</td><td>部分实例生效</td><td>全部在线实例生效</td></tr>';
+      if (id === 'ADT-20260416-AI018') {
+        document.getElementById('auditActionType').textContent = '模型调用';
+        document.getElementById('auditObject').textContent = 'inference_id: INF-20260416-018 / model_version: sec-judge-v1.2';
+        document.getElementById('auditDataLevel').textContent = 'L1 内部';
+        document.getElementById('auditCallStatus').textContent = 'success / 1840ms / 1286 tokens';
+        document.getElementById('auditDiffBody').innerHTML =
+          '<tr><td>call_status</td><td>pending</td><td>success</td></tr>' +
+          '<tr><td>data_level</td><td>-</td><td>L1 内部</td></tr>' +
+          '<tr><td>desensitization_hit_count</td><td>0</td><td>2</td></tr>';
+      } else if (id === 'ADT-20260416-JDG018') {
+        document.getElementById('auditActionType').textContent = 'AI研判确认';
+        document.getElementById('auditObject').textContent = 'EVT-2026-00018 / judgement_id: JDG-018';
+        document.getElementById('auditDataLevel').textContent = 'L1 内部';
+        document.getElementById('auditCallStatus').textContent = 'confirmed';
+        document.getElementById('auditDiffBody').innerHTML =
+          '<tr><td>adoption_status</td><td>pending</td><td>confirmed</td></tr>' +
+          '<tr><td>ai_analysis_status</td><td>generated</td><td>confirmed</td></tr>' +
+          '<tr><td>sample_feedback</td><td>-</td><td>candidate_created</td></tr>';
+      } else if (id === 'ADT-20260416-SMP009') {
+        document.getElementById('auditActionType').textContent = '样本回流';
+        document.getElementById('auditObject').textContent = 'sample_id: SMP-20260416-009 / false_positive';
+        document.getElementById('auditDataLevel').textContent = 'L0 公开';
+        document.getElementById('auditCallStatus').textContent = 'candidate_created';
+        document.getElementById('auditDiffBody').innerHTML =
+          '<tr><td>sample_set</td><td>-</td><td>candidate</td></tr>' +
+          '<tr><td>annotation_status</td><td>-</td><td>pending_review</td></tr>' +
+          '<tr><td>feedback_source</td><td>-</td><td>AI研判拒绝</td></tr>';
+      } else if (id === 'ADT-20260414-001') {
+        document.getElementById('auditActionType').textContent = '禁用用户';
+        document.getElementById('auditObject').textContent = '张三丰 / 只读查看员';
+      } else if (id === 'ADT-20260410-022') {
+        document.getElementById('auditActionType').textContent = '异常登录尝试';
+        document.getElementById('auditObject').textContent = '管理员门户';
+      } else {
+        document.getElementById('auditActionType').textContent = '发布规则版本';
+        document.getElementById('auditObject').textContent = 'tool-boundary-v1.8.2';
+      }
+      openModal('auditDetailModal');
+    }
+  </script>
+</body>
+</html>
