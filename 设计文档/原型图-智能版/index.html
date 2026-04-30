@@ -410,6 +410,60 @@
                             ">
                         意图偏离分析台
                     </div>
+                    <div class="nav-item" data-page="pages/monitor/soc-dashboard.html" data-label="SOC分析驾驶舱" onclick="
+                                loadPage(
+                                    'pages/monitor/soc-dashboard.html',
+                                    'SOC分析驾驶舱',
+                                    this,
+                                )
+                            ">
+                        SOC分析驾驶舱
+                    </div>
+                    <div class="nav-item" data-page="pages/monitor/persona-analysis.html" data-label="人员风险分析" onclick="
+                                loadPage(
+                                    'pages/monitor/persona-analysis.html',
+                                    '人员风险分析',
+                                    this,
+                                )
+                            ">
+                        人员风险分析
+                    </div>
+                    <div class="nav-item" data-page="pages/monitor/correlation-analysis.html" data-label="风险关联分析" onclick="
+                                loadPage(
+                                    'pages/monitor/correlation-analysis.html',
+                                    '风险关联分析',
+                                    this,
+                                )
+                            ">
+                        风险关联分析
+                    </div>
+                    <div class="nav-item" data-page="pages/monitor/behavior-baseline.html" data-label="行为基线管理" onclick="
+                                loadPage(
+                                    'pages/monitor/behavior-baseline.html',
+                                    '行为基线管理',
+                                    this,
+                                )
+                            ">
+                        行为基线管理
+                    </div>
+                    <div class="nav-item" data-page="pages/monitor/org-risk-posture.html" data-label="组织风险态势" onclick="
+                                loadPage(
+                                    'pages/monitor/org-risk-posture.html',
+                                    '组织风险态势',
+                                    this,
+                                )
+                            ">
+                        组织风险态势
+                    </div>
+                    <div class="nav-item" data-page="pages/ops/ai-service-monitor.html" data-label="AI服务监控" onclick="
+                                loadPage(
+                                    'pages/ops/ai-service-monitor.html',
+                                    'AI服务监控',
+                                    this,
+                                )
+                            ">
+                        AI服务监控
+                    </div>
                 </div>
 
                 <!-- 安全事件 -->
@@ -548,10 +602,28 @@
                             ">
                         通知渠道管理
                     </div>
+                    <div class="nav-item" data-page="pages/policy/auto-response-rules.html" data-label="自动响应规则" onclick="
+                                loadPage(
+                                    'pages/policy/auto-response-rules.html',
+                                    '自动响应规则',
+                                    this,
+                                )
+                            ">
+                        自动响应规则
+                    </div>
+                    <div class="nav-item" data-page="pages/system/data-classification.html" data-label="数据分级管理" onclick="
+                                loadPage(
+                                    'pages/system/data-classification.html',
+                                    '数据分级管理',
+                                    this,
+                                )
+                            ">
+                        数据分级管理
+                    </div>
                 </div>
 
                 <!-- 报告中心 -->
-                <div class="nav-parent nav-hidden-p0" onclick="toggleNav(this)">
+                <div class="nav-parent" onclick="toggleNav(this)">
                     <svg class="nav-icon" viewBox="0 0 16 16" fill="none" width="16" height="16">
                         <rect x="2" y="1" width="12" height="14" rx="1.5" stroke="currentColor" stroke-width="1.5" />
                         <path d="M5 5h6M5 8h6M5 11h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
@@ -559,7 +631,7 @@
                     <span class="nav-label">报告中心</span>
                     <span class="nav-arrow"></span>
                 </div>
-                <div class="nav-children nav-hidden-p0">
+                <div class="nav-children">
                     <div class="nav-item" data-page="pages/report/report-list.html" data-label="安全报告" onclick="
                                 loadPage(
                                     'pages/report/report-list.html',
@@ -586,6 +658,62 @@
                                 )
                             ">
                         报告订阅
+                    </div>
+                </div>
+
+                <!-- 知识库管理 (P1) -->
+                <div class="nav-parent" onclick="toggleNav(this)">
+                    <svg class="nav-icon" viewBox="0 0 16 16" fill="none" width="16" height="16">
+                        <path d="M2 3h12v2H2V3zm0 4h8v2H2V7zm0 4h10v2H2v-2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <span class="nav-label">知识库管理</span>
+                    <span class="nav-arrow"></span>
+                </div>
+                <div class="nav-children">
+                    <div class="nav-item" data-page="pages/knowledge/knowledge-item.html" data-label="知识条目管理" onclick="
+                                loadPage(
+                                    'pages/knowledge/knowledge-item.html',
+                                    '知识条目管理',
+                                    this,
+                                )
+                            ">
+                        知识条目管理
+                    </div>
+                    <div class="nav-item" data-page="pages/knowledge/sample-library.html" data-label="样本库管理" onclick="
+                                loadPage(
+                                    'pages/knowledge/sample-library.html',
+                                    '样本库管理',
+                                    this,
+                                )
+                            ">
+                        样本库管理
+                    </div>
+                    <div class="nav-item" data-page="pages/knowledge/model-evaluation.html" data-label="模型效果评估" onclick="
+                                loadPage(
+                                    'pages/knowledge/model-evaluation.html',
+                                    '模型效果评估',
+                                    this,
+                                )
+                            ">
+                        模型效果评估
+                    </div>
+                    <div class="nav-item" data-page="pages/knowledge/policy-template.html" data-label="策略模板库" onclick="
+                                loadPage(
+                                    'pages/knowledge/policy-template.html',
+                                    '策略模板库',
+                                    this,
+                                )
+                            ">
+                        策略模板库
+                    </div>
+                    <div class="nav-item" data-page="pages/knowledge/security-qa.html" data-label="安全知识问答" onclick="
+                                loadPage(
+                                    'pages/knowledge/security-qa.html',
+                                    '安全知识问答',
+                                    this,
+                                )
+                            ">
+                        安全知识问答
                     </div>
                 </div>
 
@@ -638,6 +766,33 @@
                                 )
                             ">
                         操作审计日志
+                    </div>
+                    <div class="nav-item" data-page="pages/system/model-registry.html" data-label="模型注册管理" onclick="
+                                loadPage(
+                                    'pages/system/model-registry.html',
+                                    '模型注册管理',
+                                    this,
+                                )
+                            ">
+                        模型注册管理
+                    </div>
+                    <div class="nav-item" data-page="pages/system/prompt-template.html" data-label="Prompt模板管理" onclick="
+                                loadPage(
+                                    'pages/system/prompt-template.html',
+                                    'Prompt模板管理',
+                                    this,
+                                )
+                            ">
+                        Prompt模板管理
+                    </div>
+                    <div class="nav-item" data-page="pages/system/external-integration.html" data-label="外部集成配置" onclick="
+                                loadPage(
+                                    'pages/system/external-integration.html',
+                                    '外部集成配置',
+                                    this,
+                                )
+                            ">
+                        外部集成配置
                     </div>
                     <div class="nav-item nav-hidden-p0" data-page="pages/ops/service-status.html" data-label="服务运行状态"
                         onclick="

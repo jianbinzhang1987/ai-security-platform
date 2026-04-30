@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>知识条目管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .tag-draft { background:#e4e7ed; color:#606266; }
+    .tag-pending { background:#fdf6ec; color:#e6a23c; }
+    .tag-published { background:#e1f3d8; color:#67c23a; }
+    .tag-revoked { background:#fde2e2; color:#f56c6c; }
+    .tag-internal { background:#fdf6ec; color:#e6a23c; }
+    .tag-secret { background:#fde2e2; color:#f56c6c; }
+    .tag-public { background:#e1f3d8; color:#67c23a; }
+    .version-badge { background:#409EFF; color:#fff; font-size:11px; padding:2px 6px; border-radius:4px; }
+    .diff-box { background:#f5f7fa; border:1px solid #ebeef5; border-radius:4px; padding:12px; font-family:Consolas,"Courier New",monospace; font-size:12px; line-height:1.8; }
+    .diff-del { background:#ffdcdc; color:#d93026; text-decoration:line-through; }
+    .diff-add { background:#d4edda; color:#155724; }
+    .rag-preview { background:#f5faff; border:1px solid #b3d8ff; border-radius:4px; padding:12px; }
+    .rag-risk-high { color:#f56c6c; font-weight:600; }
+    .rag-risk-mid { color:#e6a23c; font-weight:600; }
+    .rag-risk-low { color:#67c23a; font-weight:600; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">知识条目管理</div>
+        <div class="page-subtitle">维护知识库条目，支持版本管理、审核流程与 RAG Prompt 安全沙盒预览。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="openImportModal()">批量导入</button>
+        <button class="btn btn-primary" onclick="openKnowledgeModal()">新增知识条目</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">关键词</span><input class="form-control" placeholder="标题 / knowledge_id"></div>
+      <div class="search-item"><span class="form-label">风险类型</span><select class="form-select"><option value="">全部</option><option>提示词攻击</option><option>工具越界</option><option>敏感数据</option><option>意图偏移</option><option>通用</option></select></div>
+      <div class="search-item"><span class="form-label">审核状态</span><select class="form-select"><option value="">全部</option><option>草稿</option><option>待审核</option><option>已发布</option><option>已撤回</option></select></div>
+      <div class="search-item"><span class="form-label">安全级别</span><select class="form-select"><option value="">全部</option><option>公开</option><option>内部</option><option>机密</option></select></div>
+      <div class="search-item"><span class="form-label">来源</span><select class="form-select"><option value="">全部</option><option>人工录入</option><option>AI生成</option><option>外部导入</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('知识条目已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>知识 ID</th>
+              <th>标题</th>
+              <th>风险类型</th>
+              <th>安全级别</th>
+              <th>审核状态</th>
+              <th>版本</th>
+              <th>来源</th>
+              <th>关联事件</th>
+              <th>更新人 / 时间</th>
+              <th style="width:160px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono">KNW-20260420-001</td>
+              <td><strong>常见提示词注入攻击手法汇总</strong></td>
+              <td><span class="tag tag-danger">提示词攻击</span></td>
+              <td><span class="tag tag-internal">内部</span></td>
+              <td><span class="tag tag-published">已发布</span></td>
+              <td><span class="version-badge">v2.1</span></td>
+              <td>人工录入</td>
+              <td>14</td>
+              <td>张安全<br><span class="form-hint">2026-04-20 11:30</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openKnowledgeModal('KNW-20260420-001')">编辑</button>
+                  <button class="btn btn-link" onclick="openVersionModal('KNW-20260420-001')">版本</button>
+                  <button class="btn btn-link" onclick="openRagPreviewModal('KNW-20260420-001')">RAG预览</button>
+                  <button class="btn btn-link warning" onclick="confirmRevoke('KNW-20260420-001')">撤回</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mono">KNW-20260419-003</td>
+              <td><strong>工具能力边界越界判定标准</strong></td>
+              <td><span class="tag tag-warning">工具越界</span></td>
+              <td><span class="tag tag-public">公开</span></td>
+              <td><span class="tag tag-published">已发布</span></td>
+              <td><span class="version-badge">v1.0</span></td>
+              <td>AI生成</td>
+              <td>8</td>
+              <td>李运营<br><span class="form-hint">2026-04-19 16:45</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openKnowledgeModal('KNW-20260419-003')">编辑</button>
+                  <button class="btn btn-link" onclick="openVersionModal('KNW-20260419-003')">版本</button>
+                  <button class="btn btn-link" onclick="openRagPreviewModal('KNW-20260419-003')">RAG预览</button>
+                  <button class="btn btn-link warning" onclick="confirmRevoke('KNW-20260419-003')">撤回</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mono">KNW-20260418-007</td>
+              <td><strong>员工档案敏感字段脱敏规则</strong></td>
+              <td><span class="tag tag-primary">敏感数据</span></td>
+              <td><span class="tag tag-secret">机密</span></td>
+              <td><span class="tag tag-pending">待审核</span></td>
+              <td><span class="version-badge">v1.0</span></td>
+              <td>人工录入</td>
+              <td>3</td>
+              <td>王合规<br><span class="form-hint">2026-04-18 09:12</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openKnowledgeModal('KNW-20260418-007')">编辑</button>
+                  <button class="btn btn-link" onclick="openVersionModal('KNW-20260418-007')">版本</button>
+                  <button class="btn btn-link" onclick="openRagPreviewModal('KNW-20260418-007')">RAG预览</button>
+                  <button class="btn btn-link" onclick="confirmAudit('KNW-20260418-007')">审核</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mono">KNW-20260417-002</td>
+              <td><strong>意图偏移检测参考案例集</strong></td>
+              <td><span class="tag tag-info">意图偏移</span></td>
+              <td><span class="tag tag-internal">内部</span></td>
+              <td><span class="tag tag-draft">草稿</span></td>
+              <td><span class="version-badge">v0.3</span></td>
+              <td>外部导入</td>
+              <td>0</td>
+              <td>赵研发<br><span class="form-hint">2026-04-17 14:22</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openKnowledgeModal('KNW-20260417-002')">编辑</button>
+                  <button class="btn btn-link" onclick="openVersionModal('KNW-20260417-002')">版本</button>
+                  <button class="btn btn-link" onclick="openRagPreviewModal('KNW-20260417-002')">RAG预览</button>
+                  <button class="btn btn-link warning" onclick="confirmDelete('KNW-20260417-002')">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="pagination"></div>
+    </div>
+  </div>
+
+  <!-- 新增/编辑知识条目 -->
+  <div class="modal-overlay" id="knowledgeModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title" id="knowledgeModalTitle">新增知识条目</div><div class="modal-close" onclick="closeModal('knowledgeModal')">×</div></div>
+      <div class="modal-body">
+        <form id="knowledgeForm">
+          <div class="form-row"><div class="form-label required">标题</div><div class="form-field"><input class="form-control" id="kTitle" required placeholder="简洁描述知识主题"></div></div>
+          <div class="form-row"><div class="form-label required">内容</div><div class="form-field"><textarea class="form-textarea" id="kContent" rows="8" required placeholder="支持 Markdown 格式"></textarea></div></div>
+          <div class="form-row">
+            <div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div><div class="form-label required">风险类型</div><select class="form-select" required><option value="">请选择</option><option>提示词攻击</option><option>工具越界</option><option>敏感数据</option><option>意图偏移</option><option>通用</option></select></div>
+              <div><div class="form-label required">安全级别</div><select class="form-select" required><option value="">请选择</option><option>公开</option><option>内部</option><option>机密</option></select></div>
+            </div>
+          </div>
+          <div class="form-row"><div class="form-label">RAG Prompt 模板关联</div><div class="form-field"><select class="form-select" multiple size="3"><option>prompt-attack-v1.2</option><option>tool-boundary-v0.8</option><option>sensitive-data-v2.0</option><option>intent-drift-v1.0</option></select><div class="form-hint">按住 Ctrl 多选，未关联则不在 RAG 召回范围内</div></div></div>
+          <div class="form-row"><div class="form-label">标签</div><div class="form-field"><input class="form-control" placeholder="用逗号分隔，如：攻击手法,SQL注入,边界案例"></div></div>
+          <div class="form-row"><div class="form-label">附件</div><div class="form-field"><input type="file" class="form-control" multiple><div class="form-hint">最多 5 个文件，单个不超过 10MB</div></div></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('knowledgeModal')">取消</button>
+        <button class="btn btn-default" onclick="saveKnowledge('draft')">存草稿</button>
+        <button class="btn btn-primary" onclick="saveKnowledge('pending')">提交审核</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 版本历史 -->
+  <div class="modal-overlay" id="versionModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">版本历史：<span id="versionTarget">KNW-20260420-001</span></div><div class="modal-close" onclick="closeModal('versionModal')">×</div></div>
+      <div class="modal-body">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead><tr><th>版本</th><th>变更人</th><th>变更时间</th><th>变更摘要</th><th>操作</th></tr></thead>
+            <tbody>
+              <tr><td><span class="version-badge">v2.1</span></td><td>张安全</td><td>2026-04-20 11:30</td><td>补充了 indirect prompt injection 案例</td><td><button class="btn btn-link" onclick="openDiffModal()">diff</button></td></tr>
+              <tr><td><span class="version-badge">v2.0</span></td><td>张安全</td><td>2026-04-18 09:15</td><td>重构章节结构，新增防御建议</td><td><button class="btn btn-link" onclick="openDiffModal()">diff</button></td></tr>
+              <tr><td><span class="version-badge">v1.0</span></td><td>李运营</td><td>2026-04-15 16:00</td><td>初始版本</td><td><button class="btn btn-link" onclick="openDiffModal()">diff</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('versionModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- diff 对比 -->
+  <div class="modal-overlay" id="diffModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">版本对比：v2.0 → v2.1</div><div class="modal-close" onclick="closeModal('diffModal')">×</div></div>
+      <div class="modal-body">
+        <div class="diff-box">
+          <div><span class="diff-del">- 防御建议：仅依赖输入过滤</span></div>
+          <div><span class="diff-add">+ 防御建议：输入过滤 + 输出审计 + 上下文隔离三层防御</span></div>
+          <div><span class="diff-add">+ 新增案例：indirect prompt injection via document upload</span></div>
+          <div><span class="diff-del">- 标签：prompt-injection</span></div>
+          <div><span class="diff-add">+ 标签：prompt-injection, indirect-injection, document-attack</span></div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('diffModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- RAG 预览 -->
+  <div class="modal-overlay" id="ragPreviewModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">RAG Prompt 安全沙盒预览</div><div class="modal-close" onclick="closeModal('ragPreviewModal')">×</div></div>
+      <div class="modal-body">
+        <div class="rag-preview">
+          <div style="margin-bottom:10px;"><strong>知识条目：</strong>常见提示词注入攻击手法汇总 <span class="version-badge">v2.1</span></div>
+          <div style="margin-bottom:10px;"><strong>安全级别：</strong><span class="tag tag-internal">内部</span></div>
+          <div class="form-row" style="margin:12px 0;">
+            <div class="form-label">Prompt 模板关联</div>
+            <div class="form-field"><select class="form-select" onchange="updateRagPreview()">
+              <option>prompt-attack-v1.2</option>
+              <option>tool-boundary-v0.8</option>
+            </select></div>
+          </div>
+          <div style="margin:12px 0;">
+            <strong>RAG 召回片段预览：</strong>
+            <div style="background:#fff;border:1px solid #d9ecff;border-radius:4px;padding:10px;margin-top:8px;color:#606266;line-height:1.7;font-size:13px;">
+              [知识片段] 常见提示词注入攻击手法包括：直接注入（用户输入包含恶意指令覆盖原 prompt）、间接注入（通过外部文档/网页内容传递恶意指令）...
+            </div>
+          </div>
+          <div style="margin-top:12px;padding-top:12px;border-top:1px solid #b3d8ff;">
+            <strong>风险等级评估：</strong>
+            <span class="rag-risk-mid">中等风险</span>
+            <div class="form-hint" style="margin-top:6px;">该知识条目安全级别为"内部"，当前 Prompt 模板允许的数据级别为"内部"，匹配通过。若 Prompt 模板数据级别为"公开"，建议添加数据级别匹配约束。</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('ragPreviewModal')">关闭</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{label:'知识库管理'},{label:'知识条目管理'}]);
+      if (typeof renderPagination === 'function') renderPagination('pagination', 86, 1, 10, function(p){});
+    });
+    function openKnowledgeModal(id) {
+      document.getElementById('knowledgeModalTitle').textContent = id ? '编辑知识条目 (' + id + ')' : '新增知识条目';
+      document.getElementById('knowledgeForm').reset();
+      openModal('knowledgeModal');
+    }
+    function saveKnowledge(status) {
+      var labels = { draft:'已存草稿', pending:'已提交审核' };
+      toastSuccess(labels[status] || '已保存');
+      closeModal('knowledgeModal');
+    }
+    function openVersionModal(id) {
+      document.getElementById('versionTarget').textContent = id;
+      openModal('versionModal');
+    }
+    function openDiffModal() { openModal('diffModal'); }
+    function openRagPreviewModal(id) { openModal('ragPreviewModal'); }
+    function openImportModal() { toastSuccess('批量导入弹窗（上传 Excel/JSON）'); }
+    function confirmRevoke(id) { toastSuccess('知识条目 ' + id + ' 已撤回'); }
+    function confirmAudit(id) { toastSuccess('知识条目 ' + id + ' 审核通过，已发布'); }
+    function confirmDelete(id) { toastSuccess('草稿 ' + id + ' 已删除'); }
+    function updateRagPreview() { toastSuccess('RAG 预览已更新'); }
+  </script>
+</body>
+</html>

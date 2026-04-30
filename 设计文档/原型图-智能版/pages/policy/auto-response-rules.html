@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>自动响应规则管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat-card { border: 1px solid #EBEEF5; border-radius: 6px; padding: 16px; background: #fff; }
+    .stat-card .k { color: #909399; font-size: 12px; margin-bottom: 8px; }
+    .stat-card .v { font-size: 28px; font-weight: 700; color: #303133; }
+    .stat-card .v.warn { color: #f56c6c; }
+    .stat-card .v.ok { color: #67c23a; }
+    .level-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+    .level-l1 { background: #ecf5ff; color: #409eff; }
+    .level-l2 { background: #f0f9eb; color: #67c23a; }
+    .level-l3 { background: #fdf6ec; color: #e6a23c; }
+    .level-l4 { background: #fde2e2; color: #f56c6c; }
+    .emergency-panel { border: 1px solid #fde2e2; background: #fff7f7; border-radius: 6px; padding: 14px; margin-bottom: 16px; }
+    .emergency-panel.normal { border-color: #e1f3d8; background: #f0f9eb; }
+    .tab-bar { display: flex; border-bottom: 2px solid #e4e7ed; margin-bottom: 14px; }
+    .tab-item { padding: 10px 20px; cursor: pointer; color: #606266; font-size: 14px; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .tab-item.active { color: #409EFF; border-bottom-color: #409EFF; font-weight: 600; }
+    .audit-row { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #F5F7FA; font-size: 13px; }
+    .audit-row:last-child { border-bottom: none; }
+    .gray-slider { width: 100%; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">自动响应规则管理</div>
+        <div class="page-subtitle">配置 L1-L4 分级自动响应规则：通知、观察、软限制、强控制。支持审批、灰度、熔断和急停控制。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-danger" onclick="openModal('emergencyModal')">全局急停</button>
+        <button class="btn btn-primary" onclick="openModal('ruleModal')">新建规则</button>
+      </div>
+    </div>
+
+    <div class="emergency-panel normal" id="emergencyStatus">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:600;color:#67c23a;">自动响应全局状态：正常运行</div>
+          <div style="font-size:12px;color:#909399;margin-top:4px;">已启用规则 12 条 | 今日自动执行 28 次 | 待审批 3 条</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="openModal('emergencyModal')">全局急停</button>
+      </div>
+    </div>
+
+    <div class="stat-cards">
+      <div class="stat-card"><div class="k">启用规则</div><div class="v ok">12</div></div>
+      <div class="stat-card"><div class="k">今日自动执行</div><div class="v">28</div></div>
+      <div class="stat-card"><div class="k">待审批规则</div><div class="v warn">3</div></div>
+      <div class="stat-card"><div class="k">已熔断规则</div><div class="v ok">0</div></div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item active" onclick="switchTab(this,'rules')">规则列表</div>
+      <div class="tab-item" onclick="switchTab(this,'audit')">执行审计</div>
+      <div class="tab-item" onclick="switchTab(this,'pending')">审批管理</div>
+    </div>
+
+    <div id="panel-rules">
+      <div class="search-bar">
+        <div class="search-item"><span class="form-label">规则名称</span><input class="form-control" placeholder="规则名称"></div>
+        <div class="search-item"><span class="form-label">风险类型</span><select class="form-select"><option value="">全部</option><option>工具越界</option><option>敏感数据</option><option>提示词风险</option><option>意图偏移</option></select></div>
+        <div class="search-item"><span class="form-label">动作级别</span><select class="form-select"><option value="">全部</option><option>L1 通知类</option><option>L2 观察类</option><option>L3 软限制类</option><option>L4 强控制类</option></select></div>
+        <div class="search-item"><span class="form-label">审批状态</span><select class="form-select"><option value="">全部</option><option>已通过</option><option>审批中</option><option>已驳回</option></select></div>
+        <div class="search-item"><span class="form-label">启用状态</span><select class="form-select"><option value="">全部</option><option>启用</option><option>停用</option></select></div>
+        <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('规则列表已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <table class="data-table">
+            <thead>
+              <tr><th>规则名称</th><th>触发条件</th><th>级别</th><th>动作类型</th><th>范围</th><th>TTL</th><th>审批状态</th><th>启用</th><th>操作</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>工具越界告警通知</strong><div style="font-size:12px;color:#909399;margin-top:2px;">命中 tool-boundary 规则时自动通知</div></td>
+                <td>工具越界 + 高风险</td>
+                <td><span class="level-tag level-l1">L1</span></td>
+                <td>告警通知</td>
+                <td>单人</td>
+                <td>默认</td>
+                <td><span class="tag tag-success">已通过</span></td>
+                <td><span class="tag tag-success">启用</span></td>
+                <td><button class="btn btn-link" onclick="openModal('ruleModal')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
+              </tr>
+              <tr>
+                <td><strong>高频观察标记</strong><div style="font-size:12px;color:#909399;margin-top:2px;">异常频率触发观察标记</div></td>
+                <td>频率异常 + 中风险</td>
+                <td><span class="level-tag level-l2">L2</span></td>
+                <td>加入监控名单</td>
+                <td>单会话</td>
+                <td>24h</td>
+                <td><span class="tag tag-success">已通过</span></td>
+                <td><span class="tag tag-success">启用</span></td>
+                <td><button class="btn btn-link" onclick="openModal('ruleModal')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
+              </tr>
+              <tr>
+                <td><strong>外联工具频率限制</strong><div style="font-size:12px;color:#909399;margin-top:2px;">命中外联工具时自动限流</div></td>
+                <td>工具越界 + 高风险</td>
+                <td><span class="level-tag level-l3">L3</span></td>
+                <td>频率降级</td>
+                <td>单应用</td>
+                <td>6h</td>
+                <td><span class="tag tag-success">已通过</span></td>
+                <td><span class="tag tag-success">启用</span></td>
+                <td><button class="btn btn-link" onclick="openModal('ruleModal')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
+              </tr>
+              <tr>
+                <td><strong>应用降级阻断</strong><div style="font-size:12px;color:#909399;margin-top:2px;">高风险事件触发应用降级</div></td>
+                <td>任意 + 高风险 + 人工确认</td>
+                <td><span class="level-tag level-l4">L4</span></td>
+                <td>应用降级</td>
+                <td>多应用</td>
+                <td>必须</td>
+                <td><span class="tag tag-warning">审批中</span></td>
+                <td><span class="tag tag-default">停用</span></td>
+                <td><button class="btn btn-link" onclick="openModal('ruleModal')">编辑</button><button class="btn btn-link" onclick="toastSuccess('已提交审批')">审批</button></td>
+              </tr>
+              <tr>
+                <td><strong>批量阻断白名单测试</strong><div style="font-size:12px;color:#909399;margin-top:2px;">灰度测试规则，仅白名单生效</div></td>
+                <td>工具越界 + 高风险</td>
+                <td><span class="level-tag level-l3">L3</span></td>
+                <td>主体阻断</td>
+                <td>单Agent</td>
+                <td>1h</td>
+                <td><span class="tag tag-warning">审批中</span></td>
+                <td><span class="tag tag-success">启用(灰度10%)</span></td>
+                <td><button class="btn btn-link" onclick="openModal('ruleModal')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('规则已停用')">停用</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-audit" style="display:none;">
+      <div class="search-bar">
+        <div class="search-item"><span class="form-label">执行时间</span><select class="form-select"><option>今日</option><option>近7天</option><option>近30天</option></select></div>
+        <div class="search-item"><span class="form-label">规则名称</span><input class="form-control" placeholder="规则名称"></div>
+        <div class="search-item"><span class="form-label">动作级别</span><select class="form-select"><option value="">全部</option><option>L1</option><option>L2</option><option>L3</option><option>L4</option></select></div>
+        <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('审计记录已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="audit-row">
+            <div style="width:140px;font-size:12px;color:#909399;">2026-04-20 10:30:05</div>
+            <div style="width:80px;"><span class="level-tag level-l3">L3</span></div>
+            <div style="flex:1;"><strong>外联工具频率限制</strong> 执行频率降级于 <strong>研发代码审查助手</strong></div>
+            <div style="width:100px;"><span class="tag tag-success">执行成功</span></div>
+            <div style="width:80px;font-size:12px;color:#909399;">TTL 5h23m</div>
+            <div style="width:60px;"><button class="btn btn-link" onclick="toastSuccess('查看详情')">详情</button></div>
+          </div>
+          <div class="audit-row">
+            <div style="width:140px;font-size:12px;color:#909399;">2026-04-20 10:25:33</div>
+            <div style="width:80px;"><span class="level-tag level-l1">L1</span></div>
+            <div style="flex:1;"><strong>工具越界告警通知</strong> 发送告警通知给 <strong>安全运营机器人</strong></div>
+            <div style="width:100px;"><span class="tag tag-success">执行成功</span></div>
+            <div style="width:80px;font-size:12px;color:#909399;">-</div>
+            <div style="width:60px;"><button class="btn btn-link" onclick="toastSuccess('查看详情')">详情</button></div>
+          </div>
+          <div class="audit-row">
+            <div style="width:140px;font-size:12px;color:#909399;">2026-04-20 10:25:30</div>
+            <div style="width:80px;"><span class="level-tag level-l2">L2</span></div>
+            <div style="flex:1;"><strong>高频观察标记</strong> 将用户 <strong>张三</strong> 加入监控名单</div>
+            <div style="width:100px;"><span class="tag tag-success">执行成功</span></div>
+            <div style="width:80px;font-size:12px;color:#909399;">TTL 23h59m</div>
+            <div style="width:60px;"><button class="btn btn-link" onclick="toastSuccess('查看详情')">详情</button></div>
+          </div>
+          <div class="audit-row">
+            <div style="width:140px;font-size:12px;color:#909399;">2026-04-19 14:18:22</div>
+            <div style="width:80px;"><span class="level-tag level-l4">L4</span></div>
+            <div style="flex:1;"><strong>应用降级阻断</strong> 拒绝自动执行，等待人工审批</div>
+            <div style="width:100px;"><span class="tag tag-warning">人工审批</span></div>
+            <div style="width:80px;font-size:12px;color:#909399;">-</div>
+            <div style="width:60px;"><button class="btn btn-link" onclick="toastSuccess('查看详情')">详情</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-pending" style="display:none;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">待审批规则</div></div>
+        <div class="card-body">
+          <div class="audit-row">
+            <div style="width:200px;"><strong>应用降级阻断</strong><div style="font-size:12px;color:#909399;">L4 强控制 | 多应用影响</div></div>
+            <div style="flex:1;font-size:13px;">触发条件：任意高风险事件 + 人工确认<br>动作：应用降级 | TTL: 必须 | 灰度: 0%</div>
+            <div style="width:100px;"><span class="tag tag-warning">审批中</span></div>
+            <div style="width:140px;font-size:12px;color:#909399;">申请人: 张安全<br>2026-04-18</div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="toastSuccess('审批已通过')">通过</button><button class="btn btn-default btn-sm" onclick="toastSuccess('审批已驳回')">驳回</button></div>
+          </div>
+          <div class="audit-row">
+            <div style="width:200px;"><strong>批量阻断白名单测试</strong><div style="font-size:12px;color:#909399;">L3 软限制 | 单Agent</div></div>
+            <div style="flex:1;font-size:13px;">触发条件：工具越界 + 高风险<br>动作：主体阻断 | TTL: 1h | 灰度: 10%<br>白名单: 研发测试Agent(2个)</div>
+            <div style="width:100px;"><span class="tag tag-warning">审批中</span></div>
+            <div style="width:140px;font-size:12px;color:#909399;">申请人: 李运营<br>2026-04-19</div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="toastSuccess('审批已通过')">通过</button><button class="btn btn-default btn-sm" onclick="toastSuccess('审批已驳回')">驳回</button></div>
+          </div>
+          <div class="audit-row">
+            <div style="width:200px;"><strong>敏感数据外发熔断</strong><div style="font-size:12px;color:#909399;">L3 软限制 | 单应用</div></div>
+            <div style="flex:1;font-size:13px;">触发条件：敏感数据输出 + 高风险<br>动作：会话TTL限制 | TTL: 30min | 灰度: 50%<br>熔断阈值: 影响5个会话暂停</div>
+            <div style="width:100px;"><span class="tag tag-warning">审批中</span></div>
+            <div style="width:140px;font-size:12px;color:#909399;">申请人: 王合规<br>2026-04-20</div>
+            <div style="display:flex;gap:8px;"><button class="btn btn-primary btn-sm" onclick="toastSuccess('审批已通过')">通过</button><button class="btn btn-default btn-sm" onclick="toastSuccess('审批已驳回')">驳回</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="ruleModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">新建自动响应规则</div><div class="modal-close" onclick="closeModal('ruleModal')">&#xD7;</div></div>
+      <div class="modal-body">
+        <form id="ruleForm">
+          <div class="tab-bar">
+            <div class="tab-item active" onclick="switchModalTab(this,'basic')">基础信息</div>
+            <div class="tab-item" onclick="switchModalTab(this,'trigger')">触发条件</div>
+            <div class="tab-item" onclick="switchModalTab(this,'action')">动作配置</div>
+            <div class="tab-item" onclick="switchModalTab(this,'approval')">审批与灰度</div>
+          </div>
+          <div id="modal-basic">
+            <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input class="form-control" required placeholder="如：工具越界告警通知"></div></div>
+            <div class="form-row"><div class="form-label">规则描述</div><div class="form-field"><textarea class="form-textarea" placeholder="说明规则触发场景和处置目标"></textarea></div></div>
+            <div class="form-row"><div class="form-label required">优先级</div><div class="form-field"><input type="range" min="1" max="10" value="5" class="gray-slider"><div class="form-hint" style="display:flex;justify-content:space-between;"><span>1(最低)</span><span>5</span><span>10(最高)</span></div></div></div>
+            <div class="form-row"><div class="form-label required">启用状态</div><div class="form-field"><label class="toggle"><input type="checkbox" checked><span class="toggle-track"></span></label></div></div>
+          </div>
+          <div id="modal-trigger" style="display:none;">
+            <div class="form-row"><div class="form-label required">风险类型</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> 工具越界</label><label class="checkbox-item"><input type="checkbox"> 敏感数据</label><label class="checkbox-item"><input type="checkbox"> 提示词风险</label><label class="checkbox-item"><input type="checkbox"> 意图偏移</label></div></div></div>
+            <div class="form-row"><div class="form-label required">风险等级</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> 高风险</label><label class="checkbox-item"><input type="checkbox"> 中风险</label><label class="checkbox-item"><input type="checkbox"> 低风险</label></div></div></div>
+            <div class="form-row"><div class="form-label">检测来源</div><div class="form-field"><select class="form-select"><option>全部</option><option>规则检出</option><option>AI检出</option><option>规则+AI联合</option></select></div></div>
+            <div class="form-row"><div class="form-label">置信度阈值</div><div class="form-field"><input class="form-control" value="0.80" placeholder="0-1"><div class="form-hint">仅当 AI 置信度 >= 阈值时触发</div></div></div>
+            <div class="form-row"><div class="form-label">时间窗口</div><div class="form-field"><select class="form-select"><option>单次命中</option><option>1分钟内重复</option><option>5分钟内重复</option><option>1小时内累计</option></select></div></div>
+            <div class="form-row"><div class="form-label">触发次数阈值</div><div class="form-field"><input class="form-control" value="1" placeholder="次数"></div></div>
+          </div>
+          <div id="modal-action" style="display:none;">
+            <div class="form-row"><div class="form-label required">动作级别</div><div class="form-field">
+              <div style="display:grid;gap:8px;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer;"><input type="radio" name="level" value="L1"> <span class="level-tag level-l1">L1 通知类</span> <span style="color:#909399;font-size:12px;">告警通知、消息推送（可自动执行）</span></label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer;"><input type="radio" name="level" value="L2"> <span class="level-tag level-l2">L2 观察类</span> <span style="color:#909399;font-size:12px;">标记观察、加入监控名单（可自动执行）</span></label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer;"><input type="radio" name="level" value="L3"> <span class="level-tag level-l3">L3 软限制类</span> <span style="color:#909399;font-size:12px;">会话TTL限制、频率降级（需白名单+审批）</span></label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #fde2e2;border-radius:4px;cursor:pointer;background:#fff7f7;"><input type="radio" name="level" value="L4"> <span class="level-tag level-l4">L4 强控制类</span> <span style="color:#f56c6c;font-size:12px;font-weight:600;">应用降级、工具禁用、主体阻断（不可自动执行，必须人工审批+MFA）</span></label>
+              </div>
+              <div class="alert-box alert-danger" style="margin-top:10px;"><span class="alert-icon">&#x26A0;</span><span><strong>L4 强控制警告：</strong>此级别动作将强制阻断业务功能，必须配置人工审批和 MFA 验证。禁止在灰度比例低于 50% 时自动执行。</span></div>
+            </div></div>
+            <div class="form-row"><div class="form-label required">具体动作</div><div class="form-field"><select class="form-select" required><option value="">请选择</option><optgroup label="L1 通知类"><option>告警通知</option><option>消息推送</option></optgroup><optgroup label="L2 观察类"><option>标记观察</option><option>升级关注</option><option>加入监控名单</option></optgroup><optgroup label="L3 软限制类"><option>会话TTL限制</option><option>频率降级</option><option>工具调用次数限制</option></optgroup><optgroup label="L4 强控制类"><option>应用降级</option><option>工具禁用</option><option>主体阻断</option><option>策略变更</option></optgroup></select></div></div>
+            <div class="form-row" id="whitelistRow"><div class="form-label">白名单对象</div><div class="form-field"><select class="form-select" multiple size="3"><option>研发测试Agent</option><option>内部审计助手</option><option>安全演练专用</option></select><div class="form-hint">L3 规则必须配置白名单，仅对白名单内对象自动执行</div></div></div>
+            <div class="form-row"><div class="form-label required">TTL（自动恢复时间）</div><div class="form-field"><div style="display:flex;gap:8px;align-items:center;"><input class="form-control" value="6" style="width:80px;" required><select class="form-select" style="width:auto;"><option>分钟</option><option selected>小时</option><option>天</option></select></div><div class="form-hint">L3/L4 必须配置 TTL，到期自动恢复</div></div></div>
+            <div class="form-row"><div class="form-label">熔断阈值</div><div class="form-field"><input class="form-control" value="5" placeholder="会话数"><div class="form-hint">影响超过 N 个会话则暂停该规则（L3/L4 建议配置）</div></div></div>
+          </div>
+          <div id="modal-approval" style="display:none;">
+            <div class="form-row"><div class="form-label">灰度比例</div><div class="form-field"><input type="range" min="0" max="100" value="0" class="gray-slider"><div class="form-hint" style="display:flex;justify-content:space-between;"><span>0%</span><span>50%</span><span>100%</span></div></div></div>
+            <div class="form-row"><div class="form-label">灰度目标</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> 全部应用</label><label class="checkbox-item"><input type="checkbox"> 研发部应用</label><label class="checkbox-item"><input type="checkbox"> 测试租户</label></div></div></div>
+            <div class="form-row"><div class="form-label">审批记录</div><div class="form-field">
+              <div style="border:1px solid #EBEEF5;border-radius:4px;padding:10px;font-size:12px;color:#606266;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>张安全 提交审批</span><span style="color:#909399;">2026-04-18 09:15</span></div>
+                <div style="display:flex;justify-content:space-between;"><span>李运营 审批通过</span><span style="color:#909399;">2026-04-18 10:22</span></div>
+              </div>
+            </div></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('ruleModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('规则已保存');closeModal('ruleModal')">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="emergencyModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title" style="color:#f56c6c;">&#x26A0; 全局急停确认</div><div class="modal-close" onclick="closeModal('emergencyModal')">&#xD7;</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-danger"><span class="alert-icon">!</span><span>全局急停将暂停<strong>所有</strong>自动响应规则，已执行动作按 TTL 自然恢复。急停后需人工重新启用，不可自动恢复。此操作将写入审计日志。</span></div>
+        <div style="margin-top:12px;font-size:13px;color:#606266;line-height:1.8;">
+          <div>&#x2022; 已启用规则: 12 条</div>
+          <div>&#x2022; 正在执行中动作: 3 个 (2 个 L2 标记 + 1 个 L3 限制)</div>
+          <div>&#x2022; 预计影响范围: 5 个应用，12 个会话</div>
+        </div>
+        <div class="form-row" style="margin-top:14px;"><div class="form-label required">输入确认码</div><div class="form-field"><input class="form-control" placeholder="请输入 EMERGENCY 以确认" required></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('emergencyModal')">取消</button><button class="btn btn-danger" onclick="doEmergencyStop()">确认全局急停</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '自动响应规则' }]);
+      }
+    });
+    function switchTab(el, tab) {
+      document.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      ['rules', 'audit', 'pending'].forEach(function(id) {
+        document.getElementById('panel-' + id).style.display = (id === tab) ? 'block' : 'none';
+      });
+    }
+    function switchModalTab(el, tab) {
+      document.querySelectorAll('#ruleModal .tab-item').forEach(function(t) { t.classList.remove('active'); });
+      el.classList.add('active');
+      ['basic', 'trigger', 'action', 'approval'].forEach(function(id) {
+        document.getElementById('modal-' + id).style.display = (id === tab) ? 'block' : 'none';
+      });
+    }
+    function doEmergencyStop() {
+      document.getElementById('emergencyStatus').classList.remove('normal');
+      document.getElementById('emergencyStatus').querySelector('div div:first-child').innerHTML = '<div style="font-weight:600;color:#f56c6c;">自动响应全局状态：已急停</div><div style="font-size:12px;color:#909399;margin-top:4px;">所有自动响应规则已暂停 | 已执行动作按 TTL 自然恢复 | 需人工重新启用</div>';
+      closeModal('emergencyModal');
+      toastSuccess('全局急停已执行，所有自动响应规则已暂停');
+    }
+  </script>
+</body>
+</html>

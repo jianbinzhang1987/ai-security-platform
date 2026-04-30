@@ -26,10 +26,32 @@
     .ai-metric-label { color: #909399; font-size: 12px; margin-bottom: 4px; }
     .ai-metric-value { color: #303133; font-weight: 600; word-break: break-all; }
     .ai-list { margin: 0; padding-left: 18px; color: #606266; line-height: 1.8; }
-    .ai-fragment { border: 1px solid #F5D0D0; background: #FFF7F7; border-radius: 4px; padding: 8px; margin-top: 8px; }
-    .similar-event { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; margin-top: 8px; }
-    .similar-event-title { display: flex; justify-content: space-between; gap: 8px; color: #303133; font-weight: 600; }
+    .ai-fragment { border: 1px solid #F5D0D0; background: #FFF7F7; border-radius: 4px; padding: 8px; margin-top: 8px; cursor: pointer; transition: box-shadow .15s; }
+    .ai-fragment:hover { box-shadow: 0 0 0 2px rgba(245,108,108,.25); }
+    .ai-fragment-click { font-size: 11px; color: #409EFF; margin-top: 4px; }
+    .ai-counter { border: 1px solid #E6F5E6; background: #F0F9EB; border-radius: 4px; padding: 8px; margin-top: 8px; }
+    .ai-counter-title { color: #67C23A; font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+    .ai-degradation { border: 1px solid #FDE2E2; background: #FEF0F0; border-radius: 4px; padding: 10px; margin-top: 10px; }
+    .ai-degradation-title { color: #F56C6C; font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .ai-degradation-kv { display: grid; grid-template-columns: 100px 1fr; gap: 4px 10px; font-size: 13px; line-height: 1.7; color: #606266; }
+    .ai-degradation-kv .k { color: #909399; }
+    .ai-version-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+    .ai-copy-btn { font-size: 11px; color: #409EFF; cursor: pointer; border: 1px solid #D9ECFF; background: #ECF5FF; border-radius: 3px; padding: 1px 6px; }
+    .ai-copy-btn:hover { background: #D9ECFF; }
+    .ai-section { margin-bottom: 14px; }
+    .ai-section-title { font-size: 13px; font-weight: 600; color: #303133; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .ai-section-title .section-icon { width: 18px; height: 18px; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; }
+    .icon-fragment { background: #F56C6C; }
+    .icon-reason { background: #409EFF; }
+    .icon-counter { background: #67C23A; }
+    .icon-degradation { background: #E6A23C; }
+    .similar-event { border: 1px solid #EBEEF5; border-radius: 4px; padding: 10px; margin-top: 8px; cursor: pointer; }
+    .similar-event:hover { border-color: #C6E2FF; }
+    .similar-event-title { display: flex; justify-content: space-between; gap: 8px; color: #303133; font-weight: 600; align-items: center; }
     .similar-event-meta { color: #909399; font-size: 12px; margin-top: 6px; line-height: 1.6; }
+    .similar-event-detail { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #EBEEF5; font-size: 13px; color: #606266; line-height: 1.7; }
+    .similar-event.expanded .similar-event-detail { display: block; }
+    .similar-toggle { font-size: 11px; color: #409EFF; user-select: none; }
     .mono { font-family: Consolas, "Courier New", monospace; }
     @media (max-width: 1400px) {
       .detail-layout { grid-template-columns: 1fr; }
@@ -43,9 +65,9 @@
       <div>
         <div class="page-title">风险事件详情 <span id="riskLevelTag" class="tag tag-danger">高风险</span> <span id="statusTag" class="tag tag-warning">处理中</span></div>
         <div class="ai-status-row">
-          <span id="detectionSourceTag" class="tag tag-primary">规则+AI检出</span>
-          <span id="aiStatusTag" class="tag tag-success">AI检测成功</span>
-          <span id="aiAnalysisStatusTag" class="tag tag-primary">AI研判已生成</span>
+          <span id="detectionSourceTag" class="tag tag-ai">规则+AI检出</span>
+          <span id="aiStatusTag" class="tag tag-ai">AI检测成功</span>
+          <span id="aiAnalysisStatusTag" class="tag tag-ai">AI研判已生成</span>
           <span id="confidenceReviewTag" class="tag tag-warning" style="display:none;">低置信待复核</span>
         </div>
         <div class="page-subtitle" id="pageSubtitle">EVT-2026-00018 | trace_id: TRC-20260416-018 | span_id: sp_04_tool | risk_stage: 工具能力边界确认</div>
@@ -113,6 +135,44 @@
         </div>
 
         <div class="card">
+          <div class="card-header"><div class="card-title">自动执行台账</div><span class="tag tag-ai">AI触发 / 人工执行</span></div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>时间</th><th>动作</th><th>级别</th><th>来源</th><th>状态</th><th>TTL 剩余</th><th>操作</th></tr></thead>
+              <tbody id="autoActionBody">
+                <tr>
+                  <td style="font-size:12px;color:#909399;">10:30:05</td>
+                  <td>工具频率降级</td>
+                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;background:#fdf6ec;color:#e6a23c;font-weight:600;">L3</span></td>
+                  <td><span class="tag tag-info">自动响应-003</span></td>
+                  <td><span class="tag tag-success">执行成功</span></td>
+                  <td><span style="color:#f56c6c;font-weight:600;">5h 23m</span></td>
+                  <td><button class="btn btn-link" onclick="toastSuccess('已提前恢复')">提前恢复</button></td>
+                </tr>
+                <tr>
+                  <td style="font-size:12px;color:#909399;">10:25:33</td>
+                  <td>告警通知</td>
+                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;background:#ecf5ff;color:#409eff;font-weight:600;">L1</span></td>
+                  <td><span class="tag tag-info">自动响应-001</span></td>
+                  <td><span class="tag tag-success">已完成</span></td>
+                  <td>-</td>
+                  <td>-</td>
+                </tr>
+                <tr>
+                  <td style="font-size:12px;color:#909399;">10:25:30</td>
+                  <td>加入监控名单</td>
+                  <td><span class="tag tag-ai">L2</span></td>
+                  <td><span class="tag tag-info">自动响应-002</span></td>
+                  <td><span class="tag tag-success">执行成功</span></td>
+                  <td><span style="color:#e6a23c;font-weight:600;">23h 59m</span></td>
+                  <td><button class="btn btn-link" onclick="toastSuccess('已提前恢复')">提前恢复</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-header"><div class="card-title">动作与审批台账</div><span class="tag tag-primary">action_id / approval_id</span></div>
           <div class="table-wrapper">
             <table class="data-table">
@@ -144,8 +204,8 @@
       </div>
 
       <div>
-        <div class="card">
-          <div class="card-header"><div class="card-title">AI辅助研判</div><span id="aiJudgementBadge" class="tag tag-primary">generated</span></div>
+        <div class="card" id="aiJudgementCard">
+          <div class="card-header"><div class="card-title">AI辅助研判</div><span id="aiJudgementBadge" class="tag tag-ai">generated</span></div>
           <div class="card-body">
             <div class="ai-card-section">
               <div class="ai-summary-title" id="aiAttackMethod">工具能力边界越界</div>
@@ -182,6 +242,31 @@
         <div class="card">
           <div class="card-header"><div class="card-title">相似事件</div><span class="tag tag-info">仅供参考</span></div>
           <div class="card-body" id="similarEventsBody"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">AI 处置建议 <span class="tag tag-ai">AI</span></div></div>
+          <div class="card-body">
+            <div style="border:1px solid #BAE6FD;background:#F0F9FF;border-radius:4px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.8;color:#0C4A6E;">
+              <div style="font-weight:600;color:#0284C7;margin-bottom:6px;">&#x1F916; AI 建议</div>
+              <div>推荐动作：<strong>限制工具 external_http_post 的调用频率</strong></div>
+              <div>动作级别：<span style="display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;background:#fdf6ec;color:#e6a23c;font-weight:600;">L3 软限制</span></div>
+              <div>影响范围：研发代码审查助手（单应用）</div>
+              <div>TTL：<strong>6 小时</strong>（自动恢复）</div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px dashed #BAE6FD;">
+                <div style="font-size:12px;color:#606266;">影响评估：影响 1 个应用，3 个活跃会话，预计误伤率 &lt; 2%</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:#909399;margin-bottom:10px;">
+              <span style="color:#f56c6c;font-weight:600;">&#x26A0;</span> L3 动作需确认白名单和熔断状态；该建议基于规则匹配，不代表最终决策。
+            </div>
+            <div class="action-grid" style="margin-bottom:10px;">
+              <button class="btn btn-primary" onclick="toastSuccess('已采纳AI建议并执行L3限制')">采纳建议并执行</button>
+              <button class="btn btn-warning" onclick="openModal('actionModal')">修改后执行</button>
+              <button class="btn btn-default" onclick="toastSuccess('已拒绝AI建议并记录原因')">拒绝并记录</button>
+              <button class="btn btn-default" onclick="toastSuccess('已转人工审批(L4)')">转人工审批(L4)</button>
+            </div>
+          </div>
         </div>
 
         <div class="card">
@@ -288,7 +373,7 @@
         <div class="form-row"><div class="form-label required">处置优先级</div><div class="form-field"><select class="form-select" required><option>critical</option><option selected>high</option><option>medium</option><option>low</option></select></div></div>
         <div class="form-row"><div class="form-label required">修正后的影响面</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明影响对象、影响范围和可能后果"></textarea></div></div>
         <div class="form-row"><div class="form-label required">修正原因</div><div class="form-field"><textarea class="form-textarea" required placeholder="说明 AI 判断中需要修正或补充的部分"></textarea></div></div>
-        <div class="form-row"><div class="form-label">样本处理</div><div class="form-field"><select class="form-select"><option>进入样本候选集</option><option>仅记录反馈</option></select></div></div>
+        <div class="form-row"><div class="form-label">加入样本候选集</div><div class="form-field"><label class="toggle"><input type="checkbox" checked id="addToSamplePool"><span class="toggle-track"></span></label><div class="meta-sub">开启后，本次修正的样本将进入样本候选集供规则优化使用</div></div></div>
         <div class="form-row"><div class="form-label">样本类型</div><div class="form-field"><select class="form-select"><option>命中样本</option><option>误报样本</option><option>攻击样本</option><option>边界样本</option></select></div></div>
       </form></div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('aiFeedbackModal')">取消</button><button class="btn btn-primary" onclick="submitAiCorrection()">提交修正</button></div>
@@ -416,6 +501,127 @@
         fpReason: '业务话术触发低置信度规则，已进入规则优化样本池。',
         acceptReason: '不适用。',
         hint: '当前事件已标记误报，建议关注规则优化样本即可。'
+      },
+      'EVT-2026-00020': {
+        id: 'EVT-2026-00020',
+        time: '2026-04-17 14:32:18',
+        traceId: 'TRC-20260417-020',
+        spanId: 'sp_08_timeout',
+        riskLevel: '中风险',
+        riskTag: 'tag-warning',
+        status: '待确认',
+        statusTag: 'tag-warning',
+        riskType: 'AI检测超时降级',
+        confidence: '0.78',
+        riskStage: 'AI检测降级',
+        app: '财务审计助手',
+        dept: '财务部',
+        agent: '审计报告生成 / AuditReport.generate',
+        tool: 'db_query',
+        resource: 'finance_report_2026q1',
+        action: '<span class="tag tag-warning">规则优先</span>',
+        detector: 'ai-timeout-degradation',
+        rule: 'ai-degradation-v1.0',
+        source: 'ai.detection',
+        offset: '0-0',
+        rawRef: 'minio://agentsec/raw/2026/04/17/sp_08_timeout.json',
+        finding: 'AI检测超时(5.2s)，已降级为纯规则检测。规则检出敏感数据访问模式。',
+        context: ['用户请求生成2026年Q1财务审计报告。', '模型计划查询数据库获取汇总数据。', 'AI检测服务响应超时，触发降级策略。', '规则引擎检测到敏感数据访问模式并生成事件。'],
+        json: '{\n  "span_id": "sp_08_timeout",\n  "ai_status": "timeout",\n  "timeout_ms": 5200,\n  "degradation": "rule_priority",\n  "rule_hit": "sensitive_data_access"\n}',
+        raw: 'AI STATUS: timeout\n降级策略: 规则优先，AI超时跳过\n规则命中: 敏感数据访问模式',
+        aiStatus: 'timeout',
+        aiStatusLabel: 'AI检测超时',
+        actions: [
+          { id: 'ACT-20260417-0020', type: 'alert_only', status: 'succeeded', rollback: 'not_required', ttl: '-', approval: '-', operator: '系统' }
+        ],
+        statusHistory: [
+          { time: '2026-04-17 14:32:18', from: '-', to: '待确认', operator: '检测引擎', note: 'AI检测超时，规则优先检出敏感数据访问' }
+        ],
+        ruleText: '降级策略：AI检测超时(>5s)时，自动降级为纯规则检测，确保检测连续性。',
+        fpReason: '暂无。',
+        acceptReason: '暂无。',
+        hint: 'AI检测超时已触发降级，当前仅规则引擎生效。建议检查AI服务状态。'
+      },
+      'EVT-2026-00021': {
+        id: 'EVT-2026-00021',
+        time: '2026-04-17 16:45:33',
+        traceId: 'TRC-20260417-021',
+        spanId: 'sp_09_circuit',
+        riskLevel: '高风险',
+        riskTag: 'tag-danger',
+        status: '处理中',
+        statusTag: 'tag-warning',
+        riskType: 'AI熔断降级',
+        confidence: '0.85',
+        riskStage: 'AI熔断保护',
+        app: '智能客服 Copilot',
+        dept: '客服中心',
+        agent: '客服问答 Agent / ReplyPlanner',
+        tool: 'knowledge_base_search',
+        resource: 'customer_faq_v2',
+        action: '<span class="tag tag-danger">已阻断</span>',
+        detector: 'ai-circuit-open-detector',
+        rule: 'circuit-breaker-v1.2',
+        source: 'ai.detection',
+        offset: '0-0',
+        rawRef: 'minio://agentsec/raw/2026/04/17/sp_09_circuit.json',
+        finding: 'AI检测熔断器已打开，连续10次调用失败。规则引擎独立检出潜在越狱攻击。',
+        context: ['用户询问退款政策相关问题。', '提示词中包含多次角色扮演尝试。', 'AI检测服务连续失败，熔断器打开。', '规则引擎独立检出越狱攻击模式。'],
+        json: '{\n  "span_id": "sp_09_circuit",\n  "ai_status": "circuit_open",\n  "consecutive_failures": 10,\n  "circuit_state": "open",\n  "rule_hit": "jailbreak_attempt"\n}',
+        raw: 'AI STATUS: circuit_open\n熔断器状态: 打开\n连续失败: 10次\n规则命中: 越狱攻击尝试',
+        aiStatus: 'circuit_open',
+        aiStatusLabel: 'AI熔断中',
+        actions: [
+          { id: 'ACT-20260417-0021', type: 'block_prompt', status: 'succeeded', rollback: 'ttl_1h', ttl: '1h', approval: 'AUTO', operator: '系统' }
+        ],
+        statusHistory: [
+          { time: '2026-04-17 16:45:33', from: '-', to: '待确认', operator: '检测引擎', note: 'AI熔断保护生效，规则独立检出越狱攻击' },
+          { time: '2026-04-17 16:46:05', from: '待确认', to: '处理中', operator: '系统', note: '自动阻断生效，等待人工复核' }
+        ],
+        ruleText: '熔断策略：AI检测连续失败达到阈值时自动打开熔断器，保护下游服务，仅依赖规则引擎。',
+        fpReason: '暂无。',
+        acceptReason: '暂无。',
+        hint: 'AI熔断保护已生效，当前仅规则引擎检测。请关注AI服务健康状态。'
+      },
+      'EVT-2026-00022': {
+        id: 'EVT-2026-00022',
+        time: '2026-04-18 09:15:42',
+        traceId: 'TRC-20260418-022',
+        spanId: 'sp_10_error',
+        riskLevel: '中风险',
+        riskTag: 'tag-warning',
+        status: '待确认',
+        statusTag: 'tag-warning',
+        riskType: 'AI检测错误降级',
+        confidence: '0.72',
+        riskStage: 'AI服务错误',
+        app: '代码生成助手',
+        dept: '研发部',
+        agent: '代码补全 Agent / CodeComplete.suggest',
+        tool: 'code_analysis',
+        resource: 'internal_api_doc',
+        action: '<span class="tag tag-warning">观察标记</span>',
+        detector: 'ai-error-degradation',
+        rule: 'ai-error-fallback-v1.0',
+        source: 'ai.detection',
+        offset: '0-0',
+        rawRef: 'minio://agentsec/raw/2026/04/18/sp_10_error.json',
+        finding: 'AI检测服务返回错误(500)，已降级。规则引擎检出潜在代码注入模式。',
+        context: ['用户请求生成数据库查询代码。', '提示词中包含SQL片段和参数。', 'AI检测服务返回500错误。', '规则引擎降级检出潜在SQL注入模式。'],
+        json: '{\n  "span_id": "sp_10_error",\n  "ai_status": "error",\n  "error_code": 500,\n  "error_msg": "Internal Server Error",\n  "degradation": "rule_fallback",\n  "rule_hit": "sql_injection_pattern"\n}',
+        raw: 'AI STATUS: error\n错误码: 500\n降级策略: 规则回退\n规则命中: SQL注入模式',
+        aiStatus: 'error',
+        aiStatusLabel: 'AI检测错误',
+        actions: [
+          { id: 'ACT-20260418-0022', type: 'mark_observation', status: 'succeeded', rollback: 'not_required', ttl: '24h', approval: '-', operator: '系统' }
+        ],
+        statusHistory: [
+          { time: '2026-04-18 09:15:42', from: '-', to: '待确认', operator: '检测引擎', note: 'AI检测错误，规则降级检出代码注入风险' }
+        ],
+        ruleText: '降级策略：AI检测服务错误时自动降级，规则引擎兜底检测关键风险类型。',
+        fpReason: '暂无。',
+        acceptReason: '暂无。',
+        hint: 'AI服务错误已触发降级保护，当前为规则兜底检测模式。'
       }
     };
 
@@ -463,6 +669,19 @@
       renderAiJudgement(ai);
       renderSimilarEvents(ai);
       renderEvidence();
+      // #7 低置信事件自动定位到AI研判卡片
+      if (ai.confidenceLevelLabel === '低置信' || ai.analysisStatus === '低置信待复核') {
+        var aiCard = document.getElementById('aiJudgementCard');
+        if (aiCard) {
+          setTimeout(function() {
+            aiCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            aiCard.style.outline = '2px solid #E6A23C';
+            aiCard.style.outlineOffset = '4px';
+            setTimeout(function() { aiCard.style.outline = ''; aiCard.style.outlineOffset = ''; }, 3000);
+          }, 300);
+          toastInfo('当前事件为低置信待复核，已自动定位到 AI 研判卡片');
+        }
+      }
     }
 
     function switchEvidenceTab(el, tab) {
@@ -478,22 +697,87 @@
       var content = '结论：' + currentEvent.finding + '\n\n证据锚点：' + currentEvent.traceId + ' / ' + currentEvent.spanId + '\n证据来源：' + currentEvent.source + '\n关联资源：' + currentEvent.resource;
       if (activeEvidenceTab === 'json') content = currentEvent.json;
       if (activeEvidenceTab === 'ai') {
-        content =
-          'AI检测状态：' + ai.aiStatus + '\n' +
-          '检测来源：' + ai.detectionSourceLabel + '\n' +
-          '攻击类型：' + ai.attackMethod + '\n' +
-          '风险标签：' + ai.riskTags.join(' / ') + '\n' +
-          '模型版本：' + ai.modelVersion + '\n' +
-          'Prompt模板：' + ai.promptVersion + '\n' +
-          '耗时：' + ai.latencyMs + 'ms | Token：' + ai.tokens + ' | 成本：' + ai.cost + '\n\n' +
-          '命中片段：\n' + ai.hitFragments.map(function(item) {
-            return '- [' + item.field + '] ' + item.text + '（' + item.offset + '）';
-          }).join('\n') + '\n\n' +
-          '判断理由：\n' + ai.reasons.map(function(item) { return '- ' + item; }).join('\n') + '\n\n' +
-          '反例提示：\n' + ai.counterExamples.map(function(item) { return '- ' + item; }).join('\n');
+        // 结构化 AI 检测结果展示（替代纯文本）
+        var isDegraded = ['timeout', 'error', 'circuit_open'].indexOf(ai.aiStatus) >= 0;
+        var html = '';
+
+        // AI 检测摘要
+        html += '<div class="ai-section">';
+        html += '<div class="ai-metric-grid">';
+        html += '<div class="ai-metric"><div class="ai-metric-label">检测来源</div><div class="ai-metric-value">' + ai.detectionSourceLabel + '</div></div>';
+        html += '<div class="ai-metric"><div class="ai-metric-label">AI检测状态</div><div class="ai-metric-value">' + ai.aiStatusLabel + '</div></div>';
+        html += '<div class="ai-metric"><div class="ai-metric-label">攻击类型</div><div class="ai-metric-value">' + ai.attackMethod + '</div></div>';
+        html += '<div class="ai-metric"><div class="ai-metric-label">风险标签</div><div class="ai-metric-value">' + ai.riskTags.join(' / ') + '</div></div>';
+        html += '</div>';
+
+        // 可复制版本号
+        html += '<div class="ai-version-row" style="margin-top:8px;">';
+        html += '<span class="form-hint">模型版本：</span><code class="mono" id="aiModelVerCopy">' + ai.modelVersion + '</code><span class="ai-copy-btn" onclick="copyAiVersion(\'aiModelVerCopy\')">复制</span>';
+        html += '<span class="form-hint" style="margin-left:12px;">Prompt版本：</span><code class="mono" id="aiPromptVerCopy">' + ai.promptVersion + '</code><span class="ai-copy-btn" onclick="copyAiVersion(\'aiPromptVerCopy\')">复制</span>';
+        html += '</div>';
+        html += '<div class="form-hint" style="margin-top:4px;">耗时：' + ai.latencyMs + 'ms | Token：' + ai.tokens + ' | 成本：' + ai.cost + '</div>';
+        html += '</div>';
+
+        // 命中片段（高亮 + 点击跳转）
+        html += '<div class="ai-section">';
+        html += '<div class="ai-section-title"><span class="section-icon icon-fragment">!</span> 命中片段</div>';
+        ai.hitFragments.forEach(function(item, idx) {
+          html += '<div class="ai-fragment" onclick="jumpToEvidence(\'' + item.field + '\',\'' + item.offset + '\')">';
+          html += '<div style="display:flex;justify-content:space-between;gap:8px;"><strong>[' + item.field + ']</strong><span class="tag tag-danger" style="font-size:11px;">offset ' + item.offset + '</span></div>';
+          html += '<div style="margin-top:4px;line-height:1.7;color:#303133;">' + highlightHit(item.text) + '</div>';
+          html += '<div class="ai-fragment-click">点击跳转到证据链对应位置</div>';
+          html += '</div>';
+        });
+        html += '</div>';
+
+        // 判断理由
+        html += '<div class="ai-section">';
+        html += '<div class="ai-section-title"><span class="section-icon icon-reason">i</span> 判断理由</div>';
+        html += '<ul class="ai-list">' + ai.reasons.map(function(item) { return '<li>' + item + '</li>'; }).join('') + '</ul>';
+        html += '</div>';
+
+        // 反例提示
+        html += '<div class="ai-section">';
+        html += '<div class="ai-section-title"><span class="section-icon icon-counter">?</span> 反例提示</div>';
+        html += '<div class="ai-counter">';
+        html += '<div class="ai-counter-title">AI 认为以下情况可能导致误判，请人工复核确认</div>';
+        html += '<ul class="ai-list">' + ai.counterExamples.map(function(item) { return '<li>' + item + '</li>'; }).join('') + '</ul>';
+        html += '</div>';
+        html += '</div>';
+
+        // 降级信息区（仅降级态显示）
+        if (isDegraded) {
+          html += '<div class="ai-section">';
+          html += '<div class="ai-section-title"><span class="section-icon icon-degradation">!</span> 降级信息</div>';
+          html += '<div class="ai-degradation">';
+          html += '<div class="ai-degradation-title">AI 检测已降级，当前结果仅基于规则引擎</div>';
+          html += '<div class="ai-degradation-kv">';
+          html += '<div class="k">降级原因</div><div>' + getDegradationReason(ai.aiStatus) + '</div>';
+          html += '<div class="k">降级时间</div><div>' + currentEvent.time + '</div>';
+          html += '<div class="k">当前策略</div><div>规则优先，AI 超时跳过</div>';
+          html += '<div class="k">恢复条件</div><div>' + getDegradationRecovery(ai.aiStatus) + '</div>';
+          html += '<div class="k">影响说明</div><div>降级期间仅规则引擎生效，AI 语义检测能力暂不可用</div>';
+          html += '</div></div></div>';
+        }
+
+        document.getElementById('evidenceCode').style.display = 'none';
+        var box = document.getElementById('evidenceCode').parentElement;
+        var aiPanel = document.getElementById('aiResultPanel');
+        if (!aiPanel) {
+          aiPanel = document.createElement('div');
+          aiPanel.id = 'aiResultPanel';
+          box.appendChild(aiPanel);
+        }
+        aiPanel.innerHTML = html;
+        aiPanel.style.display = 'block';
+        return; // 不走下面的 textContent 赋值
       }
       if (activeEvidenceTab === 'raw') content = 'Raw 原文不在普通详情页直接展示。\n\nraw_ref：' + currentEvent.rawRef + '\n授权入口：提交高敏访问审批后，由审计日志记录访问人、审批编号、访问时间和用途。\n建议用途：证据复核、合规抽检或误报申诉。';
       if (activeEvidenceTab === 'rule') content = currentEvent.ruleText;
+      // 非 AI Tab 时恢复 pre 显示
+      var aiPanel = document.getElementById('aiResultPanel');
+      if (aiPanel) aiPanel.style.display = 'none';
+      document.getElementById('evidenceCode').style.display = '';
       document.getElementById('evidenceCode').textContent = content;
     }
 
@@ -570,12 +854,42 @@
     }
 
     function renderSimilarEvents(ai) {
-      document.getElementById('similarEventsBody').innerHTML = ai.similarEvents.map(function(item) {
-        return '<div class="similar-event">' +
-          '<div class="similar-event-title"><span class="mono">' + item.id + '</span><span class="tag tag-primary">' + item.score + '</span></div>' +
+      document.getElementById('similarEventsBody').innerHTML =
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+        '<span class="form-hint">共 ' + ai.similarEvents.length + ' 条相似事件</span>' +
+        '<button class="btn btn-default btn-sm" type="button" onclick="toggleAllSimilar()">全部展开/收起</button></div>' +
+        ai.similarEvents.map(function(item, idx) {
+        return '<div class="similar-event" id="similarEvt' + idx + '" onclick="toggleSimilar(' + idx + ')">' +
+          '<div class="similar-event-title"><span><span class="mono">' + item.id + '</span><span class="tag tag-primary" style="margin-left:8px;">' + item.score + '</span></span><span class="similar-toggle">展开 ▾</span></div>' +
           '<div class="similar-event-meta">关键相似点：' + item.points + '<br>历史处置：' + item.result + '</div>' +
+          '<div class="similar-event-detail">' +
+          '<div><strong>详细相似分析</strong></div>' +
+          '<div style="margin-top:4px;">相似维度：' + (item.dimensions || '攻击手法、风险类型、目标对象') + '</div>' +
+          '<div style="margin-top:4px;">历史处置详情：' + (item.resultDetail || item.result) + '</div>' +
+          '<div style="margin-top:4px;">处置人：' + (item.handler || '安全管理员') + ' | 处置时间：' + (item.handleTime || '2026-04-20 14:30') + '</div>' +
+          '<div style="margin-top:8px;"><button class="btn btn-link" onclick="event.stopPropagation();toastSuccess(\'已跳转至事件 ' + item.id + '\')">查看事件详情</button></div>' +
+          '</div>' +
           '</div>';
       }).join('') + '<div class="form-hint" style="margin-top:8px;">相似事件仅供参考，不自动继承历史处置结论。</div>';
+    }
+
+    function toggleSimilar(idx) {
+      var el = document.getElementById('similarEvt' + idx);
+      if (!el) return;
+      el.classList.toggle('expanded');
+      var toggle = el.querySelector('.similar-toggle');
+      if (toggle) toggle.textContent = el.classList.contains('expanded') ? '收起 ▴' : '展开 ▾';
+    }
+
+    function toggleAllSimilar() {
+      var items = document.querySelectorAll('.similar-event');
+      var allExpanded = true;
+      items.forEach(function(el) { if (!el.classList.contains('expanded')) allExpanded = false; });
+      items.forEach(function(el, idx) {
+        if (allExpanded) { el.classList.remove('expanded'); } else { el.classList.add('expanded'); }
+        var toggle = el.querySelector('.similar-toggle');
+        if (toggle) toggle.textContent = allExpanded ? '展开 ▾' : '收起 ▴';
+      });
     }
 
     function submitAiFeedback(status) {
@@ -585,9 +899,51 @@
 
     function submitAiCorrection() {
       if (validateForm('aiFeedbackForm')) {
-        toastSuccess('AI研判修正已提交，样本候选集已更新');
+        var addToPool = document.getElementById('addToSamplePool').checked;
+        var msg = addToPool ? 'AI研判修正已提交，样本已加入候选集' : 'AI研判修正已提交，仅记录反馈';
+        toastSuccess(msg);
         closeModal('aiFeedbackModal');
       }
+    }
+
+    function highlightHit(text) {
+      // 对 <evidence-mark> 标记的片段加高亮
+      return text.replace(/\[HIGHLIGHT\]/g, '<span class="evidence-mark">').replace(/\[\/HIGHLIGHT\]/g, '</span>');
+    }
+
+    function jumpToEvidence(field, offset) {
+      // 切换到证据摘要 Tab 并滚动到对应位置
+      var summaryTab = document.querySelector('.evidence-tab');
+      if (summaryTab) {
+        switchEvidenceTab(summaryTab, 'summary');
+      }
+      toastInfo('已跳转至证据字段 ' + field + ' (offset ' + offset + ')');
+    }
+
+    function copyAiVersion(elId) {
+      var el = document.getElementById(elId);
+      if (!el) return;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(el.textContent).then(function() { toastSuccess('已复制: ' + el.textContent); });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = el.textContent;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        toastSuccess('已复制: ' + el.textContent);
+      }
+    }
+
+    function getDegradationReason(status) {
+      var map = { timeout: 'AI 检测超时（阈值 3000ms），自动降级为规则优先', error: 'AI 模型调用异常（推理服务返回错误），降级为规则优先', circuit_open: 'AI 熔断器打开（连续失败超过阈值），降级为规则优先' };
+      return map[status] || '未知降级原因';
+    }
+
+    function getDegradationRecovery(status) {
+      var map = { timeout: '下次调用成功后自动恢复，或等待熔断窗口（60s）结束', error: '需人工确认模型服务恢复后手动重置', circuit_open: '熔断器半开状态后自动试探，连续 3 次成功则恢复' };
+      return map[status] || '等待自动恢复';
     }
 
     function backToList() {

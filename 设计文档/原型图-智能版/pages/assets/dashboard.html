@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <title>安全总览</title>
   <link rel="stylesheet" href="../../css/style.css">
+  <!-- P2 改进：引入 ECharts 实现交互式图表 -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script> -->
   <style>
     .dashboard-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
     .risk-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
@@ -42,6 +44,17 @@
     .todo-item.high { border-left-color: #F56C6C; }
     .todo-item.ok { border-left-color: #67C23A; }
     .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .ai-trend-area { height: 200px; display: flex; align-items: flex-end; gap: 0; padding: 12px 6px 28px; border: 1px solid #EBEEF5; border-radius: 4px; background: #fff; position: relative; }
+    .ai-trend-col { flex: 1; display: flex; flex-direction: column-reverse; position: relative; height: 100%; }
+    .ai-trend-seg { width: 100%; min-height: 2px; transition: height .2s; }
+    .ai-trend-seg.s-rule { background: #409EFF; }
+    .ai-trend-seg.s-ai { background: #7c3aed; }
+    .ai-trend-seg.s-joint { background: #F56C6C; }
+    .ai-trend-seg.s-skip { background: #C0C4CC; }
+    .ai-trend-col::after { content: attr(data-label); position: absolute; bottom: -22px; left: 50%; transform: translateX(-50%); color: #909399; font-size: 11px; white-space: nowrap; }
+    .range-chips { display: flex; gap: 6px; align-items: center; }
+    .range-chip { border: 1px solid #DCDFE6; background: #fff; color: #606266; border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; }
+    .range-chip.active { color: #409EFF; border-color: #B3D8FF; background: #ECF5FF; }
   </style>
 </head>
 <body class="page-content">
@@ -104,6 +117,29 @@
             <div class="trend-day" data-label="04-14"><div class="bar high" style="height:44%;"></div><div class="bar mid" style="height:57%;"></div><div class="bar low" style="height:61%;"></div></div>
             <div class="trend-day" data-label="04-15"><div class="bar high" style="height:31%;"></div><div class="bar mid" style="height:48%;"></div><div class="bar low" style="height:46%;"></div></div>
             <div class="trend-day" data-label="今日"><div class="bar high" style="height:50%;"></div><div class="bar mid" style="height:66%;"></div><div class="bar low" style="height:54%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <div class="card-title">AI 检测来源分布趋势</div>
+          <div class="range-chips">
+            <span style="color:#909399;font-size:12px;">周期</span>
+            <button class="range-chip active" onclick="setAiTrendRange(this,'7d')">近 7 日</button>
+            <button class="range-chip" onclick="setAiTrendRange(this,'30d')">近 30 日</button>
+            <div style="margin-left:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#409EFF;vertical-align:middle;"></span><span style="font-size:11px;color:#606266;">规则</span> <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#7c3aed;vertical-align:middle;"></span><span style="font-size:11px;color:#606266;">AI</span> <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#F56C6C;vertical-align:middle;"></span><span style="font-size:11px;color:#606266;">联合</span> <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#C0C4CC;vertical-align:middle;"></span><span style="font-size:11px;color:#606266;">跳过</span></div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-trend-area" id="aiTrendChart">
+            <div class="ai-trend-col" data-label="04-10"><div class="ai-trend-seg s-rule" style="height:38%;"></div><div class="ai-trend-seg s-ai" style="height:12%;"></div><div class="ai-trend-seg s-joint" style="height:18%;"></div><div class="ai-trend-seg s-skip" style="height:8%;"></div></div>
+            <div class="ai-trend-col" data-label="04-11"><div class="ai-trend-seg s-rule" style="height:42%;"></div><div class="ai-trend-seg s-ai" style="height:15%;"></div><div class="ai-trend-seg s-joint" style="height:22%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>
+            <div class="ai-trend-col" data-label="04-12"><div class="ai-trend-seg s-rule" style="height:35%;"></div><div class="ai-trend-seg s-ai" style="height:10%;"></div><div class="ai-trend-seg s-joint" style="height:16%;"></div><div class="ai-trend-seg s-skip" style="height:9%;"></div></div>
+            <div class="ai-trend-col" data-label="04-13"><div class="ai-trend-seg s-rule" style="height:52%;"></div><div class="ai-trend-seg s-ai" style="height:18%;"></div><div class="ai-trend-seg s-joint" style="height:28%;"></div><div class="ai-trend-seg s-skip" style="height:5%;"></div></div>
+            <div class="ai-trend-col" data-label="04-14"><div class="ai-trend-seg s-rule" style="height:48%;"></div><div class="ai-trend-seg s-ai" style="height:20%;"></div><div class="ai-trend-seg s-joint" style="height:25%;"></div><div class="ai-trend-seg s-skip" style="height:7%;"></div></div>
+            <div class="ai-trend-col" data-label="04-15"><div class="ai-trend-seg s-rule" style="height:40%;"></div><div class="ai-trend-seg s-ai" style="height:14%;"></div><div class="ai-trend-seg s-joint" style="height:20%;"></div><div class="ai-trend-seg s-skip" style="height:8%;"></div></div>
+            <div class="ai-trend-col" data-label="今日"><div class="ai-trend-seg s-rule" style="height:44%;"></div><div class="ai-trend-seg s-ai" style="height:16%;"></div><div class="ai-trend-seg s-joint" style="height:24%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>
           </div>
         </div>
       </div>
@@ -183,6 +219,31 @@
         navigateTo(path, label, null);
       } else {
         window.location.href = page;
+      }
+    }
+
+    function setAiTrendRange(el, range) {
+      document.querySelectorAll('.range-chip').forEach(function(item){ item.classList.remove('active'); });
+      el.classList.add('active');
+      var chart = document.getElementById('aiTrendChart');
+      if (range === '30d') {
+        // 近30日展示简化为4个周段
+        chart.innerHTML =
+          '<div class="ai-trend-col" data-label="第1周"><div class="ai-trend-seg s-rule" style="height:40%;"></div><div class="ai-trend-seg s-ai" style="height:13%;"></div><div class="ai-trend-seg s-joint" style="height:19%;"></div><div class="ai-trend-seg s-skip" style="height:7%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="第2周"><div class="ai-trend-seg s-rule" style="height:44%;"></div><div class="ai-trend-seg s-ai" style="height:16%;"></div><div class="ai-trend-seg s-joint" style="height:22%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="第3周"><div class="ai-trend-seg s-rule" style="height:38%;"></div><div class="ai-trend-seg s-ai" style="height:18%;"></div><div class="ai-trend-seg s-joint" style="height:26%;"></div><div class="ai-trend-seg s-skip" style="height:5%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="第4周"><div class="ai-trend-seg s-rule" style="height:42%;"></div><div class="ai-trend-seg s-ai" style="height:15%;"></div><div class="ai-trend-seg s-joint" style="height:23%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>';
+        toastSuccess('已切换到近 30 日统计口径');
+      } else {
+        chart.innerHTML =
+          '<div class="ai-trend-col" data-label="04-10"><div class="ai-trend-seg s-rule" style="height:38%;"></div><div class="ai-trend-seg s-ai" style="height:12%;"></div><div class="ai-trend-seg s-joint" style="height:18%;"></div><div class="ai-trend-seg s-skip" style="height:8%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="04-11"><div class="ai-trend-seg s-rule" style="height:42%;"></div><div class="ai-trend-seg s-ai" style="height:15%;"></div><div class="ai-trend-seg s-joint" style="height:22%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="04-12"><div class="ai-trend-seg s-rule" style="height:35%;"></div><div class="ai-trend-seg s-ai" style="height:10%;"></div><div class="ai-trend-seg s-joint" style="height:16%;"></div><div class="ai-trend-seg s-skip" style="height:9%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="04-13"><div class="ai-trend-seg s-rule" style="height:52%;"></div><div class="ai-trend-seg s-ai" style="height:18%;"></div><div class="ai-trend-seg s-joint" style="height:28%;"></div><div class="ai-trend-seg s-skip" style="height:5%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="04-14"><div class="ai-trend-seg s-rule" style="height:48%;"></div><div class="ai-trend-seg s-ai" style="height:20%;"></div><div class="ai-trend-seg s-joint" style="height:25%;"></div><div class="ai-trend-seg s-skip" style="height:7%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="04-15"><div class="ai-trend-seg s-rule" style="height:40%;"></div><div class="ai-trend-seg s-ai" style="height:14%;"></div><div class="ai-trend-seg s-joint" style="height:20%;"></div><div class="ai-trend-seg s-skip" style="height:8%;"></div></div>' +
+          '<div class="ai-trend-col" data-label="今日"><div class="ai-trend-seg s-rule" style="height:44%;"></div><div class="ai-trend-seg s-ai" style="height:16%;"></div><div class="ai-trend-seg s-joint" style="height:24%;"></div><div class="ai-trend-seg s-skip" style="height:6%;"></div></div>';
+        toastSuccess('已切换到近 7 日统计口径');
       }
     }
   </script>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>外部集成配置</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="../../js/common.js"></script>
+  <style>
+    /* 集成通道列表样式 */
+    .channel-type-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .type-syslog { background: #f0f9ff; color: #409EFF; }
+    .type-webhook { background: #f2f9f2; color: #67c23a; }
+
+    /* 数据级别标签 */
+    .data-level-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .data-level-l0 { background: #f0f9ff; color: #409EFF; }
+    .data-level-l1 { background: #f2f9f2; color: #67c23a; }
+    .data-level-l2 { background: #fdf6ec; color: #e6a23c; }
+    .data-level-l3 { background: #fef0f0; color: #f56c6c; }
+
+    /* 状态标签 */
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .status-enabled { background: #f0f9ff; color: #67c23a; }
+    .status-disabled { background: #f4f4f5; color: #909399; }
+
+    /* Tab样式 */
+    .page-tabs {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+      margin-bottom: 16px;
+    }
+    .page-tab {
+      padding: 12px 20px;
+      color: #606266;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+    }
+    .page-tab:hover {
+      color: #409EFF;
+    }
+    .page-tab.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+      font-weight: 500;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* 协议选择卡片 */
+    .protocol-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .protocol-card {
+      border: 2px solid #e4e7ed;
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .protocol-card:hover {
+      border-color: #c6e2ff;
+    }
+    .protocol-card.selected {
+      border-color: #409EFF;
+      background: #f0f9ff;
+    }
+    .protocol-card-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .protocol-card-desc {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    /* 复选框组 */
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checkbox-item label {
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    /* 密钥显示区 */
+    .secret-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f5f7fa;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .secret-masked {
+      color: #606266;
+    }
+
+    /* 测试结果卡片 */
+    .test-result {
+      border-radius: 4px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .test-result.success {
+      background: #f2f9f2;
+      border: 1px solid #c2e7b0;
+    }
+    .test-result.error {
+      background: #fef0f0;
+      border: 1px solid #fbc4c4;
+    }
+    .test-result-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .test-result.success .test-result-header { color: #67c23a; }
+    .test-result.error .test-result-header { color: #f56c6c; }
+
+    /* 日志列表 */
+    .log-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .log-success { background: #f2f9f2; color: #67c23a; }
+    .log-failed { background: #fef0f0; color: #f56c6c; }
+    .log-retry { background: #fdf6ec; color: #e6a23c; }
+
+    /* 重试进度 */
+    .retry-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #e6a23c;
+    }
+
+    /* JSON展示 */
+    .json-preview {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      padding: 12px;
+      border-radius: 4px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+    .json-key { color: #9cdcfe; }
+    .json-string { color: #ce9178; }
+    .json-number { color: #b5cea8; }
+
+    /* 表单区域标题 */
+    .form-section {
+      border: 1px solid #e4e7ed;
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .form-section-title {
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e4e7ed;
+    }
+
+    /* 警告提示 */
+    .warning-box {
+      background: #fdf6ec;
+      border: 1px solid #f5dab1;
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: #e6a23c;
+      font-size: 13px;
+    }
+    .info-box {
+      background: #f0f9ff;
+      border: 1px solid #b3d8ff;
+      border-radius: 4px;
+      padding: 12px 16px;
+      color: #409EFF;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">外部集成配置</div>
+        <div class="page-subtitle">配置Syslog和Webhook通道，实现与外部系统的数据集成。</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="switchTab(this, 'channels')">集成通道</div>
+      <div class="page-tab" onclick="switchTab(this, 'logs')">发送日志</div>
+    </div>
+
+    <!-- 集成通道Tab -->
+    <div id="channels" class="tab-panel active">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div class="search-bar" style="margin:0;padding:0;border:none;box-shadow:none;">
+            <div class="search-item">
+              <span class="form-label">类型</span>
+              <select class="form-select">
+                <option>全部</option>
+                <option>Syslog</option>
+                <option>Webhook</option>
+              </select>
+            </div>
+            <div class="search-item">
+              <span class="form-label">状态</span>
+              <select class="form-select">
+                <option>全部</option>
+                <option>启用</option>
+                <option>禁用</option>
+              </select>
+            </div>
+            <div class="search-item">
+              <span class="form-label">数据级别</span>
+              <select class="form-select">
+                <option>全部</option>
+                <option>L0</option>
+                <option>L1</option>
+                <option>L2</option>
+                <option>L3</option>
+              </select>
+            </div>
+            <button class="btn btn-primary">查询</button>
+            <button class="btn btn-default">重置</button>
+          </div>
+          <button class="btn btn-primary" onclick="openModal('createChannelModal')">+ 新建通道</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>通道名称</th>
+                <th>类型</th>
+                <th>目标地址</th>
+                <th>数据级别</th>
+                <th>状态</th>
+                <th>最近发送</th>
+                <th>成功率</th>
+                <th style="width:200px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>SIEM对接</strong></td>
+                <td><span class="channel-type-tag type-syslog">Syslog</span></td>
+                <td>10.0.1.100:514</td>
+                <td><span class="data-level-tag data-level-l1">L1</span></td>
+                <td><span class="status-tag status-enabled">🟢 启用</span></td>
+                <td>2分钟前</td>
+                <td style="color:#67c23a;">99.5%</td>
+                <td>
+                  <div class="table-action-col">
+                    <button class="btn btn-link" onclick="openModal('editSyslogModal')">编辑</button>
+                    <button class="btn btn-link" onclick="openModal('testResultModal')">测试</button>
+                    <button class="btn btn-link">日志</button>
+                    <button class="btn btn-link danger">禁用</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>SOC平台</strong></td>
+                <td><span class="channel-type-tag type-syslog">Syslog</span></td>
+                <td>10.0.2.50:514</td>
+                <td><span class="data-level-tag data-level-l2">L2</span></td>
+                <td><span class="status-tag status-enabled">🟢 启用</span></td>
+                <td>5分钟前</td>
+                <td style="color:#67c23a;">98.2%</td>
+                <td>
+                  <div class="table-action-col">
+                    <button class="btn btn-link" onclick="openModal('editSyslogModal')">编辑</button>
+                    <button class="btn btn-link" onclick="openModal('testResultModal')">测试</button>
+                    <button class="btn btn-link">日志</button>
+                    <button class="btn btn-link danger">禁用</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>企业微信</strong></td>
+                <td><span class="channel-type-tag type-webhook">Webhook</span></td>
+                <td>qyapi.weixin...</td>
+                <td><span class="data-level-tag data-level-l0">L0</span></td>
+                <td><span class="status-tag status-enabled">🟢 启用</span></td>
+                <td>1分钟前</td>
+                <td style="color:#67c23a;">100%</td>
+                <td>
+                  <div class="table-action-col">
+                    <button class="btn btn-link" onclick="openModal('editWebhookModal')">编辑</button>
+                    <button class="btn btn-link" onclick="openModal('testResultModal')">测试</button>
+                    <button class="btn btn-link">日志</button>
+                    <button class="btn btn-link danger">禁用</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>飞书通知</strong></td>
+                <td><span class="channel-type-tag type-webhook">Webhook</span></td>
+                <td>open.feishu...</td>
+                <td><span class="data-level-tag data-level-l0">L0</span></td>
+                <td><span class="status-tag status-disabled">🔴 禁用</span></td>
+                <td>3天前</td>
+                <td style="color:#909399;">—</td>
+                <td>
+                  <div class="table-action-col">
+                    <button class="btn btn-link" onclick="openModal('editWebhookModal')">编辑</button>
+                    <button class="btn btn-link">日志</button>
+                    <button class="btn btn-link" style="color:#67c23a;">启用</button>
+                    <button class="btn btn-link danger">删除</button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>监管上报</strong></td>
+                <td><span class="channel-type-tag type-syslog">Syslog</span></td>
+                <td>192.168.1.10</td>
+                <td><span class="data-level-tag data-level-l0">L0</span></td>
+                <td><span class="status-tag status-enabled">🟢 启用</span></td>
+                <td>15分钟前</td>
+                <td style="color:#67c23a;">99.9%</td>
+                <td>
+                  <div class="table-action-col">
+                    <button class="btn btn-link" onclick="openModal('editSyslogModal')">编辑</button>
+                    <button class="btn btn-link" onclick="openModal('testResultModal')">测试</button>
+                    <button class="btn btn-link">日志</button>
+                    <button class="btn btn-link danger">禁用</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="pagination"></div>
+      </div>
+    </div>
+
+    <!-- 发送日志Tab -->
+    <div id="logs" class="tab-panel">
+      <div class="card">
+        <div class="search-bar" style="margin-bottom:16px;">
+          <div class="search-item">
+            <span class="form-label">通道</span>
+            <select class="form-select">
+              <option>全部通道</option>
+              <option>SIEM对接</option>
+              <option>SOC平台</option>
+              <option>企业微信</option>
+            </select>
+          </div>
+          <div class="search-item">
+            <span class="form-label">状态</span>
+            <select class="form-select">
+              <option>全部</option>
+              <option>成功</option>
+              <option>失败</option>
+              <option>重试中</option>
+            </select>
+          </div>
+          <div class="search-item">
+            <span class="form-label">事件类型</span>
+            <select class="form-select">
+              <option>全部</option>
+              <option>risk_event</option>
+              <option>audit_log</option>
+              <option>statistics</option>
+            </select>
+          </div>
+          <div class="search-item">
+            <span class="form-label">时间范围</span>
+            <select class="form-select">
+              <option>近1小时</option>
+              <option>近6小时</option>
+              <option>近24小时</option>
+            </select>
+          </div>
+          <button class="btn btn-primary">查询</button>
+          <button class="btn btn-default">重置</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>发送时间</th>
+                <th>通道名称</th>
+                <th>数据级别</th>
+                <th>事件类型</th>
+                <th>状态</th>
+                <th>响应码</th>
+                <th>延迟</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>15:32:18</td>
+                <td>SIEM对接</td>
+                <td><span class="data-level-tag data-level-l1">L1</span></td>
+                <td>risk_event</td>
+                <td><span class="log-status log-success">✅ 成功</span></td>
+                <td>200</td>
+                <td>12ms</td>
+                <td><button class="btn btn-link" onclick="openModal('logDetailModal')">详情</button></td>
+              </tr>
+              <tr>
+                <td>15:31:45</td>
+                <td>企业微信</td>
+                <td><span class="data-level-tag data-level-l0">L0</span></td>
+                <td>risk_event</td>
+                <td><span class="log-status log-success">✅ 成功</span></td>
+                <td>200</td>
+                <td>45ms</td>
+                <td><button class="btn btn-link" onclick="openModal('logDetailModal')">详情</button></td>
+              </tr>
+              <tr>
+                <td>15:31:12</td>
+                <td>SOC平台</td>
+                <td><span class="data-level-tag data-level-l2">L2</span></td>
+                <td>audit_log</td>
+                <td><span class="log-status log-success">✅ 成功</span></td>
+                <td>200</td>
+                <td>23ms</td>
+                <td><button class="btn btn-link" onclick="openModal('logDetailModal')">详情</button></td>
+              </tr>
+              <tr>
+                <td>15:30:58</td>
+                <td>飞书通知</td>
+                <td><span class="data-level-tag data-level-l0">L0</span></td>
+                <td>risk_event</td>
+                <td>
+                  <span class="log-status log-failed">❌ 失败</span>
+                  <div class="retry-indicator">重试 1/3</div>
+                </td>
+                <td>—</td>
+                <td>—</td>
+                <td><button class="btn btn-link" onclick="openModal('logDetailModal')">详情</button></td>
+              </tr>
+              <tr>
+                <td>15:30:25</td>
+                <td>SIEM对接</td>
+                <td><span class="data-level-tag data-level-l1">L1</span></td>
+                <td>statistics</td>
+                <td><span class="log-status log-success">✅ 成功</span></td>
+                <td>200</td>
+                <td>8ms</td>
+                <td><button class="btn btn-link" onclick="openModal('logDetailModal')">详情</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="pagination2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建通道弹窗 -->
+  <div class="modal-overlay" id="createChannelModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">新建集成通道</div>
+        <div class="modal-close" onclick="closeModal('createChannelModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div style="font-weight:600;margin-bottom:12px;">选择通道类型</div>
+        <div class="protocol-cards">
+          <div class="protocol-card selected" onclick="selectProtocol(this, 'syslog')">
+            <div class="protocol-card-title">📡 Syslog</div>
+            <div class="protocol-card-desc">RFC5424/RFC3164/JSON格式<br>支持TCP/UDP/TLS</div>
+          </div>
+          <div class="protocol-card" onclick="selectProtocol(this, 'webhook')">
+            <div class="protocol-card-title">🔗 Webhook</div>
+            <div class="protocol-card-desc">HTTP POST回调<br>支持签名验证</div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:24px;">
+          <button class="btn btn-primary" onclick="closeModal('createChannelModal');openModal('createSyslogModal')">下一步</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建Syslog通道弹窗 -->
+  <div class="modal-overlay" id="createSyslogModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header">
+        <div class="modal-title">新建集成通道 (Syslog)</div>
+        <div class="modal-close" onclick="closeModal('createSyslogModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <div class="form-section-title">基础配置</div>
+          <div class="form-row">
+            <div class="form-label required">通道名称</div>
+            <div class="form-field"><input type="text" class="form-control" placeholder="SIEM对接"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">协议选择</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option>RFC 5424</option>
+                <option>RFC 3164</option>
+                <option>JSON</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">传输方式</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option>TCP</option>
+                <option>UDP</option>
+                <option>TLS</option>
+              </select>
+              <div class="info-box" style="margin-top:8px;">
+                ℹ️ L2/L3数据必须通过TLS传输
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">目标地址</div>
+            <div class="form-field"><input type="text" class="form-control" placeholder="10.0.1.100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">端口号</div>
+            <div class="form-field"><input type="number" class="form-control" value="514" style="width:100px;"></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">数据配置</div>
+          <div class="form-row">
+            <div class="form-label required">最高数据级别</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option value="l0">L0 公开</option>
+                <option value="l1" selected>L1 内部</option>
+                <option value="l2">L2 敏感</option>
+                <option value="l3">L3 机密</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">数据内容选择</div>
+            <div class="form-field">
+              <div class="checkbox-group">
+                <label class="checkbox-item">
+                  <input type="checkbox" checked> 风险事件
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox"> 摘要
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked> 详情
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox"> 原始
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked> 审计日志
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked> 统计指标
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" checked> AI检测结果(脱敏后)
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">过滤条件</div>
+            <div class="form-field">
+              <div style="display:flex;gap:12px;">
+                <select class="form-select" style="width:auto;">
+                  <option>全部等级</option>
+                  <option>high</option>
+                  <option>medium</option>
+                  <option>low</option>
+                </select>
+                <select class="form-select" style="width:auto;">
+                  <option>全部来源</option>
+                  <option>rule</option>
+                  <option>ai_model</option>
+                  <option>rule_and_ai</option>
+                </select>
+                <select class="form-select" style="width:auto;">
+                  <option>全部应用</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">发送频率</div>
+            <div class="form-field">
+              <select class="form-select" style="width:auto;">
+                <option>实时</option>
+                <option>批量5分钟</option>
+                <option>批量15分钟</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('createSyslogModal')">取消</button>
+        <button class="btn btn-default" onclick="openModal('testResultModal')">测试连接</button>
+        <button class="btn btn-primary" onclick="showToast('success', '成功', '通道创建成功');closeModal('createSyslogModal')">确定创建</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新建Webhook通道弹窗 -->
+  <div class="modal-overlay" id="editWebhookModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header">
+        <div class="modal-title">Webhook通道配置</div>
+        <div class="modal-close" onclick="closeModal('editWebhookModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-section">
+          <div class="form-section-title">基础配置</div>
+          <div class="form-row">
+            <div class="form-label required">通道名称</div>
+            <div class="form-field"><input type="text" class="form-control" value="企业微信告警"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">目标URL</div>
+            <div class="form-field"><input type="text" class="form-control" value="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxx"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">签名密钥</div>
+            <div class="form-field">
+              <div class="secret-display">
+                <span class="secret-masked">sk-***-demo</span>
+                <button class="btn btn-link" style="padding:2px 8px;font-size:12px;">🔄 重新生成</button>
+                <button class="btn btn-link" style="padding:2px 8px;font-size:12px;">📋 复制</button>
+              </div>
+              <div style="font-size:12px;color:#909399;margin-top:4px;">脱敏显示，仅管理员可见完整密钥</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">超时设置</div>
+            <div class="form-field"><input type="number" class="form-control" value="10" style="width:80px;"> <span style="color:#909399;">秒 (默认10秒)</span></div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-title">数据配置</div>
+          <div class="form-row">
+            <div class="form-label required">最高数据级别</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option value="l0" selected>L0 公开</option>
+                <option value="l1">L1 内部</option>
+              </select>
+              <div class="warning-box" style="margin-top:8px;">
+                ⚠️ Webhook建议仅发送L0/L1级别数据
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">自定义Header</div>
+            <div class="form-field">
+              <div class="json-preview">{
+  <span class="json-key">"X-Custom-Source"</span>: <span class="json-string">"ai-security-platform"</span>,
+  <span class="json-key">"X-Env"</span>: <span class="json-string">"production"</span>
+}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('editWebhookModal')">取消</button>
+        <button class="btn btn-default" onclick="openModal('testResultModal')">测试连接</button>
+        <button class="btn btn-primary" onclick="showToast('success', '成功', '配置已保存');closeModal('editWebhookModal')">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 测试连接结果弹窗 -->
+  <div class="modal-overlay" id="testResultModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title">测试连接结果</div>
+        <div class="modal-close" onclick="closeModal('testResultModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="test-result success">
+          <div class="test-result-header">
+            <span>🟢</span> 成功
+          </div>
+          <div style="font-size:13px;line-height:2;">
+            <div><span style="color:#909399;">测试时间:</span> 2026-04-30 15:32:18</div>
+            <div><span style="color:#909399;">目标地址:</span> 10.0.1.100:514</div>
+            <div><span style="color:#909399;">协议:</span> RFC 5424 over TCP</div>
+            <div><span style="color:#909399;">响应时间:</span> 12ms</div>
+            <div><span style="color:#909399;">发送测试消息:</span> 已发送1条测试日志</div>
+            <div><span style="color:#909399;">接收确认:</span> 已收到服务器确认</div>
+          </div>
+          <div style="background:#1e1e1e;color:#d4d4d4;font-family:monospace;font-size:11px;padding:12px;border-radius:4px;margin-top:12px;">
+            <div style="color:#67c23a;">测试消息内容:</div>
+            &lt;14&gt;1 2026-04-30T15:32:18.000Z...
+            [event@32473 id="test" type="test"]
+            Test connection from AI Security
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('testResultModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发送详情弹窗 -->
+  <div class="modal-overlay" id="logDetailModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">发送详情</div>
+        <div class="modal-close" onclick="closeModal('logDetailModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:20px;">
+          <div style="font-weight:600;margin-bottom:12px;">基本信息</div>
+          <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:12px;font-size:13px;">
+            <div><span style="color:#909399;">投递ID:</span> DEL-20250430-001234</div>
+            <div><span style="color:#909399;">发送时间:</span> 2026-04-30 15:32:18</div>
+            <div><span style="color:#909399;">关联通道:</span> SIEM对接</div>
+            <div><span style="color:#909399;">数据级别:</span> <span class="data-level-tag data-level-l1">L1</span></div>
+            <div><span style="color:#909399;">事件类型:</span> risk_event</div>
+            <div><span style="color:#909399;">源对象ID:</span> EVT-20250430-005678</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="font-weight:600;margin-bottom:12px;">发送状态</div>
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;font-size:13px;">
+            <div><span style="color:#909399;">状态:</span> <span style="color:#67c23a;">成功</span></div>
+            <div><span style="color:#909399;">重试次数:</span> 0</div>
+            <div><span style="color:#909399;">响应码:</span> 200</div>
+            <div><span style="color:#909399;">延迟:</span> 12ms</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:600;margin-bottom:12px;">
+            发送内容 <span style="font-size:12px;color:#909399;font-weight:normal;">(Payload Hash: a1b2c3d4...)</span>
+          </div>
+          <div class="json-preview">{
+  <span class="json-key">"timestamp"</span>: <span class="json-string">"2026-04-30T15:32:18"</span>,
+  <span class="json-key">"data_level"</span>: <span class="json-string">"L1"</span>,
+  <span class="json-key">"event_type"</span>: <span class="json-string">"prompt_injection"</span>,
+  <span class="json-key">"event_id"</span>: <span class="json-string">"EVT-20250430-005678"</span>,
+  <span class="json-key">"risk_level"</span>: <span class="json-string">"high"</span>,
+  <span class="json-key">"app_id"</span>: <span class="json-string">"app_copilot_service"</span>,
+  <span class="json-key">"summary"</span>: <span class="json-string">"AI检测到Prompt注入攻击"</span>
+}</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('logDetailModal')">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(el, tabId) {
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function selectProtocol(el, type) {
+      document.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    // 初始化分页
+    document.getElementById('pagination').innerHTML = `
+      <div style="display:flex;justify-content:flex-end;align-items:center;padding:16px;gap:8px;">
+        <button class="btn btn-default" disabled>上一页</button>
+        <button class="btn btn-primary" style="min-width:32px;">1</button>
+        <button class="btn btn-default" disabled>下一页</button>
+        <span style="color:#606266;font-size:13px;margin-left:8px;">共 5 条记录</span>
+      </div>
+    `;
+
+    document.getElementById('pagination2').innerHTML = `
+      <div style="display:flex;justify-content:flex-end;align-items:center;padding:16px;gap:8px;">
+        <button class="btn btn-default" disabled>上一页</button>
+        <button class="btn btn-primary" style="min-width:32px;">1</button>
+        <button class="btn btn-default" style="min-width:32px;">2</button>
+        <button class="btn btn-default">下一页</button>
+        <span style="color:#606266;font-size:13px;margin-left:8px;">共 1,234 条记录</span>
+      </div>
+    `;
+  </script>
+</body>
+</html>

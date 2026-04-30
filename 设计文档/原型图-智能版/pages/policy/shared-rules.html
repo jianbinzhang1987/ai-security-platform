@@ -39,6 +39,7 @@
     .config-panel.active { display:block; }
     .status-strip { display:flex; flex-wrap:wrap; gap:8px; }
     .modal-box.modal-xl { width: 1100px; max-width: calc(100vw - 60px); }
+    .tag-ai { display:inline-flex; align-items:center; padding:2px 8px; border-radius:12px; font-size:11px; background:#f5f0ff; color:#7c3aed; border:1px solid #e0d4ff; }
   </style>
 </head>
 <body class="page-content">
@@ -372,7 +373,21 @@
                   <div class="form-row"><div class="form-label">超时</div><div class="form-field"><input class="form-control" value="3000 ms"></div></div>
                   <div class="form-row"><div class="form-label">降级行为</div><div class="form-field"><select class="form-select"><option>规则结果优先，AI超时跳过</option><option>标记人工复核</option><option>仅记录AI错误</option></select></div></div>
                   <div class="form-row"><div class="form-label">输出字段</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险标签</label><label class="checkbox-item"><input type="checkbox" checked> 命中片段</label><label class="checkbox-item"><input type="checkbox" checked> 判断理由</label><label class="checkbox-item"><input type="checkbox" checked> 反例提示</label></div></div></div>
+                  <div class="form-row"><div class="form-label">输出解析方式</div><div class="form-field"><select class="form-select"><option>结构化 JSON</option><option>分类标签</option><option>自定义解析脚本</option></select></div></div>
                 </div>
+                <div class="form-row"><div class="form-label">风险标签映射</div><div class="form-field"><div style="border:1px solid #EBEEF5;border-radius:4px;padding:10px;background:#fafafa;">
+                  <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
+                    <input class="form-control" value="jailbreak" placeholder="AI输出标签">
+                    <input class="form-control" value="越狱攻击" placeholder="平台风险类型">
+                    <button class="btn btn-default btn-sm">删除</button>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:center;">
+                    <input class="form-control" value="prompt_injection" placeholder="AI输出标签">
+                    <input class="form-control" value="提示词注入" placeholder="平台风险类型">
+                    <button class="btn btn-default btn-sm">删除</button>
+                  </div>
+                  <button class="btn btn-default btn-sm">+ 添加映射</button>
+                </div></div></div>
                 <div class="field-hint">AI增强规则仍受规则引擎托管，模型不可直接执行处置动作，输出只参与评分融合与人工研判。</div>
               </div>
             </div>
@@ -391,7 +406,19 @@
           </div>
 
           <div class="section-block">
-            <div class="section-title">D. 生效控制</div>
+            <div class="section-title">D. AI 优化建议<span class="tag tag-ai" style="margin-left:8px;font-size:11px;">AI 分析</span><span class="meta-sub" style="margin-left:8px;">P0.5b 占位 · P1 激活完整功能</span><button class="btn btn-link" style="margin-left:auto;" type="button" onclick="openAiSuggestModal()">查看完整分析</button></div>
+            <div class="section-desc">基于关联样本的 AI 优化建议，帮助提升规则准确率。当前为占位展示，完整功能将在 P1 阶段激活。</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+              <div class="stat-lite"><div class="k">关联样本总数</div><div class="v" id="aiSampleTotal">34</div></div>
+              <div class="stat-lite"><div class="k">命中样本</div><div class="v" style="color:#f56c6c;" id="aiSampleHit">12</div></div>
+              <div class="stat-lite"><div class="k">误报样本</div><div class="v" style="color:#e6a23c;" id="aiSampleFp">18</div></div>
+              <div class="stat-lite"><div class="k">边界样本</div><div class="v" style="color:#409eff;" id="aiSampleBorder">4</div></div>
+            </div>
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>AI 优化建议需在样本量 ≥ 20 条后自动生成。当前规则关联样本 34 条，已有优化建议。点击"查看完整分析"查看样本分析、规则调整建议和干跑验证。</span></div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-title">E. 生效控制</div>
             <div class="section-desc">控制优先级、启停、生效范围和变更说明。</div>
             <div class="form-grid-2">
               <div class="form-row"><div class="form-label required">优先级</div><div class="form-field"><input class="form-control" value="40"></div></div>
@@ -447,27 +474,116 @@
   </div>
 
   <div class="modal-overlay" id="aiSuggestModal">
-    <div class="modal-box modal-lg">
-      <div class="modal-header"><div class="modal-title">AI优化建议</div><div class="modal-close" onclick="closeModal('aiSuggestModal')">×</div></div>
+    <div class="modal-box modal-xl">
+      <div class="modal-header"><div class="modal-title">AI 优化建议：Prompt注入语义检测</div><div class="modal-close" onclick="closeModal('aiSuggestModal')">×</div></div>
       <div class="modal-body">
-        <div class="section-block">
-          <div class="section-title">样本分析</div>
-          <table class="kv-table">
-            <tr><td>近7日误报样本</td><td>18 条，集中在“业务话术改写”场景</td></tr>
-            <tr><td>近7日漏报样本</td><td>5 条，集中在“编码绕过”和“多轮诱导”</td></tr>
-            <tr><td>建议动作</td><td>提高角色扮演类权重，降低普通改写话术权重</td></tr>
-          </table>
+        <div class="tab-bar" style="margin-bottom:14px;">
+          <div class="tab-item active" onclick="switchSuggestTab(this,'sample')">样本分析</div>
+          <div class="tab-item" onclick="switchSuggestTab(this,'suggest')">规则调整建议</div>
+          <div class="tab-item" onclick="switchSuggestTab(this,'dryrun')">干跑验证</div>
         </div>
-        <div class="section-block">
-          <div class="section-title">干跑验证结果</div>
-          <table class="data-table">
-            <thead><tr><th>指标</th><th>当前版本</th><th>建议版本</th><th>变化</th></tr></thead>
-            <tbody><tr><td>误报率</td><td>7.8%</td><td>5.1%</td><td><span class="tag tag-success">下降</span></td></tr><tr><td>漏报率</td><td>9.4%</td><td>8.7%</td><td><span class="tag tag-success">下降</span></td></tr><tr><td>平均耗时</td><td>1840ms</td><td>1930ms</td><td><span class="tag tag-warning">+90ms</span></td></tr></tbody>
-          </table>
+
+        <div id="suggestTab-sample">
+          <div class="section-block" style="margin-bottom:14px;">
+            <div class="section-title">样本概览</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+              <div class="stat-lite"><div class="k">关联样本总数</div><div class="v">34</div></div>
+              <div class="stat-lite"><div class="k">命中样本</div><div class="v" style="color:#f56c6c;">12</div></div>
+              <div class="stat-lite"><div class="k">误报样本</div><div class="v" style="color:#e6a23c;">18</div></div>
+              <div class="stat-lite"><div class="k">边界样本</div><div class="v" style="color:#409eff;">4</div></div>
+            </div>
+            <div style="height:120px;display:flex;align-items:flex-end;gap:10px;padding:0 8px;margin-bottom:10px;">
+              <div style="flex:1;text-align:center;"><div style="height:35%;background:#409EFF;border-radius:4px 4px 0 0;"></div><div style="font-size:11px;color:#909399;margin-top:6px;">命中<br>12</div></div>
+              <div style="flex:1;text-align:center;"><div style="height:55%;background:#E6A23C;border-radius:4px 4px 0 0;"></div><div style="font-size:11px;color:#909399;margin-top:6px;">误报<br>18</div></div>
+              <div style="flex:1;text-align:center;"><div style="height:12%;background:#67C23A;border-radius:4px 4px 0 0;"></div><div style="font-size:11px;color:#909399;margin-top:6px;">攻击<br>0</div></div>
+              <div style="flex:1;text-align:center;"><div style="height:12%;background:#909399;border-radius:4px 4px 0 0;"></div><div style="font-size:11px;color:#909399;margin-top:6px;">边界<br>4</div></div>
+            </div>
+          </div>
+          <div class="section-block" style="margin-bottom:14px;">
+            <div class="section-title">误报 Top 3 原因聚类</div>
+            <div class="quote-list">
+              <div class="quote-item"><div><strong>1. 业务话术改写</strong><div class="meta-sub">8 条样本 · 占比 44%</div></div><div style="text-align:right;"><div style="color:#f56c6c;font-size:18px;font-weight:700;">44%</div></div></div>
+              <div class="quote-item"><div><strong>2. 角色扮演类合法场景</strong><div class="meta-sub">5 条样本 · 占比 28%</div></div><div style="text-align:right;"><div style="color:#e6a23c;font-size:18px;font-weight:700;">28%</div></div></div>
+              <div class="quote-item"><div><strong>3. 多轮上下文语义漂移</strong><div class="meta-sub">3 条样本 · 占比 17%</div></div><div style="text-align:right;"><div style="color:#909399;font-size:18px;font-weight:700;">17%</div></div></div>
+            </div>
+          </div>
+          <div class="section-block" style="margin:0;">
+            <div class="section-title">当前阈值 vs 样本分布</div>
+            <div style="border:1px solid #e4e7ed;border-radius:4px;padding:12px;background:#fafafa;font-size:13px;color:#606266;line-height:1.8;">
+              <div>当前置信阈值：<strong>0.82</strong>（红色竖线）</div>
+              <div style="margin:8px 0;height:24px;background:linear-gradient(to right, #67c23a 0%, #67c23a 35%, #e6a23c 35%, #e6a23c 75%, #f56c6c 75%, #f56c6c 100%);border-radius:4px;position:relative;"><div style="position:absolute;left:82%;top:-4px;bottom:-4px;width:2px;background:#d93026;"></div></div>
+              <div style="display:flex;justify-content:space-between;font-size:11px;"><span>0.50</span><span>0.65</span><span>0.82</span><span>0.95</span></div>
+              <div class="form-hint" style="margin-top:8px;">建议将阈值调整至 0.75，可减少约 40% 误报，但需监控漏报变化。</div>
+            </div>
+          </div>
         </div>
-        <div class="alert-box alert-warning"><span class="alert-icon">!</span><span>AI优化建议不能直接发布，需走正式审批流程并记录影响面估算。</span></div>
+
+        <div id="suggestTab-suggest" style="display:none;">
+          <div class="section-block" style="margin-bottom:14px;">
+            <div class="section-title">AI 生成的规则调整建议</div>
+            <div class="quote-list">
+              <div class="quote-item" style="display:block;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <div><strong>建议 1：降低置信阈值至 0.75</strong><span class="tag tag-success" style="margin-left:8px;">高置信建议</span></div>
+                  <div><span class="tag tag-primary">调整阈值</span></div>
+                </div>
+                <div style="color:#606266;font-size:13px;line-height:1.7;margin-bottom:8px;">基于误报样本分布分析，当前阈值 0.82 过滤掉了大量边界正常请求。降低至 0.75 可将误报率从 7.8% 降至 5.1%，同时漏报率保持在 8.7% 以下。</div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary btn-sm" onclick="toastSuccess('建议已采纳，规则阈值已更新为 0.75')">采纳建议</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('建议已忽略')">忽略</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('已加入评估集验证队列')">加入评估集验证</button>
+                </div>
+              </div>
+              <div class="quote-item" style="display:block;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <div><strong>建议 2：补充关键词 "角色扮演" 白名单</strong><span class="tag tag-warning" style="margin-left:8px;">中置信建议</span></div>
+                  <div><span class="tag tag-primary">补充关键词</span></div>
+                </div>
+                <div style="color:#606266;font-size:13px;line-height:1.7;margin-bottom:8px;">28% 的误报来自合法角色扮演场景（如"假设你是历史学家"）。建议将此类表达加入白名单，仅对明确的指令覆盖行为触发检测。</div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary btn-sm" onclick="toastSuccess('白名单已更新')">采纳建议</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('建议已忽略')">忽略</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('已加入评估集验证队列')">加入评估集验证</button>
+                </div>
+              </div>
+              <div class="quote-item" style="display:block;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <div><strong>建议 3：改用 AI 增强实现方式</strong><span class="tag tag-info" style="margin-left:8px;">待验证</span></div>
+                  <div><span class="tag tag-danger">改用 AI 增强</span></div>
+                </div>
+                <div style="color:#606266;font-size:13px;line-height:1.7;margin-bottom:8px;">当前正则规则在语义复杂场景下表现有限。样本量已达 34 条，建议升级为 AI 增强实现方式，预计准确率可提升至 94%+。</div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn btn-primary btn-sm" onclick="toastSuccess('已创建 AI 增强升级任务')">采纳建议</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('建议已忽略')">忽略</button>
+                  <button class="btn btn-default btn-sm" onclick="toastSuccess('已加入评估集验证队列')">加入评估集验证</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="suggestTab-dryrun" style="display:none;">
+          <div class="section-block" style="margin-bottom:14px;">
+            <div class="section-title">干跑验证配置</div>
+            <div class="form-row"><div class="form-label">历史时间范围</div><div class="form-field"><select class="form-select"><option>近 7 天</option><option selected>近 30 天</option><option>近 90 天</option></select></div></div>
+            <div style="margin-top:10px;"><button class="btn btn-primary" onclick="runDryRun()">执行干跑验证</button></div>
+          </div>
+          <div class="section-block" id="dryrunResult" style="display:none;margin:0;">
+            <div class="section-title">干跑验证结果（近 30 天，1,240 条请求）</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;">
+              <div class="stat-lite"><div class="k">原规则检出数</div><div class="v">142</div></div>
+              <div class="stat-lite"><div class="k">新规则检出数</div><div class="v" style="color:#409eff;">128</div></div>
+              <div class="stat-lite"><div class="k">误报减少</div><div class="v" style="color:#67c23a;">-18</div></div>
+              <div class="stat-lite"><div class="k">新增漏报</div><div class="v" style="color:#f56c6c;">+4</div></div>
+            </div>
+            <div class="alert-box alert-info"><span class="alert-icon">i</span><span>误报减少 18 条（主要消除业务话术改写误触发），新增漏报 4 条（边界编码绕过场景）。综合评估建议继续优化。</span></div>
+            <div style="margin-top:12px;"><button class="btn btn-primary" onclick="toastSuccess('已确认生效新规则配置')">确认生效</button><button class="btn btn-default" onclick="toastSuccess('已标记需继续优化')">继续优化</button></div>
+          </div>
+        </div>
+
+        <div class="alert-box alert-warning" style="margin-top:14px;"><span class="alert-icon">!</span><span>AI 优化建议不能直接发布，需走正式审批流程并记录影响面估算。关键规则项变更将自动创建审批单。</span></div>
       </div>
-      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('aiSuggestModal')">关闭</button><button class="btn btn-primary" type="button" onclick="toastSuccess('已创建AI规则优化审批单');closeModal('aiSuggestModal')">创建审批单</button></div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('aiSuggestModal')">关闭</button><button class="btn btn-primary" type="button" onclick="toastSuccess('已创建 AI 规则优化审批单');closeModal('aiSuggestModal')">创建审批单</button></div>
     </div>
   </div>
 
@@ -572,6 +688,15 @@
     }
     function openAiSuggestModal() {
       openModal('aiSuggestModal');
+    }
+    function switchSuggestTab(el, tab) {
+      document.querySelectorAll('#aiSuggestModal .tab-item').forEach(function(t){ t.classList.remove('active'); });
+      el.classList.add('active');
+      ['sample','suggest','dryrun'].forEach(function(id){ document.getElementById('suggestTab-'+id).style.display = (id===tab)?'block':'none'; });
+    }
+    function runDryRun() {
+      document.getElementById('dryrunResult').style.display = 'block';
+      toastSuccess('干跑验证已完成');
     }
   </script>
 </body>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SOC分析驾驶舱</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.five-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.five-card{border:1px solid #EBEEF5;border-radius:6px;padding:16px;background:#fff;cursor:pointer;transition:all .2s ease}
+.five-card:hover{border-color:#B3D8FF;box-shadow:0 6px 16px rgba(64,158,255,.08);transform:translateY(-1px)}
+.five-card .label{color:#909399;font-size:12px;margin-bottom:8px}
+.five-card .value{font-size:28px;font-weight:700;color:#303133}
+.five-card .trend{font-size:12px;margin-top:6px}
+.five-card .trend.up{color:#f56c6c}
+.five-card .trend.down{color:#67c23a}
+.five-card .trend.stable{color:#909399}
+.five-card .icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:8px}
+.icon-persona{background:#fde2e2;color:#f56c6c}
+.icon-org{background:#fdf6ec;color:#e6a23c}
+.icon-time{background:#ecf5ff;color:#409eff}
+.icon-link{background:#e1f3d8;color:#67c23a}
+.icon-baseline{background:#f5f0ff;color:#7c3aed}
+.soc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.user-mini-list{display:grid;gap:8px}
+.user-mini-item{display:grid;grid-template-columns:32px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer}
+.user-mini-item:hover{background:#F5FAFF;border-color:#B3D8FF}
+.user-avatar-mini{width:32px;height:32px;border-radius:50%;background:#409EFF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
+.user-risk-ring{width:36px;height:36px;border-radius:50%;border:3px solid #EBEEF5;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.user-risk-ring.high{border-color:#f56c6c;color:#f56c6c}
+.user-risk-ring.mid{border-color:#e6a23c;color:#e6a23c}
+.user-risk-ring.low{border-color:#67c23a;color:#67c23a}
+.chain-mini-list{display:grid;gap:8px}
+.chain-mini-item{border:1px solid #EBEEF5;border-radius:4px;padding:10px 12px;cursor:pointer}
+.chain-mini-item:hover{background:#F5FAFF}
+.chain-status{display:flex;gap:6px;align-items:center;font-size:12px;color:#606266;margin-top:4px}
+.chain-dot{width:8px;height:8px;border-radius:50%}
+.chain-dot.active{background:#409EFF}
+.chain-dot.predict{background:#c0c4cc;border:2px dashed #909399;opacity:.6}
+.chain-predict-label{color:#909399;font-size:11px;background:#f4f4f5;padding:1px 6px;border-radius:4px;margin-left:4px}
+.timeline-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #F5F7FA}
+.timeline-row:last-child{border-bottom:none}
+.timeline-time{width:48px;font-size:12px;color:#909399;flex-shrink:0}
+.timeline-badge{padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
+.stacked-area{height:200px;display:flex;align-items:flex-end;gap:4px;padding:0 8px 28px;border:1px solid #EBEEF5;border-radius:4px;background:#fff}
+.stacked-col{flex:1;display:flex;flex-direction:column-reverse;gap:1px;position:relative}
+.stacked-col::after{content:attr(data-day);position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:#909399;font-size:11px}
+.stack-seg{width:100%;border-radius:2px 2px 0 0;min-height:2px}
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+<div class="page-header">
+<div><div class="page-title">SOC 分析驾驶舱</div><div class="page-subtitle">五维高级分析入口：人员、组织、时序、关联、行为基线。点击卡片下钻到对应分析页面。</div></div>
+<div style="display:flex;gap:8px;">
+<button class="btn btn-default" onclick="toastSuccess('SOC 驾驶舱数据已刷新')">刷新</button>
+<select class="form-select" style="width:auto;" onchange="toastSuccess('刷新周期已切换')"><option>实时</option><option selected>5 分钟</option><option>1 小时</option></select>
+<button class="btn btn-primary" onclick="toastSuccess('SOC 分析报告导出中')">导出</button>
+</div>
+</div>
+
+<div class="five-cards">
+<div class="five-card" onclick="goPage('persona-analysis.html','人员风险分析')"><div class="icon icon-persona">&#x1F464;</div><div class="label">高风险用户</div><div class="value" style="color:#f56c6c;">12</div><div class="trend up">&#x2191; 较昨日 +3</div></div>
+<div class="five-card" onclick="goPage('org-risk-posture.html','组织风险态势')"><div class="icon icon-org">&#x1F3E2;</div><div class="label">风险热点部门</div><div class="value" style="color:#e6a23c;">3</div><div class="trend stable">&#x2192; 与昨日持平</div></div>
+<div class="five-card" onclick="goPage('../events/event-list.html','风险事件')"><div class="icon icon-time">&#x23F0;</div><div class="label">攻击趋势</div><div class="value" style="color:#409eff;">上升</div><div class="trend up">&#x2191; 提示词攻击周期活跃</div></div>
+<div class="five-card" onclick="goPage('correlation-analysis.html','风险关联分析')"><div class="icon icon-link">&#x1F517;</div><div class="label">活跃攻击链</div><div class="value" style="color:#67c23a;">5</div><div class="trend down">&#x2193; 较昨日 -2</div></div>
+<div class="five-card" onclick="goPage('behavior-baseline.html','行为基线管理')"><div class="icon icon-baseline">&#x1F4CA;</div><div class="label">偏离告警</div><div class="value" style="color:#7c3aed;">8</div><div class="trend up">&#x2191; 新增 2 条未确认</div></div>
+</div>
+
+<div class="soc-layout">
+<div class="card">
+<div class="card-header"><div class="card-title">高风险用户 Top 10</div><button class="btn btn-link" onclick="goPage('persona-analysis.html','人员风险分析')">查看全部</button></div>
+<div class="card-body">
+<div class="user-mini-list">
+<div class="user-mini-item" onclick="goPersona('user_zhangsan')"><div class="user-avatar-mini">张</div><div><div style="font-weight:600;">张三 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 8 | 跨应用 3 | 基线偏离 2</div></div><div class="user-risk-ring high">92</div><span class="tag tag-danger">上升</span></div>
+<div class="user-mini-item" onclick="goPersona('user_lisi')"><div class="user-avatar-mini">李</div><div><div style="font-weight:600;">李四 <span class="tag tag-info">财务中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 6 | 跨应用 2 | 基线偏离 1</div></div><div class="user-risk-ring high">87</div><span class="tag tag-danger">上升</span></div>
+<div class="user-mini-item" onclick="goPersona('user_wangwu')"><div class="user-avatar-mini">王</div><div><div style="font-weight:600;">王五 <span class="tag tag-info">客服部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 5 | 跨应用 1 | 基线偏离 0</div></div><div class="user-risk-ring mid">68</div><span class="tag tag-warning">平稳</span></div>
+<div class="user-mini-item" onclick="goPersona('user_zhaoliu')"><div class="user-avatar-mini">赵</div><div><div style="font-weight:600;">赵六 <span class="tag tag-info">运营中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 4 | 跨应用 2 | 基线偏离 1</div></div><div class="user-risk-ring mid">55</div><span class="tag tag-warning">上升</span></div>
+<div class="user-mini-item" onclick="goPersona('user_qianqi')"><div class="user-avatar-mini">钱</div><div><div style="font-weight:600;">钱七 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 3 | 跨应用 1 | 基线偏离 0</div></div><div class="user-risk-ring low">42</div><span class="tag tag-success">下降</span></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title">活跃攻击链态势</div><button class="btn btn-link" onclick="goPage('correlation-analysis.html','风险关联分析')">查看详情</button></div>
+<div class="card-body">
+<div class="chain-mini-list">
+<div class="chain-mini-item" onclick="goChain('CHAIN-20260420-003')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260420-003</strong><span class="tag tag-danger">进行中</span></div><div class="chain-status"><span class="chain-dot active"></span>提示词注入<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>探测边界<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>工具越界<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot predict"></span>数据外发<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 2 个应用 | 4 个 Trace | 攻击者: 张三</div></div>
+<div class="chain-mini-item" onclick="goChain('CHAIN-20260419-001')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260419-001</strong><span class="tag tag-warning">监测中</span></div><div class="chain-status"><span class="chain-dot active"></span>角色扮演<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>模板诱导<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot predict"></span>越界调用<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 1 个应用 | 3 个 Trace | 攻击者: 未识别</div></div>
+<div class="chain-mini-item" onclick="goChain('CHAIN-20260418-002')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260418-002</strong><span class="tag tag-success">已阻断</span></div><div class="chain-status"><span class="chain-dot active"></span>编码绕过<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>敏感数据请求<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>已拦截</div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 3 个应用 | 5 个 Trace | 攻击者: 李四</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="soc-layout">
+<div class="card">
+<div class="card-header"><div class="card-title">近 7 日风险时序趋势</div><div style="display:flex;gap:8px;"><span class="tag tag-danger">高</span><span class="tag tag-warning">中</span><span class="tag tag-primary">低</span></div></div>
+<div class="card-body">
+<div class="stacked-area">
+<div class="stacked-col" data-day="04-24"><div class="stack-seg" style="height:18%;background:#409EFF;"></div><div class="stack-seg" style="height:12%;background:#E6A23C;"></div><div class="stack-seg" style="height:8%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="04-23"><div class="stack-seg" style="height:22%;background:#409EFF;"></div><div class="stack-seg" style="height:10%;background:#E6A23C;"></div><div class="stack-seg" style="height:6%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="04-22"><div class="stack-seg" style="height:15%;background:#409EFF;"></div><div class="stack-seg" style="height:18%;background:#E6A23C;"></div><div class="stack-seg" style="height:14%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="04-21"><div class="stack-seg" style="height:20%;background:#409EFF;"></div><div class="stack-seg" style="height:14%;background:#E6A23C;"></div><div class="stack-seg" style="height:10%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="04-20"><div class="stack-seg" style="height:16%;background:#409EFF;"></div><div class="stack-seg" style="height:22%;background:#E6A23C;"></div><div class="stack-seg" style="height:20%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="04-19"><div class="stack-seg" style="height:24%;background:#409EFF;"></div><div class="stack-seg" style="height:16%;background:#E6A23C;"></div><div class="stack-seg" style="height:12%;background:#F56C6C;"></div></div>
+<div class="stacked-col" data-day="今日"><div class="stack-seg" style="height:12%;background:#409EFF;"></div><div class="stack-seg" style="height:20%;background:#E6A23C;"></div><div class="stack-seg" style="height:28%;background:#F56C6C;"></div></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title">今日行为基线偏离告警</div><button class="btn btn-link" onclick="goPage('behavior-baseline.html','行为基线管理')">查看全部</button></div>
+<div class="card-body">
+<div class="timeline-row"><div class="timeline-time">14:32</div><span class="timeline-badge" style="background:#fde2e2;color:#f56c6c;">高</span><div style="flex:1;font-size:13px;"><strong>研发代码审查助手</strong> 调用频率偏离基线 3.2σ<div style="font-size:12px;color:#909399;">当前 142 次/小时，基线 45±12 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-001')">查看</button></div>
+<div class="timeline-row"><div class="timeline-time">13:15</div><span class="timeline-badge" style="background:#fdf6ec;color:#e6a23c;">中</span><div style="flex:1;font-size:13px;"><strong>财务审计 Agent</strong> 工具使用种类偏离基线 2.1σ<div style="font-size:12px;color:#909399;">当前使用 5 种工具，基线 2±1 种</div></div><button class="btn btn-link" onclick="goBaseline('bl-002')">查看</button></div>
+<div class="timeline-row"><div class="timeline-time">11:48</div><span class="timeline-badge" style="background:#ecf5ff;color:#409eff;">低</span><div style="flex:1;font-size:13px;"><strong>智能客服 Copilot</strong> 响应时长偏离基线 1.8σ<div style="font-size:12px;color:#909399;">当前平均 2.3s，基线 1.2±0.4s</div></div><button class="btn btn-link" onclick="goBaseline('bl-003')">查看</button></div>
+<div class="timeline-row"><div class="timeline-time">09:22</div><span class="timeline-badge" style="background:#fde2e2;color:#f56c6c;">高</span><div style="flex:1;font-size:13px;"><strong>人事档案助理</strong> 敏感数据访问偏离基线 4.1σ<div style="font-size:12px;color:#909399;">当前 28 次/小时，基线 3±2 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-004')">查看</button></div>
+</div>
+</div>
+</div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'},{label:'SOC分析驾驶舱'}]);
+});
+function goPage(page,label){
+if(typeof navigateTo==='function'){navigateTo('pages/monitor/'+page,label,null);}else{window.location.href=page;}
+}
+function goPersona(id){toastSuccess('跳转人员风险分析: '+id);}
+function goChain(id){toastSuccess('跳转攻击链详情: '+id);}
+function goBaseline(id){toastSuccess('跳转行为基线详情: '+id);}
+</script>
+</body>
+</html>

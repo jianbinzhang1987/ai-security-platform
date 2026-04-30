@@ -45,6 +45,22 @@
     .kv .k { color: #909399; }
     .action-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
     .evidence-actions { position: sticky; bottom: 0; margin: 16px -16px -16px; padding: 12px 16px; background: #fff; border-top: 1px solid #EBEEF5; display: flex; gap: 8px; flex-wrap: wrap; }
+    .knowledge-sidebar { border-top: 1px solid #EBEEF5; margin: 14px -16px 0; padding: 14px 16px 0; }
+    .knowledge-sidebar-title { font-weight: 600; color: #606266; font-size: 13px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .knowledge-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 0; border-bottom: 1px solid #F5F7FA; font-size: 12px; }
+    .knowledge-item:last-child { border-bottom: none; }
+    .knowledge-title { color: #303133; font-weight: 600; }
+    .knowledge-meta { color: #909399; margin-top: 2px; }
+    .knowledge-trust { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 11px; background: #f0f9eb; color: #67c23a; }
+    .knowledge-trust.medium { background: #fdf6ec; color: #e6a23c; }
+    .knowledge-trust.low { background: #f4f4f5; color: #909399; }
+    .ai-summary-box { background: #F0F9FF; border: 1px solid #BAE6FD; border-radius: 4px; padding: 12px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; color: #0C4A6E; }
+    .ai-summary-box .ai-label { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: #0284C7; margin-bottom: 6px; }
+    .chain-timeline-mini { display: flex; align-items: center; gap: 8px; padding: 10px; background: #fafafa; border-radius: 4px; margin-bottom: 10px; overflow-x: auto; }
+    .chain-node-mini { flex-shrink: 0; text-align: center; font-size: 12px; }
+    .chain-node-mini .box { border: 1px solid #EBEEF5; border-radius: 4px; padding: 6px 10px; background: #fff; min-width: 80px; }
+    .chain-node-mini .box.active { border-color: #409EFF; background: #ECF5FF; font-weight: 600; }
+    .chain-node-mini .box.predict { border-style: dashed; opacity: .6; }
     @media (max-width: 1400px) {
       .investigation-layout { grid-template-columns: 320px 400px minmax(0, 1fr); }
       .evidence-summary { grid-template-columns: repeat(2, minmax(130px, 1fr)); }
@@ -203,6 +219,11 @@
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'json')">格式化 JSON</div>
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'raw')">Raw 授权</div>
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'rule')">规则解释</div>
+            <div class="evidence-tab" onclick="switchEvidenceTab(this,'attackchain')">AI攻击链</div>
+          </div>
+          <div class="ai-summary-box" id="aiEvidenceSummary">
+            <div class="ai-label"><span style="font-size:14px;">&#x1F916;</span> AI 证据摘要</div>
+            <div>该 Trace 属于攻击链 <strong>CHAIN-20260420-003</strong>（阶段 3/4）。当前 Span 为关键转折点：工具输入携带内部仓库路径 "internal/payment"，触发工具能力边界越界风险（置信度 0.91）。建议优先确认该工具声明状态，并评估是否需追加 Session 级限制。</div>
           </div>
           <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段，当前应用未声明外部 HTTP POST 能力。</span></div>
           <div class="kv-list" id="evidenceMetaList" style="margin:12px 0;">
@@ -232,11 +253,39 @@
   }
 }</pre>
           </div>
+          <div class="knowledge-sidebar" id="knowledgeSidebar">
+            <div class="knowledge-sidebar-title">
+              <span>相关知识检索 <span class="tag tag-info">AI</span></span>
+              <button class="btn btn-link" style="padding:0;font-size:12px;" onclick="toastSuccess('已标记知识缺口')">标记知识缺口</button>
+            </div>
+            <div class="knowledge-item">
+              <div>
+                <div class="knowledge-title">外联工具调用安全规范</div>
+                <div class="knowledge-meta">来源: 人工审核 | 适用范围: 工具边界 | 引用 12 次</div>
+              </div>
+              <div><span class="knowledge-trust">高可信</span></div>
+            </div>
+            <div class="knowledge-item">
+              <div>
+                <div class="knowledge-title">支付回调配置审计指南</div>
+                <div class="knowledge-meta">来源: AI生成 | 适用范围: 敏感数据 | 引用 5 次</div>
+              </div>
+              <div><span class="knowledge-trust medium">中可信</span></div>
+            </div>
+            <div class="knowledge-item">
+              <div>
+                <div class="knowledge-title">代码审查外联限制策略</div>
+                <div class="knowledge-meta">来源: 外部导入 | 适用范围: 策略模板 | 冲突: 待裁决</div>
+              </div>
+              <div><span class="knowledge-trust low">低可信</span></div>
+            </div>
+          </div>
           <div class="evidence-actions">
             <button class="btn btn-primary" onclick="toastSuccess('事件已确认，状态变更为处理中')">确认风险</button>
             <button class="btn btn-warning" onclick="openModal('actionModal')">建议处置</button>
             <button class="btn btn-default" onclick="toastSuccess('已标记为误报样本')">标记误报</button>
             <button class="btn btn-default" onclick="openModal('createEventModal')">关联事件</button>
+            <button class="btn btn-default" onclick="toastSuccess('已引用知识到研判')">引用知识</button>
           </div>
         </div>
       </div>
@@ -514,6 +563,9 @@
         title = '规则解释';
         content = profile.ruleText;
         metaList.style.display = 'none';
+      } else if (activeEvidenceTab === 'attackchain') {
+        title = 'AI 攻击链关联';
+        content = '攻击链：CHAIN-20260420-003（阶段 3/4）\n\n该 Trace 在攻击链中的位置：\n[Trace-001 提示词注入] -> [Trace-002 探测边界] -> [当前 Trace 工具越界] -> [预测: 数据外发]\n\n关键转折点：\n- Turn 4 出现外部 HTTP POST 工具计划\n- Turn 5 工具输入包含内部仓库路径 "internal/payment"\n\n攻击者画像：\n用户标识: 张三\n风险评分: 92（高风险）\n跨应用风险: 涉及 2 个应用\n\nAI 预测下一阶段：\n基于当前攻击模式，AI 预测下一阶段可能为数据外发（置信度 0.78）。\n建议动作：加强该用户跨应用权限审查，并启用 Session 级监控。\n\n注：预测结论为 AI 分析结果，不代表确定事实，需人工确认。';
       }
 
       document.getElementById('evidenceBoxTitle').textContent = title;

@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>AI服务监控</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <script src="../../js/common.js"></script>
+  <style>
+    /* 统计卡片 - 紧凑版 */
+    .stat-cards-compact {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card-compact {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .stat-card-compact-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+    .stat-card-compact-label {
+      font-size: 12px;
+      color: #909399;
+    }
+    .stat-card-compact-sub {
+      font-size: 11px;
+      color: #67c23a;
+      margin-top: 4px;
+    }
+    .stat-card-compact-sub.warning { color: #e6a23c; }
+    .stat-card-compact-sub.danger { color: #f56c6c; }
+
+    /* Tab样式 */
+    .page-tabs {
+      display: flex;
+      border-bottom: 1px solid #e4e7ed;
+      margin-bottom: 16px;
+    }
+    .page-tab {
+      padding: 12px 20px;
+      color: #606266;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+    }
+    .page-tab:hover {
+      color: #409EFF;
+    }
+    .page-tab.active {
+      color: #409EFF;
+      border-bottom-color: #409EFF;
+      font-weight: 500;
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* 状态矩阵表格 */
+    .status-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .status-matrix-table th,
+    .status-matrix-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #ebeef5;
+    }
+    .status-matrix-table th {
+      background: #f5f7fa;
+      font-weight: 500;
+      color: #606266;
+      font-size: 13px;
+    }
+    .status-matrix-table tr:hover td {
+      background: #f5f7fa;
+    }
+
+    /* 熔断状态 */
+    .circuit-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .circuit-closed {
+      background: #f0f9ff;
+      color: #67c23a;
+    }
+    .circuit-open {
+      background: #fef0f0;
+      color: #f56c6c;
+    }
+    .circuit-half-open {
+      background: #fdf6ec;
+      color: #e6a23c;
+    }
+
+    /* 图表模拟 */
+    .chart-container {
+      height: 200px;
+      position: relative;
+      margin: 16px 0;
+    }
+    .chart-mock {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #f5f7fa 0%, #fff 100%);
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+    .chart-line {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70%;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50' preserveAspectRatio='none'%3E%3Cpath d='M0,50 L0,30 Q10,35 20,25 T40,20 T60,25 T80,15 T100,10 L100,50 Z' fill='%23409EFF' opacity='0.1'/%3E%3Cpath d='M0,30 Q10,35 20,25 T40,20 T60,25 T80,15 T100,10' fill='none' stroke='%23409EFF' stroke-width='2'/%3E%3C/svg%3E") no-repeat center;
+      background-size: 100% 100%;
+    }
+    .chart-threshold {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 40%;
+      border-top: 2px dashed #f56c6c;
+    }
+    .chart-labels {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px;
+      font-size: 11px;
+      color: #909399;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 3px;
+      border-radius: 2px;
+    }
+
+    /* 熔断器详情面板 */
+    .circuit-panel {
+      background: #fef0f0;
+      border: 1px solid #fbc4c4;
+      border-radius: 4px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    .circuit-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .circuit-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .circuit-status-open {
+      background: #f56c6c;
+      color: #fff;
+    }
+
+    /* 成本看板 */
+    .budget-progress {
+      margin: 16px 0;
+    }
+    .budget-bar {
+      height: 24px;
+      background: #e4e7ed;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    .budget-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #67c23a 0%, #67c23a 46.9%, #e6a23c 46.9%, #e6a23c 100%);
+      border-radius: 12px;
+      position: relative;
+    }
+    .budget-warning-line {
+      position: absolute;
+      left: 80%;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #f56c6c;
+    }
+    .budget-warning-label {
+      position: absolute;
+      left: 80%;
+      top: -20px;
+      transform: translateX(-50%);
+      font-size: 11px;
+      color: #f56c6c;
+    }
+
+    /* 饼图模拟 */
+    .pie-chart-mock {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #409EFF 0deg 162deg,
+        #67c23a 162deg 252deg,
+        #e6a23c 252deg 324deg,
+        #909399 324deg 345deg,
+        #f56c6c 345deg 360deg
+      );
+      margin: 0 auto;
+    }
+
+    /* 柱状图模拟 */
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 100px;
+      padding: 0 16px;
+    }
+    .bar-item {
+      flex: 1;
+      background: #409EFF;
+      border-radius: 2px 2px 0 0;
+      min-height: 10px;
+    }
+    .bar-labels {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 16px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: #909399;
+    }
+
+    /* 分布卡片 */
+    .distribution-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .distribution-card {
+      background: #f5f7fa;
+      border-radius: 4px;
+      padding: 16px;
+      text-align: center;
+    }
+    .distribution-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 4px;
+    }
+    .distribution-label {
+      font-size: 12px;
+      color: #909399;
+    }
+    .distribution-sub {
+      font-size: 11px;
+      color: #606266;
+      margin-top: 4px;
+    }
+
+    /* 图表两列布局 */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* 快捷标签 */
+    .quick-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      background: #f5f7fa;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #606266;
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">AI服务监控</div>
+        <div class="page-subtitle">实时监控各AI模型服务的运行状态、性能指标、熔断状态与成本消耗。</div>
+      </div>
+    </div>
+
+    <!-- 全局概览卡 -->
+    <div class="stat-cards-compact">
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value" style="color:#409EFF;">8/12</div>
+        <div class="stat-card-compact-label">在线模型</div>
+        <div class="stat-card-compact-sub">67% 在线率</div>
+      </div>
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value">15,234</div>
+        <div class="stat-card-compact-label">今日调用</div>
+        <div class="stat-card-compact-sub">↗ +12%</div>
+      </div>
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value">210ms</div>
+        <div class="stat-card-compact-label">全局P95</div>
+        <div class="stat-card-compact-sub">正常范围</div>
+      </div>
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value" style="color:#67c23a;">98.5%</div>
+        <div class="stat-card-compact-label">全局成功</div>
+        <div class="stat-card-compact-sub">↗ +0.5%</div>
+      </div>
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value" style="color:#f56c6c;">1</div>
+        <div class="stat-card-compact-label">熔断模型</div>
+        <div class="stat-card-compact-sub danger">需关注</div>
+      </div>
+      <div class="stat-card-compact">
+        <div class="stat-card-compact-value" style="color:#e6a23c;">46%</div>
+        <div class="stat-card-compact-label">本月Token</div>
+        <div class="stat-card-compact-sub warning">2.3M / 5M</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="switchTab(this, 'realtime')">实时监控</div>
+      <div class="page-tab" onclick="switchTab(this, 'trends')">趋势图</div>
+      <div class="page-tab" onclick="switchTab(this, 'cost')">成本看板</div>
+      <div class="page-tab" onclick="switchTab(this, 'alerts')">告警规则</div>
+    </div>
+
+    <!-- 实时监控Tab -->
+    <div id="realtime" class="tab-panel active">
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;">模型状态矩阵</div>
+        <div class="table-wrapper">
+          <table class="status-matrix-table">
+            <thead>
+              <tr>
+                <th>模型名称</th>
+                <th>状态</th>
+                <th>P95延迟</th>
+                <th>成功率</th>
+                <th>熔断状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>注入检测</strong></td>
+                <td><span style="color:#67c23a;">🟢 在线</span></td>
+                <td>210ms</td>
+                <td>99.2%</td>
+                <td><span class="circuit-status circuit-closed">🟢 CLOSED</span></td>
+                <td><button class="btn btn-link" onclick="showCircuitDetail('closed')">详情</button></td>
+              </tr>
+              <tr>
+                <td><strong>越狱识别</strong></td>
+                <td><span style="color:#67c23a;">🟢 在线</span></td>
+                <td>280ms</td>
+                <td>98.7%</td>
+                <td><span class="circuit-status circuit-closed">🟢 CLOSED</span></td>
+                <td><button class="btn btn-link" onclick="showCircuitDetail('closed')">详情</button></td>
+              </tr>
+              <tr>
+                <td><strong>研判摘要</strong></td>
+                <td><span style="color:#67c23a;">🟢 在线</span></td>
+                <td>4.2s</td>
+                <td>97.1%</td>
+                <td><span class="circuit-status circuit-closed">🟢 CLOSED</span></td>
+                <td><button class="btn btn-link" onclick="showCircuitDetail('closed')">详情</button></td>
+              </tr>
+              <tr>
+                <td><strong>敏感识别</strong></td>
+                <td><span style="color:#e6a23c;">🟡 探测</span></td>
+                <td>450ms</td>
+                <td>85.3%</td>
+                <td><span class="circuit-status circuit-half-open">🟡 HALF_OPEN</span></td>
+                <td><button class="btn btn-link" onclick="showCircuitDetail('half-open')">手动恢复</button></td>
+              </tr>
+              <tr>
+                <td><strong>工具判定</strong></td>
+                <td><span style="color:#f56c6c;">🔴 熔断</span></td>
+                <td>—</td>
+                <td>—</td>
+                <td><span class="circuit-status circuit-open">🔴 OPEN</span></td>
+                <td><button class="btn btn-link" onclick="showCircuitDetail('open')">查看</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 熔断器详情 -->
+      <div class="card">
+        <div class="circuit-panel">
+          <div class="circuit-panel-header">
+            <span style="font-weight:600;">熔断器详情: 工具判定模型</span>
+            <span class="circuit-status-badge circuit-status-open">🔴 OPEN (已熔断)</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:16px;margin-bottom:16px;">
+            <div>
+              <div style="color:#909399;font-size:12px;">最近熔断</div>
+              <div style="font-weight:500;">2026-04-30 14:32:15</div>
+            </div>
+            <div>
+              <div style="color:#909399;font-size:12px;">熔断原因</div>
+              <div style="font-weight:500;">连续错误率超过阈值 (>50%)</div>
+            </div>
+            <div>
+              <div style="color:#909399;font-size:12px;">冷却剩余</div>
+              <div style="font-weight:500;color:#e6a23c;">4分32秒 (5分钟后尝试)</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-default" onclick="showToast('warning', '确认', '确认手动恢复？')">手动恢复</button>
+            <button class="btn btn-default" onclick="showToast('warning', '确认', '确认强制熔断？')">强制熔断</button>
+            <button class="btn btn-link">查看日志</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 延迟趋势图 -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-weight:600;">延迟趋势图 (近1h)</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-default btn-sm">1h</button>
+            <button class="btn btn-default btn-sm active">6h</button>
+            <button class="btn btn-default btn-sm">24h</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-mock">
+            <div class="chart-line"></div>
+            <div class="chart-threshold"></div>
+            <div style="position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);color:#f56c6c;font-size:12px;">超时阈值线</div>
+            <div class="chart-labels">
+              <span>10:00</span>
+              <span>11:00</span>
+              <span>12:00</span>
+              <span>13:00</span>
+              <span>14:00</span>
+              <span>15:00</span>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#409EFF;"></div>
+            <span>P95延迟</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#67c23a;"></div>
+            <span>P99延迟</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#f56c6c;border:1px dashed #f56c6c;height:1px;"></div>
+            <span>超时阈值</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 趋势图Tab -->
+    <div id="trends" class="tab-panel">
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;">成功率趋势 (近24h)</div>
+        <div class="chart-container">
+          <div class="chart-mock">
+            <div style="position:absolute;bottom:0;left:0;right:0;height:85%;background:url('data:image/svg+xml,...') no-repeat center;"></div>
+            <div class="chart-labels">
+              <span>00:00</span>
+              <span>06:00</span>
+              <span>12:00</span>
+              <span>18:00</span>
+              <span>23:59</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 成本看板Tab -->
+    <div id="cost" class="tab-panel">
+      <!-- 预算概览 -->
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;">预算概览</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <span style="color:#606266;font-size:14px;">本月预算: </span>
+            <span style="font-weight:600;">¥50,000</span>
+          </div>
+          <div>
+            <span style="color:#606266;font-size:14px;">已消耗: </span>
+            <span style="font-weight:600;color:#e6a23c;">¥23,456 (46.9%)</span>
+          </div>
+        </div>
+        <div class="budget-progress">
+          <div class="budget-bar">
+            <div class="budget-fill" style="width:46.9%;">
+              <div class="budget-warning-line"></div>
+            </div>
+          </div>
+          <div class="budget-warning-label">80%警告线</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:13px;color:#909399;">
+          <div>预计月末: ¥48,500 (结余 ¥1,500)</div>
+          <div>剩余可用: 约15天</div>
+        </div>
+      </div>
+
+      <!-- 消耗趋势图 -->
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;">消耗趋势图 (日粒度)</div>
+        <div class="chart-container">
+          <div class="chart-mock">
+            <div style="position:absolute;bottom:30px;left:0;right:0;height:60%;">
+              <div class="bar-chart">
+                <div class="bar-item" style="height:60%;"></div>
+                <div class="bar-item" style="height:75%;"></div>
+                <div class="bar-item" style="height:45%;"></div>
+                <div class="bar-item" style="height:80%;"></div>
+                <div class="bar-item" style="height:65%;"></div>
+                <div class="bar-item" style="height:55%;"></div>
+                <div class="bar-item" style="height:47%;"></div>
+              </div>
+              <div class="bar-labels">
+                <span>04/24</span>
+                <span>04/25</span>
+                <span>04/26</span>
+                <span>04/27</span>
+                <span>04/28</span>
+                <span>04/29</span>
+                <span>04/30</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#409EFF;"></div>
+            <span>输入Token</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#67c23a;"></div>
+            <span>输出Token</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#909399;"></div>
+            <span>总成本</span>
+          </div>
+          <div class="chart-legend-item">
+            <div class="legend-color" style="background:#e6a23c;border:1px dashed #e6a23c;height:1px;"></div>
+            <span>预算线</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 两列图表 -->
+      <div class="chart-grid">
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;">按模型消耗Top5</div>
+          <div class="pie-chart-mock"></div>
+          <div style="margin-top:16px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span><span style="color:#409EFF;">●</span> GPT-4o</span>
+              <span>45%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span><span style="color:#67c23a;">●</span> 注入检测</span>
+              <span>25%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span><span style="color:#e6a23c;">●</span> 研判摘要</span>
+              <span>20%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <span><span style="color:#909399;">●</span> Claude-3.5</span>
+              <span>7%</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;">
+              <span><span style="color:#f56c6c;">●</span> Embedding</span>
+              <span>3%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:600;margin-bottom:16px;">按检测点消耗分布</div>
+          <div style="font-size:13px;line-height:2;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:100px;">Prompt注入检测</span>
+              <div style="flex:1;height:8px;background:#e4e7ed;border-radius:4px;">
+                <div style="width:80%;height:100%;background:#409EFF;border-radius:4px;"></div>
+              </div>
+              <span>████</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:100px;">越狱攻击识别</span>
+              <div style="flex:1;height:8px;background:#e4e7ed;border-radius:4px;">
+                <div style="width:60%;height:100%;background:#67c23a;border-radius:4px;"></div>
+              </div>
+              <span>███</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:100px;">AI研判摘要</span>
+              <div style="flex:1;height:8px;background:#e4e7ed;border-radius:4px;">
+                <div style="width:40%;height:100%;background:#e6a23c;border-radius:4px;"></div>
+              </div>
+              <span>██</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:100px;">敏感内容识别</span>
+              <div style="flex:1;height:8px;background:#e4e7ed;border-radius:4px;">
+                <div style="width:20%;height:100%;background:#909399;border-radius:4px;"></div>
+              </div>
+              <span>█</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="width:100px;">工具边界判定</span>
+              <div style="flex:1;height:8px;background:#e4e7ed;border-radius:4px;">
+                <div style="width:20%;height:100%;background:#f56c6c;border-radius:4px;"></div>
+              </div>
+              <span>█</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 按数据级别消耗分布 -->
+      <div class="card">
+        <div style="font-weight:600;margin-bottom:16px;">按数据级别消耗分布</div>
+        <div class="distribution-grid">
+          <div class="distribution-card">
+            <div style="font-size:12px;color:#409EFF;font-weight:500;margin-bottom:8px;">L0 公开</div>
+            <div class="distribution-value">2,100</div>
+            <div class="distribution-label">调用次数</div>
+            <div class="distribution-sub">450K Token</div>
+          </div>
+          <div class="distribution-card">
+            <div style="font-size:12px;color:#67c23a;font-weight:500;margin-bottom:8px;">L1 内部</div>
+            <div class="distribution-value">8,500</div>
+            <div class="distribution-label">调用次数</div>
+            <div class="distribution-sub">1.2M Token</div>
+          </div>
+          <div class="distribution-card">
+            <div style="font-size:12px;color:#e6a23c;font-weight:500;margin-bottom:8px;">L2 敏感</div>
+            <div class="distribution-value">3,200</div>
+            <div class="distribution-label">调用次数</div>
+            <div class="distribution-sub">800K Token</div>
+          </div>
+          <div class="distribution-card">
+            <div style="font-size:12px;color:#f56c6c;font-weight:500;margin-bottom:8px;">L3 机密</div>
+            <div class="distribution-value">150</div>
+            <div class="distribution-label">调用次数</div>
+            <div class="distribution-sub">50K Token</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 告警规则Tab -->
+    <div id="alerts" class="tab-panel">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-weight:600;">告警规则配置</div>
+          <button class="btn btn-primary" onclick="showToast('info', '提示', '新建告警规则')">+ 新建规则</button>
+        </div>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>规则名称</th>
+                <th>告警类型</th>
+                <th>触发条件</th>
+                <th>严重级别</th>
+                <th>通知渠道</th>
+                <th>状态</th>
+                <th>最近触发</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>延迟告警</td>
+                <td>latency</td>
+                <td>P99 > 阈值×80%</td>
+                <td><span class="quick-tag" style="background:#fdf6ec;color:#e6a23c;">warning</span></td>
+                <td>邮件、Webhook</td>
+                <td><span style="color:#67c23a;">启用</span></td>
+                <td>2026-04-30 10:15</td>
+              </tr>
+              <tr>
+                <td>成功率下降</td>
+                <td>success_rate</td>
+                <td>成功率 &lt; 95%</td>
+                <td><span class="quick-tag" style="background:#fdf6ec;color:#e6a23c;">warning</span></td>
+                <td>邮件</td>
+                <td><span style="color:#67c23a;">启用</span></td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>熔断触发</td>
+                <td>circuit_open</td>
+                <td>熔断器 OPEN</td>
+                <td><span class="quick-tag" style="background:#fef0f0;color:#f56c6c;">critical</span></td>
+                <td>电话、短信</td>
+                <td><span style="color:#67c23a;">启用</span></td>
+                <td>2026-04-30 14:32</td>
+              </tr>
+              <tr>
+                <td>预算告警</td>
+                <td>budget</td>
+                <td>消耗 > 80%</td>
+                <td><span class="quick-tag" style="background:#fdf6ec;color:#e6a23c;">warning</span></td>
+                <td>邮件、Webhook</td>
+                <td><span style="color:#67c23a;">启用</span></td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(el, tabId) {
+      document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    function showCircuitDetail(status) {
+      if (status === 'closed') {
+        showToast('info', '熔断器状态', '当前状态: CLOSED (正常)');
+      } else if (status === 'half-open') {
+        showToast('warning', '熔断器状态', '当前状态: HALF_OPEN (探测中)，可手动恢复');
+      } else if (status === 'open') {
+        showToast('error', '熔断器状态', '当前状态: OPEN (已熔断)，需手动干预');
+      }
+    }
+  </script>
+</body>
+</html>

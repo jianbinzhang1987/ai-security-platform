@@ -1,17 +1,106 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>自定义报告</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head><meta charset="UTF-8"><title>自定义报告</title><link rel="stylesheet" href="../../css/style.css">
+<style>
+.template-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+.template-card{border:2px solid #EBEEF5;border-radius:6px;padding:14px;background:#fff;cursor:pointer;transition:all .2s ease}
+.template-card:hover{border-color:#C6E2FF}
+.template-card.active{border-color:#409EFF;background:#ECF5FF}
+.template-icon{width:36px;height:36px;border-radius:8px;background:#ecf5ff;color:#409eff;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:8px}
+.template-title{font-weight:600;color:#303133;margin-bottom:4px}
+.template-desc{font-size:12px;color:#909399}
+.ai-filled{background:#F0F9FF;border:1px dashed #BAE6FD;border-radius:4px;padding:10px;margin-bottom:8px;position:relative}
+.ai-filled .ai-label{position:absolute;top:-8px;left:8px;background:#F0F9FF;color:#0284C7;font-size:11px;font-weight:600;padding:0 4px}
+.ai-filled .content{color:#0C4A6E;font-size:13px;line-height:1.8;min-height:60px}
+.ai-filled textarea{border:none;background:transparent;width:100%;min-height:60px;color:#0C4A6E;font-size:13px;line-height:1.8;resize:vertical}
+.ai-filled textarea:focus{outline:none}
+.manual-filled{border:1px solid #EBEEF5;border-radius:4px;padding:10px;margin-bottom:8px}
+.manual-filled .manual-label{font-size:11px;color:#909399;margin-bottom:4px;font-weight:600}
+.manual-filled textarea{border:none;width:100%;min-height:60px;font-size:13px;line-height:1.8;resize:vertical}
+.manual-filled textarea:focus{outline:none}
+</style>
+</head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="page-header"><div><div class="page-title">自定义报告</div><div class="page-subtitle">选择时间范围、应用范围、风险维度和输出格式，生成可分享安全报告。</div></div><button class="btn btn-primary" onclick="toastSuccess('报告生成任务已提交')">生成报告</button></div>
-    <div class="card"><div class="card-body">
-      <div class="form-row"><div class="form-label required">报告名称</div><div class="form-field"><input class="form-control" value="智能客服 Copilot 周报"></div></div>
-      <div class="form-row"><div class="form-label">接入应用</div><div class="form-field"><select class="form-select"><option>全部应用</option><option>智能客服 Copilot</option><option>研发代码审查助手</option></select></div></div>
-      <div class="form-row"><div class="form-label">内容模块</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险趋势</label><label class="checkbox-item"><input type="checkbox" checked> 事件处置</label><label class="checkbox-item"><input type="checkbox" checked> 策略覆盖</label><label class="checkbox-item"><input type="checkbox"> 原始证据附录</label></div></div></div>
-      <div class="form-row"><div class="form-label">输出格式</div><div class="form-field"><div class="radio-group"><label class="radio-item"><input type="radio" name="fmt" checked> PDF</label><label class="radio-item"><input type="radio" name="fmt"> HTML</label><label class="radio-item"><input type="radio" name="fmt"> Excel</label></div></div></div>
+    <div class="page-header"><div><div class="page-title">自定义报告</div><div class="page-subtitle">选择 AI 生成模板或手动创建，AI 自动填充数据后需人工审核确认方可发布。</div></div><div style="display:flex;gap:8px;"><button class="btn btn-default" onclick="toastSuccess('草稿已保存')">保存草稿</button><button class="btn btn-warning" onclick="toastSuccess('报告已提交审核')">提交审核</button><button class="btn btn-primary" onclick="toastSuccess('报告已发布')">直接发布</button></div></div>
+
+    <div class="card"><div class="card-header"><div class="card-title">选择报告模板</div></div><div class="card-body">
+      <div class="template-grid">
+        <div class="template-card active" onclick="selectTemplate(this,'weekly')">
+          <div class="template-icon">&#x1F4C5;</div>
+          <div class="template-title">安全周报模板</div>
+          <div class="template-desc">AI 自动生成近 7 日风险概览、事件统计、趋势分析和建议措施</div>
+        </div>
+        <div class="template-card" onclick="selectTemplate(this,'monthly')">
+          <div class="template-icon">&#x1F4C6;</div>
+          <div class="template-title">安全月报模板</div>
+          <div class="template-desc">AI 自动生成月度安全态势、应用风险排行、策略覆盖和处置总结</div>
+        </div>
+        <div class="template-card" onclick="selectTemplate(this,'inspect')">
+          <div class="template-icon">&#x1F50D;</div>
+          <div class="template-title">巡检报告模板</div>
+          <div class="template-desc">AI 自动生成应用接入合规性、策略配置检查和基线偏离汇总</div>
+        </div>
+        <div class="template-card" onclick="selectTemplate(this,'custom')">
+          <div class="template-icon">&#x270F;</div>
+          <div class="template-title">空白自定义</div>
+          <div class="template-desc">手动创建报告，可选择部分 AI 辅助填充</div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="card"><div class="card-header"><div class="card-title">报告基础信息</div></div><div class="card-body">
+      <div class="form-row"><div class="form-label required">报告名称</div><div class="form-field"><input class="form-control" id="reportName" value="2026-W17 安全周报" required></div></div>
+      <div class="form-row"><div class="form-label required">数据时间范围</div><div class="form-field" style="display:flex;gap:8px;align-items:center;"><input class="form-control" value="2026-04-21" style="width:160px;"><span>至</span><input class="form-control" value="2026-04-27" style="width:160px;"></div></div>
+      <div class="form-row"><div class="form-label">覆盖应用</div><div class="form-field"><select class="form-select"><option>全部应用</option><option>研发代码审查助手</option><option>智能客服 Copilot</option><option>人事档案助理</option></select></div></div>
+      <div class="form-row"><div class="form-label">内容模块</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险概览</label><label class="checkbox-item"><input type="checkbox" checked> 事件统计</label><label class="checkbox-item"><input type="checkbox" checked> 趋势分析</label><label class="checkbox-item"><input type="checkbox" checked> 处置总结</label><label class="checkbox-item"><input type="checkbox" checked> 建议措施</label><label class="checkbox-item"><input type="checkbox"> 原始证据附录</label></div></div></div>
+    </div></div>
+
+    <div class="card"><div class="card-header"><div class="card-title">报告内容编辑 <span class="tag tag-info">AI</span></div><div><button class="btn btn-info btn-sm" onclick="toastSuccess('AI 已重新生成内容')">重新生成</button></div></div><div class="card-body">
+      <div class="ai-filled">
+        <div class="ai-label">&#x1F916; AI 生成 — 风险概览</div>
+        <textarea>本周（2026-04-21 至 2026-04-27）共监测到风险事件 42 起，较上周增加 12%。其中高风险事件 8 起，中风险事件 18 起，低风险事件 16 起。主要风险类型为工具能力边界越界（15 起）和敏感数据输出（12 起）。</textarea>
+      </div>
+      <div class="ai-filled">
+        <div class="ai-label">&#x1F916; AI 生成 — 事件统计</div>
+        <textarea>按应用维度统计：研发代码审查助手关联事件 18 起（高风险 5 起），智能客服 Copilot 关联事件 8 起（高风险 1 起），人事档案助理关联事件 6 起（高风险 2 起）。按部门维度统计：研发部 22 起，客服部 12 起，财务部 8 起。</textarea>
+      </div>
+      <div class="ai-filled">
+        <div class="ai-label">&#x1F916; AI 生成 — 趋势分析</div>
+        <textarea>本周风险趋势呈上升态势，周三（04-23）达到峰值，单日风险事件 11 起。工具越界类风险在周二至周四期间集中爆发，与研发代码审查助手的功能迭代窗口重合。建议关注该应用的边界配置更新。</textarea>
+      </div>
+      <div class="manual-filled">
+        <div class="manual-label">人工编辑 — 处置总结</div>
+        <textarea placeholder="可补充人工处置记录、跨部门协作情况、特殊事项说明等"></textarea>
+      </div>
+      <div class="ai-filled">
+        <div class="ai-label">&#x1F916; AI 生成 — 建议措施</div>
+        <textarea>1. 建议对研发代码审查助手的工具声明边界进行复核，重点关注 external_http_post 等外联工具的授权范围。
+2. 建议加强人事档案助理的敏感数据输出检测规则，提升响应字段的脱敏覆盖率。
+3. 建议对本周新增的 3 条自动响应规则进行灰度效果评估。</textarea>
+      </div>
+      <div style="margin-top:12px;padding:10px;border:1px solid #EBEEF5;border-radius:4px;background:#fafafa;font-size:12px;color:#909399;line-height:1.8;">
+        <strong style="color:#606266;">AI 生成标注：</strong>本报告内容由 AI 基于近 7 天事件数据自动生成，所有数据已标注来源，请人工审核确认后发布。AI 生成段落以蓝色虚线框标识，人工编辑段落以实线框标识。
+      </div>
+    </div></div>
+
+    <div class="card"><div class="card-header"><div class="card-title">审核与发布</div></div><div class="card-body">
+      <div class="form-row"><div class="form-label">审核人</div><div class="form-field"><select class="form-select"><option>张安全</option><option>李运营</option><option>王合规</option></select><div class="form-hint">AI 生成报告必须经审核人确认后方可发布</div></div></div>
+      <div class="form-row"><div class="form-label">审核备注</div><div class="form-field"><textarea class="form-textarea" placeholder="审核意见、修改建议等"></textarea></div></div>
+      <div class="form-row"><div class="form-label">发布渠道</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> 平台内报告中心</label><label class="checkbox-item"><input type="checkbox"> 邮件推送</label><label class="checkbox-item"><input type="checkbox"> 飞书机器人</label><label class="checkbox-item"><input type="checkbox"> 订阅者自动投递</label></div></div></div>
     </div></div>
   </div>
   <script src="../../js/common.js"></script>
-  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);</script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);
+    function selectTemplate(el,tpl){
+      document.querySelectorAll('.template-card').forEach(function(c){c.classList.remove('active');});
+      el.classList.add('active');
+      if(tpl==='weekly'){document.getElementById('reportName').value='2026-W17 安全周报';}
+      else if(tpl==='monthly'){document.getElementById('reportName').value='2026年4月安全月报';}
+      else if(tpl==='inspect'){document.getElementById('reportName').value='应用合规巡检报告';}
+      else{document.getElementById('reportName').value='';}
+    }
+  </script>
 </body>
 </html>

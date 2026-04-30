@@ -281,13 +281,38 @@ function initTabs(navContainerId, paneContainerId, defaultTab) {
   }
 }
 
+/**
+ * 弹窗内 Tab 切换（通用版）
+ * @param {HTMLElement} el      - 点击的 tab-item 元素
+ * @param {string} tab          - 目标 tab 名称
+ * @param {string} modalId      - 弹窗容器 ID（可选，默认自动查找最近的 modal）
+ * @param {string} panePrefix   - 面板 ID 前缀（可选，默认为 'modal-'）
+ */
+function switchModalTab(el, tab, modalId, panePrefix) {
+  const prefix = panePrefix || 'modal-';
+  const modal = modalId ? document.getElementById(modalId) : el.closest('.modal-box, .modal-overlay');
+  if (!modal) return;
+
+  // 切换 tab-item 激活状态
+  modal.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+
+  // 切换内容面板显示
+  modal.querySelectorAll('[id^="' + prefix + '"]').forEach(function(pane) {
+    pane.style.display = (pane.id === prefix + tab) ? 'block' : 'none';
+  });
+}
+
 /* =============================================
    分页组件
    ============================================= */
 
 /**
  * 渲染分页
- * @param {string} containerId - 分页容器 ID
+ * @param {string}   message  - 提示内容
+ * @param {Function} callback - 点击"确认"后执行的回调
+ * @param {string}   title    - 标题，默认"操作确认"
+ * @param {string}   type     - 类型 'danger'|'warning'，影响确认按钮样式
  * @param {number} total       - 总条数
  * @param {number} current     - 当前页
  * @param {number} pageSize    - 每页条数

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>风险关联分析</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.tab-bar{display:flex;border-bottom:2px solid #e4e7ed;margin-bottom:14px}
+.tab-item{padding:10px 20px;cursor:pointer;color:#606266;font-size:14px;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-item.active{color:#409EFF;border-bottom-color:#409EFF;font-weight:600}
+.graph-area{height:420px;border:1px solid #EBEEF5;border-radius:4px;background:#fafafa;position:relative;overflow:hidden}
+.graph-legend{display:flex;gap:16px;margin-bottom:10px;font-size:12px;color:#606266}
+.graph-legend span{display:flex;align-items:center;gap:4px}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+.legend-dot.high{background:#f56c6c}
+.legend-dot.mid{background:#e6a23c}
+.legend-dot.low{background:#67c23a}
+.legend-line{width:24px;height:3px;background:#909399;border-radius:2px}
+.legend-line.thick{height:5px;background:#f56c6c}
+.chain-timeline{display:flex;align-items:center;gap:12px;padding:16px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;margin-bottom:12px;overflow-x:auto}
+.chain-node{flex-shrink:0;text-align:center}
+.chain-node .box{border:1px solid #EBEEF5;border-radius:4px;padding:8px 12px;background:#fff;font-size:12px;min-width:100px}
+.chain-node .box.active{border-color:#409EFF;background:#F5FAFF;font-weight:600}
+.chain-node .box.predict{border-style:dashed;opacity:.6}
+.chain-arrow{color:#c0c4cc;font-size:18px}
+.chain-meta{font-size:11px;color:#909399;margin-top:4px}
+.info-panel{border:1px solid #EBEEF5;border-radius:4px;padding:14px;background:#fff}
+.tree-node{padding:6px 0;padding-left:20px;position:relative}
+.tree-node::before{content:'';position:absolute;left:6px;top:0;bottom:0;width:1px;background:#DCDFE6}
+.tree-node .node-label{display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 0}
+.tree-node .node-label::before{content:'';position:absolute;left:6px;width:8px;height:1px;background:#DCDFE6}
+.tree-toggle{width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #DCDFE6;border-radius:2px;font-size:10px;color:#606266;cursor:pointer;background:#fff}
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+<div class="page-header"><div><div class="page-title">风险关联分析</div><div class="page-subtitle">跨应用风险传播、工具传播链与攻击链路关联可视化分析。</div></div></div>
+
+<div class="tab-bar">
+<div class="tab-item active" onclick="switchTab(this,'spread')">跨应用风险传播</div>
+<div class="tab-item" onclick="switchTab(this,'toolchain')">工具传播链</div>
+<div class="tab-item" onclick="switchTab(this,'attack')">攻击链路关联</div>
+</div>
+
+<div id="panel-spread">
+<div class="graph-legend"><span><span class="legend-dot high"></span>高风险应用</span><span><span class="legend-dot mid"></span>中风险应用</span><span><span class="legend-dot low"></span>低风险应用</span><span><span class="legend-line"></span>共享工具/资源</span><span><span class="legend-line thick"></span>高风险传播</span></div>
+<div class="graph-area">
+<div style="position:absolute;top:20px;left:30px;"><div style="width:80px;height:50px;border:2px solid #f56c6c;border-radius:6px;background:#fde2e2;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">研发代码审查助手</div><div style="font-size:11px;color:#909399;text-align:center;margin-top:4px;">风险评分: 94</div></div>
+<div style="position:absolute;top:100px;left:180px;"><div style="width:80px;height:50px;border:2px solid #e6a23c;border-radius:6px;background:#fdf6ec;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">测试环境助手</div><div style="font-size:11px;color:#909399;text-align:center;margin-top:4px;">风险评分: 72</div></div>
+<div style="position:absolute;top:180px;left:60px;"><div style="width:80px;height:50px;border:2px solid #e6a23c;border-radius:6px;background:#fdf6ec;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">内部知识库助手</div><div style="font-size:11px;color:#909399;text-align:center;margin-top:4px;">风险评分: 68</div></div>
+<div style="position:absolute;top:60px;left:320px;"><div style="width:80px;height:50px;border:2px solid #67c23a;border-radius:6px;background:#e1f3d8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">智能客服 Copilot</div><div style="font-size:11px;color:#909399;text-align:center;margin-top:4px;">风险评分: 35</div></div>
+<div style="position:absolute;top:200px;left:300px;"><div style="width:80px;height:50px;border:2px solid #f56c6c;border-radius:6px;background:#fde2e2;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;">财务审计 Agent</div><div style="font-size:11px;color:#909399;text-align:center;margin-top:4px;">风险评分: 88</div></div>
+<svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"><line x1="110" y1="45" x2="180" y2="125" stroke="#909399" stroke-width="2"/><line x1="110" y1="45" x2="60" y2="205" stroke="#f56c6c" stroke-width="4"/><line x1="180" y1="125" x2="320" y2="85" stroke="#909399" stroke-width="2"/><line x1="300" y1="225" x2="360" y2="85" stroke="#e6a23c" stroke-width="2" stroke-dasharray="5,3"/></svg>
+</div>
+<div class="info-panel" style="margin-top:12px;">
+<div style="font-weight:600;margin-bottom:8px;">选中传播路径详情</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;color:#606266;line-height:1.8;">
+<div><strong>源应用：</strong>研发代码审查助手<br><strong>目标应用：</strong>内部知识库助手<br><strong>传播类型：</strong>共享高危工具(external_http_post)</div>
+<div><strong>传播风险权重：</strong>0.92<br><strong>关联事件数：</strong>6<br><strong>最近传播时间：</strong>2026-04-20 10:25</div>
+</div>
+</div>
+</div>
+
+<div id="panel-toolchain" style="display:none;">
+<div class="graph-legend"><span><span class="legend-dot high"></span>高风险工具</span><span><span class="legend-dot mid"></span>中风险工具</span><span><span class="legend-line"></span>调用关系</span></div>
+<div style="padding:20px;">
+<div style="display:flex;align-items:center;margin-bottom:20px;">
+<div style="width:120px;height:40px;border:2px solid #f56c6c;border-radius:6px;background:#fde2e2;display:flex;align-items:center;justify-content:center;font-weight:600;">external_http_post</div>
+<div style="width:40px;text-align:center;color:#909399;">&#x2193; 被调用</div>
+</div>
+<div style="display:flex;gap:30px;margin-left:60px;">
+<div>
+<div style="width:100px;height:36px;border:2px solid #e6a23c;border-radius:6px;background:#fdf6ec;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-bottom:8px;">研发代码审查</div>
+<div style="font-size:11px;color:#909399;">调用 14 次 | 风险事件 6</div>
+<div style="margin-top:10px;padding-left:20px;border-left:2px solid #DCDFE6;">
+<div style="font-size:12px;color:#606266;margin-bottom:4px;">&#x251C; EVT-2026-00018</div>
+<div style="font-size:12px;color:#606266;margin-bottom:4px;">&#x251C; EVT-2026-00014</div>
+<div style="font-size:12px;color:#606266;">&#x2514; EVT-2026-00011</div>
+</div>
+</div>
+<div>
+<div style="width:100px;height:36px;border:2px solid #e6a23c;border-radius:6px;background:#fdf6ec;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-bottom:8px;">内部知识库</div>
+<div style="font-size:11px;color:#909399;">调用 8 次 | 风险事件 3</div>
+</div>
+<div>
+<div style="width:100px;height:36px;border:2px solid #67c23a;border-radius:6px;background:#e1f3d8;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-bottom:8px;">测试环境助手</div>
+<div style="font-size:11px;color:#909399;">调用 3 次 | 风险事件 1</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="panel-attack" style="display:none;">
+<div class="card" style="margin-bottom:14px;"><div class="card-header"><div class="card-title">攻击链路：CHAIN-20260420-003</div><span class="tag tag-danger">进行中</span></div>
+<div class="card-body">
+<div style="font-size:12px;color:#909399;margin-bottom:12px;">攻击者: 张三 | 涉及 2 个应用 | 4 个 Trace | 持续 2 小时 18 分钟</div>
+<div class="chain-timeline">
+<div class="chain-node"><div class="box">Trace-001<br><span style="font-size:11px;color:#909399;">提示词注入</span></div><div class="chain-meta">10:05</div></div>
+<div class="chain-arrow">&#x2192;</div>
+<div class="chain-node"><div class="box">Trace-002<br><span style="font-size:11px;color:#909399;">探测边界</span></div><div class="chain-meta">10:18</div></div>
+<div class="chain-arrow">&#x2192;</div>
+<div class="chain-node"><div class="box active">当前 Trace<br><span style="font-size:11px;color:#909399;">工具越界</span></div><div class="chain-meta">10:25</div></div>
+<div class="chain-arrow" style="color:#c0c4cc;">&#x21E2;</div>
+<div class="chain-node"><div class="box predict">预测: 数据外发<br><span style="font-size:11px;color:#909399;">AI 预测 78%</span></div><div class="chain-meta">预测</div></div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+<div class="info-panel"><div style="font-weight:600;margin-bottom:6px;">攻击链证据摘要</div><div style="font-size:13px;color:#606266;line-height:1.8;">Turn 1: 用户输入"只做配置检查"（低风险）<br>Turn 3: 请求读取仓库配置（风险累积）<br>Turn 5: 工具调用 external_http_post 携带内部路径（关键转折点）</div></div>
+<div class="info-panel"><div style="font-weight:600;margin-bottom:6px;">AI 分析结论 <span class="tag tag-info">AI 分析</span></div><div style="font-size:13px;color:#606266;line-height:1.8;">攻击类型: 多阶段渗透<br>当前阶段: 工具边界越界<br>预测下一阶段: 数据外发 (置信度 0.78)<br>建议动作: 加强该用户跨应用权限审查</div></div>
+</div>
+</div>
+</div>
+<div class="card"><div class="card-header"><div class="card-title">攻击链路列表</div></div>
+<div class="card-body">
+<table class="data-table">
+<thead><tr><th>链路 ID</th><th>阶段数</th><th>状态</th><th>攻击者</th><th>涉及应用</th><th>最新时间</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td class="mono">CHAIN-20260420-003</td><td>4 (1预测)</td><td><span class="tag tag-danger">进行中</span></td><td>张三</td><td>2</td><td>2026-04-20 10:25</td><td><button class="btn btn-link" onclick="goChain('CHAIN-20260420-003')">查看</button><button class="btn btn-link" onclick="toastSuccess('已标记人工确认')">确认</button></td></tr>
+<tr><td class="mono">CHAIN-20260419-001</td><td>3 (1预测)</td><td><span class="tag tag-warning">监测中</span></td><td>未识别</td><td>1</td><td>2026-04-19 16:40</td><td><button class="btn btn-link" onclick="goChain('CHAIN-20260419-001')">查看</button><button class="btn btn-link" onclick="toastSuccess('已拆分链路')">拆分</button></td></tr>
+<tr><td class="mono">CHAIN-20260418-002</td><td>3</td><td><span class="tag tag-success">已阻断</span></td><td>李四</td><td>3</td><td>2026-04-18 14:22</td><td><button class="btn btn-link" onclick="goChain('CHAIN-20260418-002')">查看</button><button class="btn btn-link" onclick="toastSuccess('已归档')">归档</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'},{label:'风险关联分析'}]);
+});
+function switchTab(el,tab){
+document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active');});
+el.classList.add('active');
+['spread','toolchain','attack'].forEach(function(id){document.getElementById('panel-'+id).style.display=(id===tab)?'block':'none';});
+}
+function goChain(id){toastSuccess('查看攻击链: '+id);}
+</script>
+</body>
+</html>

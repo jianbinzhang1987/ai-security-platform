@@ -8,10 +8,6 @@
     .rule-meta { color:#909399; font-size:12px; margin-top:4px; display: flex; gap: 8px; align-items: center;}
     .hook-badge { background:#e1f3d8; color:#67c23a; padding:1px 4px; border-radius:3px; font-size:11px; }
     .sample-box { background:#f5f7fa; border:1px solid #EBEEF5; border-radius:4px; padding:10px; line-height:1.8; font-family:Consolas, monospace; font-size:12px; margin-top: 8px;}
-    .stat-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:16px; }
-    .stat-lite { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; }
-    .stat-lite .k { color:#909399; font-size:12px; }
-    .stat-lite .v { font-size:20px; font-weight:700; margin-top:6px; }
     .payload-diff { display: flex; gap: 10px; margin-top: 10px; }
     .payload-column { flex: 1; border: 1px solid #ebeef5; border-radius: 4px; overflow: hidden;}
     .payload-header { background: #f5f7fa; padding: 6px 10px; font-weight: 600; font-size: 12px; border-bottom: 1px solid #ebeef5;}
@@ -29,13 +25,6 @@
         <div class="page-subtitle">管理运行在大模型 API 网关层的安全防护策略，重点拦截非法内容的输入与敏感数据的输出。</div>
       </div>
       <button class="btn btn-primary" onclick="openRuleModal()">新建网关策略</button>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-lite"><div class="k">生效中策略 (网关)</div><div class="v" style="color:#67C23A;">18</div></div>
-      <div class="stat-lite"><div class="k">近 7 日成功拦截</div><div class="v" style="color:#F56C6C;">5,312</div></div>
-      <div class="stat-lite"><div class="k">近 7 日脱敏处理</div><div class="v" style="color:#E6A23C;">12,840</div></div>
-      <div class="stat-lite"><div class="k">网关节点同步覆盖率</div><div class="v" style="color:#409EFF;">100%</div></div>
     </div>
 
     <div class="search-bar">
@@ -211,12 +200,12 @@
         
         <div id="simResultBox" style="display: none;">
           <div style="padding: 12px; background: #fdf6ec; border: 1px solid #f5dab1; border-radius: 4px; margin-bottom: 16px;">
-            <span style="color: #e6a23c; font-weight: bold;">命中策略:</span> [输出手机号脱敏过滤]   
+            <span style="color: #e6a23c; font-weight: bold;">触发规则:</span> [输出手机号脱敏过滤]   
             <span style="color: #909399; margin-left: 10px;">执行点: Http-Response-Out</span>
             <span style="color: #909399; margin-left: 10px;">执行动作: 数据打码</span>
           </div>
           
-          <div style="font-weight: 600; margin-bottom: 8px;">Payload 实时篡改对比</div>
+          <div style="font-weight: 600; margin-bottom: 8px;">Payload 处理对比</div>
           <div class="payload-diff">
             <div class="payload-column">
               <div class="payload-header">原始请求 (Original)</div>

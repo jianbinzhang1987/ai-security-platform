@@ -20,6 +20,148 @@
     .ai-state-cell { min-width: 150px; }
     .ai-state-cell .tag { margin: 0 4px 4px 0; }
     .quick-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+
+    /* 视图切换Tab */
+    .view-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+      padding: 4px;
+      background: #f5f7fa;
+      border-radius: 6px;
+      width: fit-content;
+    }
+    .view-tab {
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #606266;
+    }
+    .view-tab:hover {
+      color: #409EFF;
+    }
+    .view-tab.active {
+      background: #fff;
+      color: #409EFF;
+      font-weight: 500;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .view-tab .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: #f56c6c;
+      color: #fff;
+      font-size: 11px;
+      border-radius: 9px;
+      margin-left: 4px;
+    }
+
+    /* 统计概览 - 待我处理视图 */
+    .my-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .my-stat-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      text-align: center;
+    }
+    .my-stat-value {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .my-stat-value.critical { color: #f56c6c; }
+    .my-stat-value.warning { color: #e6a23c; }
+    .my-stat-value.info { color: #409EFF; }
+    .my-stat-value.success { color: #67c23a; }
+    .my-stat-label {
+      font-size: 12px;
+      color: #909399;
+    }
+
+    /* AI状态标签 */
+    .ai-status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .ai-pending { background: #fdf6ec; color: #e6a23c; }
+    .ai-generated { background: #f0f9ff; color: #409EFF; }
+    .ai-confirmed { background: #f2f9f2; color: #67c23a; }
+    .ai-modified { background: #fdf6ec; color: #e6a23c; }
+    .ai-rejected { background: #fef0f0; color: #f56c6c; }
+    .ai-timeout { background: #f4f4f5; color: #909399; }
+    .ai-error { background: #fef0f0; color: #f56c6c; }
+
+    /* 认领人信息 */
+    .assignee-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .assignee-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #409EFF;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+    .assignee-unclaimed {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #fdf6ec;
+      color: #e6a23c;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* 批量操作浮动栏 */
+    .batch-action-bar {
+      position: sticky;
+      bottom: 0;
+      background: #fff;
+      border-top: 1px solid #e4e7ed;
+      padding: 12px 16px;
+      margin: 0 -16px -16px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+    }
+    .batch-action-bar.show {
+      display: flex;
+    }
+    .batch-action-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .batch-action-right {
+      display: flex;
+      gap: 8px;
+    }
+    .batch-warning {
+      color: #e6a23c;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body class="page-content">
@@ -39,6 +181,34 @@
     <div class="alert-box alert-info" style="margin-bottom:12px;">
       <span class="alert-icon">i</span>
       <span>边界说明：本页是风险事件的正式闭环主档，负责指派、确认、误报、接受风险和关闭；如果需要查看完整会话输入输出、用户画像和会话时间轴，请进入“会话审计”。</span>
+    </div>
+
+    <!-- 视图切换Tab -->
+    <div class="view-tabs">
+      <div class="view-tab active" onclick="switchView(this, 'all')">全部事件</div>
+      <div class="view-tab" onclick="switchView(this, 'my-pending')">待我处理 <span class="badge">12</span></div>
+      <div class="view-tab" onclick="switchView(this, 'unclaimed')">未认领</div>
+      <div class="view-tab" onclick="switchView(this, 'critical')">高危未处理 <span class="badge">3</span></div>
+    </div>
+
+    <!-- 待我处理视图统计概览 -->
+    <div id="myStatsPanel" class="my-stats" style="display:none;">
+      <div class="my-stat-card">
+        <div class="my-stat-value info">12</div>
+        <div class="my-stat-label">待处理</div>
+      </div>
+      <div class="my-stat-card">
+        <div class="my-stat-value critical">3</div>
+        <div class="my-stat-label">高危待处理</div>
+      </div>
+      <div class="my-stat-card">
+        <div class="my-stat-value warning">5</div>
+        <div class="my-stat-label">AI待确认</div>
+      </div>
+      <div class="my-stat-card">
+        <div class="my-stat-value success">8</div>
+        <div class="my-stat-label">今日已处理</div>
+      </div>
     </div>
 
     <div class="stat-cards">
@@ -142,13 +312,43 @@
           <span class="form-label">AI研判状态</span>
           <select class="form-select" id="filterAiStatus">
             <option value="">全部</option>
-            <option>待AI研判</option>
-            <option>AI研判已生成</option>
-            <option>低置信待复核</option>
-            <option>已确认</option>
-            <option>已修正</option>
-            <option>已拒绝</option>
-            <option>超时/熔断</option>
+            <option value="pending">⏳ pending</option>
+            <option value="generated">✅ generated</option>
+            <option value="confirmed">✅ confirmed</option>
+            <option value="modified">📝 modified</option>
+            <option value="rejected">❌ rejected</option>
+            <option value="timeout">⚠️ timeout</option>
+            <option value="error">🔴 error</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">检测来源</span>
+          <select class="form-select" id="filterDetectionSource">
+            <option value="">全部</option>
+            <option value="rule">rule</option>
+            <option value="ai_model">ai_model</option>
+            <option value="rule_and_ai">rule_and_ai</option>
+            <option value="manual">manual</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">认领人</span>
+          <select class="form-select" id="filterAssignee">
+            <option value="">全部</option>
+            <option value="me">我认领的</option>
+            <option value="unclaimed">未认领</option>
+            <option value="zhangsan">张三</option>
+            <option value="lisi">李四</option>
+            <option value="wangwu">王五</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">分派时间</span>
+          <select class="form-select">
+            <option>全部</option>
+            <option>近1小时</option>
+            <option>近24小时</option>
+            <option>近7天</option>
           </select>
         </div>
       <!--<div class="search-item">
@@ -209,7 +409,7 @@
               <td>研发代码审查助手<br><span class="form-hint">app_id: app_rd_code_review</span><br><span class="form-hint">external_http_post</span></td>
               <td><span class="tag tag-danger">高风险</span></td>
               <td>工具能力边界越界</td>
-              <td class="ai-state-cell"><span class="tag tag-primary">规则+AI联合检出</span><span class="tag tag-success">AI检测成功</span><span class="tag tag-primary">研判已生成</span><div class="form-hint">置信等级：高</div></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">规则+AI联合检出</span><span class="tag tag-ai">AI检测成功</span><span class="tag tag-ai">研判已生成</span><div class="form-hint">置信等级：高</div></td>
               <td><div class="evidence-tags"><span class="tag tag-danger">未声明工具</span><span class="tag tag-warning">外联数据流</span><span class="tag tag-info">已脱敏</span></div><div class="evidence-summary">Tool Input 包含内部仓库路径片段。</div></td>
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
@@ -224,7 +424,7 @@
               <td>人事档案助理<br><span class="form-hint">app_id: app_hr_profile</span><br><span class="form-hint">hr_profile_reader</span></td>
               <td><span class="tag tag-warning">中风险</span></td>
               <td>敏感数据输出</td>
-              <td class="ai-state-cell"><span class="tag tag-primary">规则+AI联合检出</span><span class="tag tag-success">AI检测成功</span><span class="tag tag-success">已确认</span><div class="form-hint">置信等级：中</div></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">规则+AI联合检出</span><span class="tag tag-ai">AI检测成功</span><span class="tag tag-ai">已确认</span><div class="form-hint">置信等级：中</div></td>
               <td><div class="evidence-tags"><span class="tag tag-warning">手机号片段</span><span class="tag tag-info">Raw 需授权</span></div><div class="evidence-summary">响应输出包含个人信息片段。</div></td>
               <td><span class="status-badge status-confirmed"></span>已处置</td>
               <td>李运营</td>
@@ -239,7 +439,7 @@
               <td>智能客服 Copilot<br><span class="form-hint">app_id: app_copilot_service</span><br><span class="form-hint">crm_search</span></td>
               <td><span class="tag tag-primary">低风险</span></td>
               <td>提示词风险</td>
-              <td class="ai-state-cell"><span class="tag tag-info">规则检出</span><span class="tag tag-warning">AI跳过</span><span class="tag tag-warning">已拒绝</span><div class="form-hint">低置信待复核，已入样本</div></td>
+              <td class="ai-state-cell"><span class="tag tag-info">规则检出</span><span class="tag tag-ai" style="background:#fdf6ec;color:#e6a23c;border-color:#faecd0;">AI跳过</span><span class="tag tag-ai">已拒绝</span><div class="form-hint">低置信待复核，已入样本</div></td>
               <td><div class="evidence-tags"><span class="tag tag-info">低置信度</span><span class="tag tag-success">已入样本</span></div><div class="evidence-summary">人工复核后标记为误报样本。</div></td>
               <td><span class="status-badge status-fp"></span>误报</td>
               <td>张安全</td>
@@ -249,6 +449,22 @@
           </tbody>
         </table>
       </div>
+      <!-- 批量操作浮动栏 -->
+      <div id="batchActionBar" class="batch-action-bar">
+        <div class="batch-action-left">
+          <span>已选择 <strong id="selectedCount">0</strong> 条事件</span>
+          <button class="btn btn-link" onclick="clearSelection()">清空选择</button>
+        </div>
+        <div class="batch-action-right">
+          <span class="batch-warning" id="batchWarning" style="display:none;">⚠️ 选中事件包含 <strong>2</strong> 条高危(critical)事件</span>
+          <button class="btn btn-default" onclick="openBatchClaimModal()">批量认领</button>
+          <button class="btn btn-default" onclick="openBatchAssignModal()">批量分派</button>
+          <button class="btn btn-default" onclick="openBatchConfirmModal()">批量确认AI研判</button>
+          <button class="btn btn-default" onclick="openBatchFpModal()">批量标记误报</button>
+          <button class="btn btn-primary" onclick="openBatchDisposeModal()">批量处置</button>
+        </div>
+      </div>
+
       <div id="pagination"></div>
     </div>
   </div>
@@ -352,6 +568,100 @@
     </div>
   </div>
 
+  <!-- 批量认领弹窗 -->
+  <div class="modal-overlay" id="batchClaimModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">批量认领</div><div class="modal-close" onclick="closeModal('batchClaimModal')">×</div></div>
+      <div class="modal-body">
+        <div style="background:#f0f9ff;border:1px solid #b3d8ff;border-radius:4px;padding:12px;margin-bottom:16px;">
+          <div style="font-weight:600;margin-bottom:8px;">操作确认</div>
+          <div style="font-size:13px;">确认认领 <strong>5</strong> 条事件？</div>
+        </div>
+        <div style="font-size:13px;color:#606266;">
+          认领后，这些事件将分配给您处理，并写入审计日志。
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('batchClaimModal')">取消</button><button class="btn btn-primary" onclick="submitBatchClaim()">确认认领</button></div>
+    </div>
+  </div>
+
+  <!-- 批量分派弹窗 -->
+  <div class="modal-overlay" id="batchAssignModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">批量分派</div><div class="modal-close" onclick="closeModal('batchAssignModal')">×</div></div>
+      <div class="modal-body">
+        <div style="background:#f5f7fa;border-radius:4px;padding:12px;margin-bottom:16px;">
+          <div style="font-size:13px;color:#606266;">
+            <div>操作类型: <strong>批量分派</strong></div>
+            <div>影响范围: <strong>5</strong> 条事件</div>
+            <div style="color:#f56c6c;">高危: 2 条 | 中危: 3 条</div>
+          </div>
+        </div>
+        <form>
+          <div class="form-row">
+            <div class="form-label required">分派给</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option>请选择用户</option>
+                <option>赵六 (安全运营)</option>
+                <option>孙七 (安全分析师)</option>
+                <option>周八 (管理员)</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">分派原因 (可选)</div>
+            <div class="form-field">
+              <textarea class="form-textarea" placeholder="填写分派原因"></textarea>
+            </div>
+          </div>
+        </form>
+        <div style="background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;padding:12px;margin-top:16px;color:#e6a23c;font-size:13px;">
+          ⚠️ 高危事件将同时通知安全负责人
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('batchAssignModal')">取消</button><button class="btn btn-primary" onclick="submitBatchAssign()">确认分派</button></div>
+    </div>
+  </div>
+
+  <!-- 批量标记误报弹窗 -->
+  <div class="modal-overlay" id="batchFpModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">批量标记误报</div><div class="modal-close" onclick="closeModal('batchFpModal')">×</div></div>
+      <div class="modal-body">
+        <div style="background:#f5f7fa;border-radius:4px;padding:12px;margin-bottom:16px;">
+          <div style="font-size:13px;color:#606266;">
+            <div>操作类型: <strong>批量标记误报</strong></div>
+            <div>影响范围: <strong>3</strong> 条事件</div>
+          </div>
+        </div>
+        <form>
+          <div class="form-row">
+            <div class="form-label required">误报原因</div>
+            <div class="form-field">
+              <textarea class="form-textarea" rows="3" placeholder="填写误报原因，如：经人工复核，该批事件为正常业务输入，规则存在过度敏感，建议调整阈值。" required></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">误报类型</div>
+            <div class="form-field">
+              <select class="form-select">
+                <option>规则误报</option>
+                <option>模型误报</option>
+                <option>白名单业务</option>
+                <option>其他</option>
+              </select>
+            </div>
+          </div>
+        </form>
+        <div style="background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;padding:12px;margin-top:16px;color:#e6a23c;font-size:13px;">
+          ⚠️ 此操作将关闭事件并更新规则命中率统计
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('batchFpModal')">取消</button><button class="btn btn-primary" onclick="submitBatchFp()">确认标记</button></div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
   <script>
     var currentActionTarget = '';
@@ -400,6 +710,101 @@
       document.getElementById('checkAll').checked = false;
       document.querySelectorAll('#eventTable tbody input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
       checkBtnState();
+      updateBatchBar();
+    }
+
+    // 视图切换
+    function switchView(el, view) {
+      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+
+      const myStatsPanel = document.getElementById('myStatsPanel');
+      if (view === 'my-pending') {
+        myStatsPanel.style.display = 'grid';
+      } else {
+        myStatsPanel.style.display = 'none';
+      }
+
+      const viewLabels = {
+        'all': '全部事件',
+        'my-pending': '待我处理事件',
+        'unclaimed': '未认领事件',
+        'critical': '高危未处理事件'
+      };
+      toastSuccess('已切换到: ' + viewLabels[view]);
+    }
+
+    // 更新批量操作栏
+    function updateBatchBar() {
+      const checked = document.querySelectorAll('#eventTable tbody input[type="checkbox"]:checked').length;
+      const batchBar = document.getElementById('batchActionBar');
+      document.getElementById('selectedCount').textContent = checked;
+
+      if (checked > 0) {
+        batchBar.classList.add('show');
+        // 模拟高危事件检测
+        if (checked >= 2) {
+          document.getElementById('batchWarning').style.display = 'inline';
+        }
+      } else {
+        batchBar.classList.remove('show');
+        document.getElementById('batchWarning').style.display = 'none';
+      }
+    }
+
+    // 覆盖原有checkBtnState
+    var originalCheckBtnState = checkBtnState;
+    checkBtnState = function() {
+      originalCheckBtnState();
+      updateBatchBar();
+    };
+
+    // 批量操作弹窗
+    function openBatchClaimModal() {
+      openModal('batchClaimModal');
+    }
+    function submitBatchClaim() {
+      toastSuccess('已批量认领 ' + selectedIds().length + ' 条事件');
+      closeModal('batchClaimModal');
+      clearSelection();
+    }
+
+    function openBatchAssignModal() {
+      openModal('batchAssignModal');
+    }
+    function submitBatchAssign() {
+      toastSuccess('已批量分派 ' + selectedIds().length + ' 条事件');
+      closeModal('batchAssignModal');
+      clearSelection();
+    }
+
+    function openBatchConfirmModal() {
+      toastSuccess('已批量确认AI研判 ' + selectedIds().length + ' 条事件');
+      clearSelection();
+    }
+
+    function openBatchFpModal() {
+      openModal('batchFpModal');
+    }
+    function submitBatchFp() {
+      toastSuccess('已批量标记误报 ' + selectedIds().length + ' 条事件');
+      closeModal('batchFpModal');
+      clearSelection();
+    }
+
+    function openBatchDisposeModal() {
+      toastSuccess('批量处置功能需要选择处置动作');
+    }
+
+    // 认领/分派/转交功能
+    function claimEvent(eventId) {
+      toastSuccess('已认领事件: ' + eventId);
+    }
+    function transferEvent(eventId) {
+      toastSuccess('转交事件: ' + eventId);
+    }
+    function reassignEvent(eventId) {
+      toastSuccess('重新分派事件: ' + eventId);
     }
     function toggleAdvancedFilters() {
       var search = document.querySelector('.event-search');

@@ -10,80 +10,131 @@
     
     <div class="search-bar">
       <div class="search-item">
-        <span class="form-label">报告体系类型</span>
+        <span class="form-label">报告名称</span>
+        <input class="form-control" placeholder="报告名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">报告类型</span>
         <select class="form-select">
-          <option value="">全部全景</option>
-          <option value="运营日报">例行巡检推送-日报</option>
-          <option value="运营周报">管理层汇总周报</option>
-          <option value="专项审计">安全部季度专项审计留档</option>
-          <option value="自定义">临时自定义拉取</option>
+          <option value="">全部</option>
+          <option>例行巡检日报</option>
+          <option>管理层周报</option>
+          <option>专项审计</option>
+          <option>自定义</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">来源</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>人工编写</option>
+          <option>AI生成+人工审核</option>
+          <option>AI生成(未审核)</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">审核状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>未审核</option>
+          <option>审核中</option>
+          <option>已发布</option>
+          <option>已驳回</option>
         </select>
       </div>
       <div class="search-btns">
-        <button class="btn btn-primary" onclick="searchData()">搜索文献</button>
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default">重置</button>
       </div>
     </div>
 
-    <!-- 列表 -->
     <div class="card">
       <div class="table-toolbar">
         <div class="table-toolbar-left">
-          <button class="btn btn-primary btn-sm" onclick="openGenModal()">安排一次临时生成工程</button>
+          <button class="btn btn-primary btn-sm" onclick="openGenModal()">新建报告</button>
           <button class="btn btn-success btn-sm" onclick="openSubModal()">建立自动化投递订阅器</button>
+          <button class="btn btn-info btn-sm" onclick="toastSuccess('AI周报生成任务已提交')">AI 生成周报</button>
+          <button class="btn btn-info btn-sm" onclick="toastSuccess('AI月报生成任务已提交')">AI 生成月报</button>
         </div>
       </div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
             <tr>
-              <th>出具档案主键</th>
-              <th>报告体系类型</th>
-              <th>覆盖分析范围区间</th>
-              <th>产生日期</th>
-              <th>创建人归属</th>
+              <th>报告编号</th>
+              <th>报告名称</th>
+              <th>报告类型</th>
+              <th>来源</th>
+              <th>审核状态</th>
+              <th>覆盖范围</th>
+              <th>生成日期</th>
               <th>生成情况</th>
-              <th style="width: 150px;">系统干预操作</th>
+              <th style="width: 180px;">操作</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>RPT-20260414-DAY</td>
-              <td><span class="tag tag-info">例行巡检推送-日报</span></td>
-              <td>2026-04-13 至 2026-04-14</td>
-              <td>2026-04-14 02:00:00</td>
-              <td>订阅系统自动生成</td>
-              <td><span class="tag tag-success">落盘完备</span></td>
+              <td class="mono">RPT-20260430-MON</td>
+              <td><strong>2026年4月安全月报</strong></td>
+              <td><span class="tag tag-info">月报</span></td>
+              <td><span class="tag tag-success">AI生成+人工审核</span></td>
+              <td><span class="tag tag-success">已发布</span></td>
+              <td>2026-04-01 至 2026-04-30</td>
+              <td>2026-04-30 02:00:00</td>
+              <td><span class="tag tag-success">已发布</span></td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="downloadRpt()">直接获取数字文档</button>
-                  <button class="btn btn-link" onclick="shareRpt()">签发阅览短链接</button>
+                  <button class="btn btn-link" onclick="downloadRpt()">下载</button>
+                  <button class="btn btn-link" onclick="shareRpt()">分享</button>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>RPT-20260407-WEEK</td>
-              <td><span class="tag tag-primary">管理层汇总周报</span></td>
-              <td>2026-03-31 至 2026-04-07</td>
-              <td>2026-04-07 02:00:00</td>
-              <td>订阅系统自动生成</td>
-              <td><span class="tag tag-success">落盘完备</span></td>
+              <td class="mono">RPT-20260428-W17</td>
+              <td><strong>2026-W17 安全周报</strong></td>
+              <td><span class="tag tag-primary">周报</span></td>
+              <td><span class="tag tag-warning">AI生成(未审核)</span></td>
+              <td><span class="tag tag-warning">审核中</span></td>
+              <td>2026-04-21 至 2026-04-27</td>
+              <td>2026-04-28 02:00:00</td>
+              <td><span class="tag tag-warning">审核中</span></td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link" onclick="downloadRpt()">直接获取数字文档</button>
-                  <button class="btn btn-link" onclick="shareRpt()">签发阅览短链接</button>
+                  <button class="btn btn-link" onclick="toastSuccess('进入审核流程')">审核</button>
+                  <button class="btn btn-link" onclick="downloadRpt()">预览</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('已驳回')">驳回</button>
                 </div>
               </td>
             </tr>
             <tr>
-              <td>RPT-MANUAL-X9</td>
-              <td><span class="tag tag-warning">临时自定义拉取</span></td>
+              <td class="mono">RPT-20260421-W16</td>
+              <td><strong>2026-W16 安全周报</strong></td>
+              <td><span class="tag tag-primary">周报</span></td>
+              <td><span class="tag tag-success">AI生成+人工审核</span></td>
+              <td><span class="tag tag-success">已发布</span></td>
+              <td>2026-04-14 至 2026-04-20</td>
+              <td>2026-04-21 02:00:00</td>
+              <td><span class="tag tag-success">已发布</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="downloadRpt()">下载</button>
+                  <button class="btn btn-link" onclick="shareRpt()">分享</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mono">RPT-MANUAL-X9</td>
+              <td><strong>Q1 安全专项审计</strong></td>
+              <td><span class="tag tag-warning">专项审计</span></td>
+              <td><span class="tag tag-info">人工编写</span></td>
+              <td><span class="tag tag-success">已发布</span></td>
               <td>2026-01-01 至 2026-04-14</td>
               <td>2026-04-14 10:15:33</td>
-              <td>安全管理员</td>
-              <td><span class="tag tag-warning">离线聚合制备中 (45%)</span></td>
+              <td><span class="tag tag-success">已发布</span></td>
               <td>
                 <div class="table-action-col">
-                  <button class="btn btn-link danger" onclick="cancelGen()">废除制备</button>
+                  <button class="btn btn-link" onclick="downloadRpt()">下载</button>
+                  <button class="btn btn-link" onclick="shareRpt()">分享</button>
                 </div>
               </td>
             </tr>
