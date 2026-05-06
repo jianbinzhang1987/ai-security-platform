@@ -189,7 +189,7 @@ event-detail.html 只展示了 `success/timeout/error/circuit_open/skipped_by_po
 
 **建议**：原型中增加校验交互——选择L2+Cloud时弹出警告，选择L3+Webhook时直接禁止并标红。
 
-### 14. Raw访问审批的MFA流程在原型中不可操作
+### 14. Raw访问审批的MFA流程在原型中不可操作。。来看，
 
 [data-classification.html](cci:7://file:///E:/code/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AE%89%E5%85%A8%E7%9B%91%E6%B5%8B%E5%B9%B3%E5%8F%B0/%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3/%E5%8E%9F%E5%9E%8B%E5%9B%BE-%E6%99%BA%E8%83%BD%E7%89%88/pages/system/data-classification.html:0:0-0:0) 的Raw访问审批Tab展示了L3需MFA的提示，但：
 

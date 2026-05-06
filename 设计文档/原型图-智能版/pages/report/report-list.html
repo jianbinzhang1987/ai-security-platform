@@ -2,11 +2,48 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>安全报告管理</title>
+  <title>报告管理</title>
   <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .view-tabs{display:flex;gap:4px;padding:4px;background:#f5f7fa;border-radius:6px;width:fit-content}
+    .view-tab{padding:8px 16px;border-radius:4px;font-size:14px;color:#606266;cursor:pointer}
+    .view-tab.active{background:#fff;color:#409EFF;font-weight:500;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .toolbar-split{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+    .toolbar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .status-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+    .summary-item{background:#fff;border:1px solid #EBEEF5;border-radius:6px;padding:12px}
+    .summary-label{font-size:12px;color:#909399;margin-bottom:6px}
+    .summary-value{font-size:22px;font-weight:600;color:#303133}
+  </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">报告管理</div>
+        <div class="page-subtitle">统一管理报告的草稿、审核、发布和归档。新建报告统一从模板与基础信息开始，AI 生成内容必须经过人工审核。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="goNewReport()">新建报告</button>
+        <button class="btn btn-default" onclick="openTemplateModal()">模板管理</button>
+        <button class="btn btn-default" onclick="openSubModal()">订阅配置</button>
+      </div>
+    </div>
+
+    <div class="status-summary">
+      <div class="summary-item"><div class="summary-label">草稿</div><div class="summary-value">6</div></div>
+      <div class="summary-item"><div class="summary-label">待我审核</div><div class="summary-value" style="color:#E6A23C;">4</div></div>
+      <div class="summary-item"><div class="summary-label">已发布</div><div class="summary-value" style="color:#67C23A;">38</div></div>
+      <div class="summary-item"><div class="summary-label">含 AI 生成内容</div><div class="summary-value" style="color:#409EFF;">21</div></div>
+    </div>
+
+    <div class="view-tabs" style="margin-bottom:12px;">
+      <div class="view-tab active" onclick="switchReportTab(this,'全部报告')">全部报告</div>
+      <div class="view-tab" onclick="switchReportTab(this,'我的草稿')">我的草稿</div>
+      <div class="view-tab" onclick="switchReportTab(this,'待我审核')">待我审核</div>
+      <div class="view-tab" onclick="switchReportTab(this,'已发布')">已发布</div>
+      <div class="view-tab" onclick="switchReportTab(this,'已驳回')">已驳回</div>
+    </div>
     
     <div class="search-bar">
       <div class="search-item">
@@ -50,11 +87,15 @@
 
     <div class="card">
       <div class="table-toolbar">
-        <div class="table-toolbar-left">
-          <button class="btn btn-primary btn-sm" onclick="openGenModal()">新建报告</button>
-          <button class="btn btn-success btn-sm" onclick="openSubModal()">建立自动化投递订阅器</button>
-          <button class="btn btn-info btn-sm" onclick="toastSuccess('AI周报生成任务已提交')">AI 生成周报</button>
-          <button class="btn btn-info btn-sm" onclick="toastSuccess('AI月报生成任务已提交')">AI 生成月报</button>
+        <div class="toolbar-split">
+          <div class="toolbar-group">
+            <button class="btn btn-primary btn-sm" onclick="goNewReport()">新建报告</button>
+            <button class="btn btn-default btn-sm" onclick="openTemplateModal()">模板管理</button>
+            <button class="btn btn-default btn-sm" onclick="openSubModal()">订阅配置</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="tag tag-info" id="currentReportView">当前视图：全部报告</span>
+          </div>
         </div>
       </div>
       <div class="table-wrapper">
@@ -145,35 +186,25 @@
     </div>
   </div>
 
-  <!-- 安排生成弹框 -->
-  <div class="modal-overlay" id="genModal">
-    <div class="modal-box">
+  <!-- 模板管理弹框 -->
+  <div class="modal-overlay" id="templateModal">
+    <div class="modal-box modal-lg">
       <div class="modal-header">
-        <div class="modal-title">安排一次基于全局维度的聚合归纳计算</div>
-        <div class="modal-close" onclick="closeModal('genModal')">×</div>
+        <div class="modal-title">模板管理</div>
+        <div class="modal-close" onclick="closeModal('templateModal')">×</div>
       </div>
       <div class="modal-body">
-        <form id="genForm">
-          <div class="form-row">
-            <div class="form-label required">起止边界时间</div>
-            <div class="form-field">
-              <input type="date" class="form-control" style="width: 140px;" required> 至 <input type="date" class="form-control" style="width: 140px;" required>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-label">报告组合拼图版块包含</div>
-            <div class="form-field">
-              <label style="display:block; margin-bottom:5px;"><input type="checkbox" checked> 总体趋势曲线拓扑</label>
-              <label style="display:block; margin-bottom:5px;"><input type="checkbox" checked> 拦截脱敏审计留痕汇总</label>
-              <label style="display:block;"><input type="checkbox" checked> 未处置滞留工作一览清单</label>
-            </div>
-          </div>
-        </form>
+        <div class="alert-box alert-info" style="margin-bottom:12px;"><span class="alert-icon">i</span><span>模板用于新建报告时选择报告结构、默认章节和 AI 生成策略。模板变更不会影响已发布报告。</span></div>
+        <table class="data-table">
+          <thead><tr><th>模板名称</th><th>适用场景</th><th>AI 初稿</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>安全周报模板</td><td>周期性运营汇报</td><td><span class="tag tag-info">启用</span></td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="toastSuccess('进入模板编辑')">编辑</button></td></tr>
+            <tr><td>安全月报模板</td><td>管理层月度汇报</td><td><span class="tag tag-info">启用</span></td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="toastSuccess('进入模板编辑')">编辑</button></td></tr>
+            <tr><td>巡检报告模板</td><td>应用合规巡检</td><td><span class="tag tag-warning">部分启用</span></td><td><span class="tag tag-success">已启用</span></td><td><button class="btn btn-link" onclick="toastSuccess('进入模板编辑')">编辑</button></td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('genModal')">放弃请求</button>
-        <button class="btn btn-primary" onclick="submitGen()">提交离线计算网格挂起排队</button>
-      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('templateModal')">关闭</button><button class="btn btn-primary" onclick="toastSuccess('新模板草稿已创建')">新建模板</button></div>
     </div>
   </div>
 
@@ -181,39 +212,41 @@
   <div class="modal-overlay" id="subModal">
     <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">安装长期投递触发组件</div>
+        <div class="modal-title">订阅配置</div>
         <div class="modal-close" onclick="closeModal('subModal')">×</div>
       </div>
       <div class="modal-body">
         <form id="subForm">
           <div class="form-row">
-            <div class="form-label required">触发周期间隔</div>
+            <div class="form-label required">订阅周期</div>
             <div class="form-field">
               <select class="form-select" required>
-                <option value="">请选择自然周期跨度</option>
-                <option value="daily">每天凌晨进行日结处理</option>
-                <option value="weekly">周一开始采集上周全貌</option>
-                <option value="monthly">每月一日生成审计快照</option>
+                <option value="">请选择订阅周期</option>
+                <option value="daily">每日</option>
+                <option value="weekly">每周</option>
+                <option value="monthly">每月</option>
               </select>
             </div>
           </div>
           <div class="form-row">
-            <div class="form-label required">投递抄送清单邮件</div>
+            <div class="form-label required">接收人</div>
             <div class="form-field">
-              <textarea class="form-textarea" placeholder="多个电子邮箱后缀请用英文逗号截断" required></textarea>
+              <textarea class="form-textarea" placeholder="填写接收人邮箱，多个邮箱用英文逗号分隔" required></textarea>
             </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('subModal')">关闭面板</button>
-        <button class="btn btn-success" onclick="submitSub()">持久化订阅器</button>
+        <button class="btn btn-default" onclick="closeModal('subModal')">取消</button>
+        <button class="btn btn-success" onclick="submitSub()">保存订阅</button>
       </div>
     </div>
   </div>
 
   <script src="../../js/common.js"></script>
   <script>
+    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告管理' }]);
+
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof renderPagination === 'function') {
         renderPagination('pagination', 55, 1, 10, function(p){ });
@@ -221,32 +254,35 @@
     });
 
     function searchData() { toastSuccess('归档检索读取成功'); }
-    
-    function openGenModal() {
-      document.getElementById('genForm').reset();
-      openModal('genModal');
-    }
-    function submitGen() {
-      if (validateForm('genForm')) {
-        toastSuccess('离线计算网格收录了该请求，请等待完成。');
-        closeModal('genModal');
-      }
+
+    function switchReportTab(el, label) {
+      document.querySelectorAll('.view-tab').forEach(function(tab) { tab.classList.remove('active'); });
+      el.classList.add('active');
+      document.getElementById('currentReportView').textContent = '当前视图：' + label;
+      toastSuccess('已切换到' + label);
     }
 
+    function goNewReport() {
+      navigateTo('pages/report/report-new.html', '新建报告', 'report-new.html');
+    }
+
+    function openTemplateModal() {
+      openModal('templateModal');
+    }
+    
     function openSubModal() {
       document.getElementById('subForm').reset();
       openModal('subModal');
     }
     function submitSub() {
       if (validateForm('subForm')) {
-        toastSuccess('长期订阅触发器挂载运转良好。');
+        toastSuccess('报告订阅已保存');
         closeModal('subModal');
       }
     }
 
-    function downloadRpt() { toastSuccess('模拟：呼叫浏览器进行二进制保存下载...'); }
-    function shareRpt() { toastSuccess('生成的免登录只读防伪安全链接已被覆盖进您的终端系统剪贴板。'); }
-    function cancelGen() { toastSuccess('废除操作强行终止了计算簇上的进度。'); }
+    function downloadRpt() { toastSuccess('报告下载已开始'); }
+    function shareRpt() { toastSuccess('报告分享链接已生成'); }
   </script>
 </body>
 </html>

@@ -20,6 +20,18 @@
     .ai-state-cell { min-width: 150px; }
     .ai-state-cell .tag { margin: 0 4px 4px 0; }
     .quick-filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+    #eventTable th:nth-child(2),
+    #eventTable th:nth-child(3),
+    #eventTable th:nth-child(4),
+    #eventTable td:nth-child(2),
+    #eventTable td:nth-child(3),
+    #eventTable td:nth-child(4) { display: none; }
+    .alert-box.alert-info,
+    .view-tabs,
+    #myStatsPanel,
+    .stat-cards,
+    .quick-filter-row,
+    .table-toolbar-right { display: none !important; }
 
     /* 视图切换Tab */
     .view-tabs {
@@ -414,7 +426,7 @@
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
               <td><span class="tag tag-warning">ACT-20260416-018 建议限制</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00018')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00018')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00018')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00018')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
             <tr data-id="EVT-2026-00012">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00012" onchange="checkBtnState()"></td>
@@ -429,7 +441,7 @@
               <td><span class="status-badge status-confirmed"></span>已处置</td>
               <td>李运营</td>
               <td><span class="tag tag-info">ACT-20260416-012 已通知</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00012')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00012')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00012')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00012')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
             <tr data-id="EVT-2026-00009">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00009" onchange="checkBtnState()"></td>
@@ -444,7 +456,7 @@
               <td><span class="status-badge status-fp"></span>误报</td>
               <td>张安全</td>
               <td><span class="tag tag-success">FP-SAMPLE-009 规则优化</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')">关闭</button><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
           </tbody>
         </table>
@@ -908,6 +920,25 @@
         closeModal('closeModal');
       }
     }
+
+    function toggleMoreActions(btn) {
+      var dropdown = btn.nextElementSibling;
+      if (!dropdown) return;
+      var show = dropdown.style.display === 'none';
+      document.querySelectorAll('.action-dropdown').forEach(function(el) { el.style.display = 'none'; });
+      document.querySelectorAll('button').forEach(function(el) { if (el.textContent.indexOf('更多') >= 0) el.textContent = '更多 ▾'; });
+      if (show) {
+        dropdown.style.display = 'block';
+        btn.textContent = '更多 ▴';
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.action-dropdown') && !e.target.closest('button')) {
+        document.querySelectorAll('.action-dropdown').forEach(function(el) { el.style.display = 'none'; });
+        document.querySelectorAll('button').forEach(function(el) { if (el.textContent.indexOf('更多') >= 0) el.textContent = '更多 ▾'; });
+      }
+    });
   </script>
 </body>
 </html>

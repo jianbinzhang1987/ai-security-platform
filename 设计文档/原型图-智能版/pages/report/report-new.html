@@ -1,106 +1,386 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>自定义报告</title><link rel="stylesheet" href="../../css/style.css">
+<head><meta charset="UTF-8"><title>新建报告</title><link rel="stylesheet" href="../../css/style.css">
 <style>
-.template-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
-.template-card{border:2px solid #EBEEF5;border-radius:6px;padding:14px;background:#fff;cursor:pointer;transition:all .2s ease}
-.template-card:hover{border-color:#C6E2FF}
-.template-card.active{border-color:#409EFF;background:#ECF5FF}
-.template-icon{width:36px;height:36px;border-radius:8px;background:#ecf5ff;color:#409eff;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:8px}
-.template-title{font-weight:600;color:#303133;margin-bottom:4px}
-.template-desc{font-size:12px;color:#909399}
-.ai-filled{background:#F0F9FF;border:1px dashed #BAE6FD;border-radius:4px;padding:10px;margin-bottom:8px;position:relative}
-.ai-filled .ai-label{position:absolute;top:-8px;left:8px;background:#F0F9FF;color:#0284C7;font-size:11px;font-weight:600;padding:0 4px}
-.ai-filled .content{color:#0C4A6E;font-size:13px;line-height:1.8;min-height:60px}
-.ai-filled textarea{border:none;background:transparent;width:100%;min-height:60px;color:#0C4A6E;font-size:13px;line-height:1.8;resize:vertical}
-.ai-filled textarea:focus{outline:none}
-.manual-filled{border:1px solid #EBEEF5;border-radius:4px;padding:10px;margin-bottom:8px}
-.manual-filled .manual-label{font-size:11px;color:#909399;margin-bottom:4px;font-weight:600}
-.manual-filled textarea{border:none;width:100%;min-height:60px;font-size:13px;line-height:1.8;resize:vertical}
-.manual-filled textarea:focus{outline:none}
+.report-meta-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;padding:12px 14px;border:1px solid #EBEEF5;border-radius:6px;background:#fff}
+.report-meta-main{display:flex;align-items:center;gap:10px;min-width:0}
+.report-meta-title{font-weight:600;color:#303133;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.report-meta-sub{font-size:12px;color:#909399;margin-top:2px}
+.template-desc{font-size:12px;color:#909399;line-height:1.6;margin-top:6px}
+.editor-empty{border:1px dashed #dcdfe6;background:#fafafa;border-radius:6px;padding:44px 20px;text-align:center;color:#909399}
+.editor-toolbar{display:flex;gap:8px;align-items:center}
+.ai-notice{border:1px solid #F5D08A;background:#FFF7E6;border-radius:6px;padding:10px 12px;color:#7A4E00;font-size:13px;line-height:1.7;margin-bottom:14px}
+.ai-section{background:#F0F9FF;border:1px solid #7DD3FC;border-left:4px solid #0284C7;border-radius:6px;padding:12px;margin-bottom:12px;position:relative}
+.ai-section .source-label{display:inline-flex;align-items:center;gap:6px;background:#0284C7;color:#fff;font-size:12px;font-weight:600;border-radius:4px;padding:2px 8px;margin-bottom:8px}
+.ai-section .source-hint{font-size:12px;color:#0369A1;margin-bottom:8px;line-height:1.6}
+.ai-section textarea{border:1px solid #BAE6FD;background:#fff;width:100%;min-height:88px;color:#0C4A6E;font-size:13px;line-height:1.8;resize:vertical;border-radius:4px;padding:8px;box-sizing:border-box}
+.manual-section{border:1px solid #EBEEF5;border-radius:6px;padding:12px;margin-bottom:12px;background:#fff}
+.manual-section .source-label{font-size:12px;color:#606266;font-weight:600;margin-bottom:8px}
+.manual-section textarea{border:1px solid #DCDFE6;width:100%;min-height:88px;font-size:13px;line-height:1.8;resize:vertical;border-radius:4px;padding:8px;box-sizing:border-box}
+.preview-paper{background:#fff;border:1px solid #EBEEF5;border-radius:6px;padding:20px;line-height:1.8;color:#303133}
+.preview-title{font-size:20px;font-weight:600;margin-bottom:6px}
+.preview-meta{font-size:12px;color:#909399;border-bottom:1px solid #EBEEF5;padding-bottom:12px;margin-bottom:14px}
+.preview-section{margin-bottom:18px}
+.preview-section-title{font-weight:600;margin-bottom:6px;color:#303133}
+.preview-ai-tag{display:inline-block;margin-left:8px;font-size:11px;color:#0284C7;background:#E0F2FE;border:1px solid #BAE6FD;border-radius:4px;padding:0 6px}
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.config-grid .form-row{min-width:0}
+.flow-steps{display:flex;gap:8px;margin-bottom:12px}
+.flow-step{flex:1;border:1px solid #EBEEF5;background:#fff;border-radius:6px;padding:8px 10px;color:#909399;font-size:13px}
+.flow-step.active{border-color:#409EFF;color:#409EFF;background:#ECF5FF;font-weight:600}
+.flow-step.done{border-color:#67C23A;color:#67C23A;background:#F0F9EB}
+.status-line{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.status-line .status-text{font-size:13px;color:#606266}
 </style>
 </head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="page-header"><div><div class="page-title">自定义报告</div><div class="page-subtitle">选择 AI 生成模板或手动创建，AI 自动填充数据后需人工审核确认方可发布。</div></div><div style="display:flex;gap:8px;"><button class="btn btn-default" onclick="toastSuccess('草稿已保存')">保存草稿</button><button class="btn btn-warning" onclick="toastSuccess('报告已提交审核')">提交审核</button><button class="btn btn-primary" onclick="toastSuccess('报告已发布')">直接发布</button></div></div>
+    <div class="page-header">
+      <div>
+        <div class="page-title">新建报告</div>
+        <div class="page-subtitle">先选择报告模板并填写基础信息，再进入内容编辑。AI 生成内容必须突出标识，并经人工审核后发布。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="goReportList()">返回列表</button>
+        <button class="btn btn-default" onclick="openConfigModal()">报告配置</button>
+        <button class="btn btn-default" id="saveDraftBtn" onclick="saveDraft()">保存草稿</button>
+        <button class="btn btn-default" id="previewBtn" onclick="openPreviewModal()">报告预览</button>
+        <button class="btn btn-warning" id="reviewBtn" onclick="openReviewModal()">提交审核</button>
+        <button class="btn btn-primary" id="publishBtn" onclick="openPublishModal()" disabled>发布</button>
+      </div>
+    </div>
 
-    <div class="card"><div class="card-header"><div class="card-title">选择报告模板</div></div><div class="card-body">
-      <div class="template-grid">
-        <div class="template-card active" onclick="selectTemplate(this,'weekly')">
-          <div class="template-icon">&#x1F4C5;</div>
-          <div class="template-title">安全周报模板</div>
-          <div class="template-desc">AI 自动生成近 7 日风险概览、事件统计、趋势分析和建议措施</div>
-        </div>
-        <div class="template-card" onclick="selectTemplate(this,'monthly')">
-          <div class="template-icon">&#x1F4C6;</div>
-          <div class="template-title">安全月报模板</div>
-          <div class="template-desc">AI 自动生成月度安全态势、应用风险排行、策略覆盖和处置总结</div>
-        </div>
-        <div class="template-card" onclick="selectTemplate(this,'inspect')">
-          <div class="template-icon">&#x1F50D;</div>
-          <div class="template-title">巡检报告模板</div>
-          <div class="template-desc">AI 自动生成应用接入合规性、策略配置检查和基线偏离汇总</div>
-        </div>
-        <div class="template-card" onclick="selectTemplate(this,'custom')">
-          <div class="template-icon">&#x270F;</div>
-          <div class="template-title">空白自定义</div>
-          <div class="template-desc">手动创建报告，可选择部分 AI 辅助填充</div>
-        </div>
-      </div>
-    </div></div>
+    <div class="flow-steps">
+      <div class="flow-step active" id="stepConfig">1. 配置报告</div>
+      <div class="flow-step" id="stepEdit">2. 编辑内容</div>
+      <div class="flow-step" id="stepReview">3. 提交审核</div>
+      <div class="flow-step" id="stepPublish">4. 发布</div>
+    </div>
 
-    <div class="card"><div class="card-header"><div class="card-title">报告基础信息</div></div><div class="card-body">
-      <div class="form-row"><div class="form-label required">报告名称</div><div class="form-field"><input class="form-control" id="reportName" value="2026-W17 安全周报" required></div></div>
-      <div class="form-row"><div class="form-label required">数据时间范围</div><div class="form-field" style="display:flex;gap:8px;align-items:center;"><input class="form-control" value="2026-04-21" style="width:160px;"><span>至</span><input class="form-control" value="2026-04-27" style="width:160px;"></div></div>
-      <div class="form-row"><div class="form-label">覆盖应用</div><div class="form-field"><select class="form-select"><option>全部应用</option><option>研发代码审查助手</option><option>智能客服 Copilot</option><option>人事档案助理</option></select></div></div>
-      <div class="form-row"><div class="form-label">内容模块</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 风险概览</label><label class="checkbox-item"><input type="checkbox" checked> 事件统计</label><label class="checkbox-item"><input type="checkbox" checked> 趋势分析</label><label class="checkbox-item"><input type="checkbox" checked> 处置总结</label><label class="checkbox-item"><input type="checkbox" checked> 建议措施</label><label class="checkbox-item"><input type="checkbox"> 原始证据附录</label></div></div></div>
-    </div></div>
+    <div class="status-line">
+      <span class="tag tag-warning" id="reportStatusTag">草稿</span>
+      <span class="status-text" id="reportStatusText">请先确认报告配置，再编辑内容并提交审核。AI 生成内容审核通过后才允许发布。</span>
+      <button class="btn btn-link" id="approveDemoBtn" style="display:none;" onclick="openModal('approveModal')">模拟审核通过</button>
+    </div>
 
-    <div class="card"><div class="card-header"><div class="card-title">报告内容编辑 <span class="tag tag-info">AI</span></div><div><button class="btn btn-info btn-sm" onclick="toastSuccess('AI 已重新生成内容')">重新生成</button></div></div><div class="card-body">
-      <div class="ai-filled">
-        <div class="ai-label">&#x1F916; AI 生成 — 风险概览</div>
-        <textarea>本周（2026-04-21 至 2026-04-27）共监测到风险事件 42 起，较上周增加 12%。其中高风险事件 8 起，中风险事件 18 起，低风险事件 16 起。主要风险类型为工具能力边界越界（15 起）和敏感数据输出（12 起）。</textarea>
+    <div class="report-meta-bar">
+      <div class="report-meta-main">
+        <span class="tag tag-info" id="templateTag">安全周报模板</span>
+        <div>
+          <div class="report-meta-title" id="reportMetaName">2026-W17 安全周报</div>
+          <div class="report-meta-sub" id="reportMetaSub">2026-04-21 至 2026-04-27 | 全部应用</div>
+        </div>
       </div>
-      <div class="ai-filled">
-        <div class="ai-label">&#x1F916; AI 生成 — 事件统计</div>
-        <textarea>按应用维度统计：研发代码审查助手关联事件 18 起（高风险 5 起），智能客服 Copilot 关联事件 8 起（高风险 1 起），人事档案助理关联事件 6 起（高风险 2 起）。按部门维度统计：研发部 22 起，客服部 12 起，财务部 8 起。</textarea>
-      </div>
-      <div class="ai-filled">
-        <div class="ai-label">&#x1F916; AI 生成 — 趋势分析</div>
-        <textarea>本周风险趋势呈上升态势，周三（04-23）达到峰值，单日风险事件 11 起。工具越界类风险在周二至周四期间集中爆发，与研发代码审查助手的功能迭代窗口重合。建议关注该应用的边界配置更新。</textarea>
-      </div>
-      <div class="manual-filled">
-        <div class="manual-label">人工编辑 — 处置总结</div>
-        <textarea placeholder="可补充人工处置记录、跨部门协作情况、特殊事项说明等"></textarea>
-      </div>
-      <div class="ai-filled">
-        <div class="ai-label">&#x1F916; AI 生成 — 建议措施</div>
-        <textarea>1. 建议对研发代码审查助手的工具声明边界进行复核，重点关注 external_http_post 等外联工具的授权范围。
-2. 建议加强人事档案助理的敏感数据输出检测规则，提升响应字段的脱敏覆盖率。
-3. 建议对本周新增的 3 条自动响应规则进行灰度效果评估。</textarea>
-      </div>
-      <div style="margin-top:12px;padding:10px;border:1px solid #EBEEF5;border-radius:4px;background:#fafafa;font-size:12px;color:#909399;line-height:1.8;">
-        <strong style="color:#606266;">AI 生成标注：</strong>本报告内容由 AI 基于近 7 天事件数据自动生成，所有数据已标注来源，请人工审核确认后发布。AI 生成段落以蓝色虚线框标识，人工编辑段落以实线框标识。
-      </div>
-    </div></div>
+      <button class="btn btn-link" onclick="openConfigModal()">修改配置</button>
+    </div>
 
-    <div class="card"><div class="card-header"><div class="card-title">审核与发布</div></div><div class="card-body">
-      <div class="form-row"><div class="form-label">审核人</div><div class="form-field"><select class="form-select"><option>张安全</option><option>李运营</option><option>王合规</option></select><div class="form-hint">AI 生成报告必须经审核人确认后方可发布</div></div></div>
-      <div class="form-row"><div class="form-label">审核备注</div><div class="form-field"><textarea class="form-textarea" placeholder="审核意见、修改建议等"></textarea></div></div>
-      <div class="form-row"><div class="form-label">发布渠道</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox"> 平台内报告中心</label><label class="checkbox-item"><input type="checkbox"> 邮件推送</label><label class="checkbox-item"><input type="checkbox"> 飞书机器人</label><label class="checkbox-item"><input type="checkbox"> 订阅者自动投递</label></div></div></div>
-    </div></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">报告内容编辑 <span class="tag tag-info">含 AI 生成内容</span></div>
+        <div class="editor-toolbar">
+          <button class="btn btn-default btn-sm" onclick="openPreviewModal()">预览</button>
+          <button class="btn btn-info btn-sm" onclick="regenerateAiContent()">重新生成 AI 段落</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="ai-notice">提示：蓝色边框段落为 AI 生成内容，仅作为辅助草稿。发布前必须由审核人确认数据、结论和建议是否准确。</div>
+        <div id="editorArea"></div>
+      </div>
+    </div>
   </div>
+
+  <div class="modal-overlay" id="configModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header"><div class="modal-title">报告配置</div><div class="modal-close" onclick="closeModal('configModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label required">报告模板</div><div class="form-field">
+          <select class="form-select" id="templateSelect" onchange="previewTemplateConfig(this.value)">
+            <option value="weekly">安全周报模板</option>
+            <option value="monthly">安全月报模板</option>
+            <option value="inspect">巡检报告模板</option>
+            <option value="custom">空白自定义</option>
+          </select>
+          <div class="template-desc" id="templateDesc">生成近 7 日风险概览、事件统计、趋势分析和建议措施。</div>
+        </div></div>
+        <div class="config-grid">
+          <div class="form-row"><div class="form-label required">报告名称</div><div class="form-field"><input class="form-control" id="reportName" value="2026-W17 安全周报" required></div></div>
+          <div class="form-row"><div class="form-label">覆盖应用</div><div class="form-field"><select class="form-select" id="scopeApp"><option>全部应用</option><option>研发代码审查助手</option><option>智能客服 Copilot</option><option>人事档案助理</option></select></div></div>
+        </div>
+        <div class="form-row"><div class="form-label required">数据时间范围</div><div class="form-field" style="display:flex;gap:8px;align-items:center;"><input class="form-control" id="dateStart" value="2026-04-21"><span>至</span><input class="form-control" id="dateEnd" value="2026-04-27"></div></div>
+        <div class="form-row"><div class="form-label">内容模块</div><div class="form-field"><div class="checkbox-group" id="moduleOptions"></div></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('configModal')">取消</button><button class="btn btn-primary" onclick="applyConfig()">生成编辑页面</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="reviewModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">提交审核</div><div class="modal-close" onclick="closeModal('reviewModal')">×</div></div>
+      <div class="modal-body">
+        <div class="ai-notice">当前报告包含 AI 生成段落，请审核人重点核对 AI 结论、统计口径和建议措施。</div>
+        <div class="form-row"><div class="form-label required">审核人</div><div class="form-field"><select class="form-select"><option>张安全</option><option>李运营</option><option>王合规</option></select></div></div>
+        <div class="form-row"><div class="form-label">审核方式</div><div class="form-field"><select class="form-select"><option>单人审核</option><option>安全与合规双人审核</option><option>部门负责人终审</option></select></div></div>
+        <div class="form-row"><div class="form-label required">审核备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明提交审核原因、需要重点关注的 AI 生成段落或数据口径"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('reviewModal')">取消</button><button class="btn btn-warning" onclick="submitReview()">确认提交审核</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="approveModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">模拟审核通过</div><div class="modal-close" onclick="closeModal('approveModal')">×</div></div>
+      <div class="modal-body">
+        <div class="alert-box alert-info"><span class="alert-icon">i</span><span>原型中用于展示审核通过后的发布状态。真实系统中该动作应由审核人在待审核列表中完成。</span></div>
+        <div class="form-row"><div class="form-label">审核结论</div><div class="form-field"><select class="form-select"><option>审核通过，允许发布</option><option>退回修改</option></select></div></div>
+        <div class="form-row"><div class="form-label">审核意见</div><div class="form-field"><textarea class="form-textarea" placeholder="填写审核意见"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('approveModal')">取消</button><button class="btn btn-primary" onclick="approveReport()">确认通过</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="publishModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header"><div class="modal-title">发布报告</div><div class="modal-close" onclick="closeModal('publishModal')">×</div></div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label required">发布渠道</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 平台内报告中心</label><label class="checkbox-item"><input type="checkbox"> 邮件推送</label><label class="checkbox-item"><input type="checkbox"> 企业消息机器人</label><label class="checkbox-item"><input type="checkbox"> 订阅者自动投递</label></div></div></div>
+        <div class="form-row"><div class="form-label">可见范围</div><div class="form-field"><select class="form-select"><option>安全运营团队</option><option>全公司可见</option><option>指定部门可见</option><option>仅报告订阅者</option></select></div></div>
+        <div class="form-row"><div class="form-label">发布时间</div><div class="form-field"><select class="form-select"><option>立即发布</option><option>定时发布</option><option>审核通过后自动发布</option></select></div></div>
+        <div class="form-row"><div class="form-label">发布说明</div><div class="form-field"><textarea class="form-textarea" placeholder="填写发布说明、读者关注点或变更记录"></textarea></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('publishModal')">取消</button><button class="btn btn-primary" onclick="submitPublish()">确认发布</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="previewModal">
+    <div class="modal-box modal-xl">
+      <div class="modal-header"><div class="modal-title">报告预览</div><div class="modal-close" onclick="closeModal('previewModal')">×</div></div>
+      <div class="modal-body"><div id="previewBody" class="preview-paper"></div></div>
+      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('previewModal')">关闭</button><button class="btn btn-warning" onclick="openReviewModal()">提交审核</button></div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
   <script>
-    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '自定义报告' }]);
-    function selectTemplate(el,tpl){
-      document.querySelectorAll('.template-card').forEach(function(c){c.classList.remove('active');});
-      el.classList.add('active');
-      if(tpl==='weekly'){document.getElementById('reportName').value='2026-W17 安全周报';}
-      else if(tpl==='monthly'){document.getElementById('reportName').value='2026年4月安全月报';}
-      else if(tpl==='inspect'){document.getElementById('reportName').value='应用合规巡检报告';}
-      else{document.getElementById('reportName').value='';}
+    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告管理' }, { label: '新建报告' }]);
+
+    var currentTemplate = 'weekly';
+    var reportStatus = 'draft';
+    var configApplied = false;
+    var templateConfig = {
+      weekly: {
+        label: '安全周报模板',
+        desc: '生成近 7 日风险概览、事件统计、趋势分析和建议措施。',
+        name: '2026-W17 安全周报',
+        modules: ['风险概览', '事件统计', '趋势分析', '处置总结', '建议措施', '原始证据附录'],
+        sections: [
+          { title: '风险概览', source: 'ai', hint: 'AI 基于近 7 天风险事件和处置记录生成，请核对统计口径。', content: '本周（2026-04-21 至 2026-04-27）共监测到风险事件 42 起，较上周增加 12%。其中高风险事件 8 起，中风险事件 18 起，低风险事件 16 起。主要风险类型为工具能力边界越界（15 起）和敏感数据输出（12 起）。' },
+          { title: '事件统计', source: 'ai', hint: 'AI 自动汇总应用、部门和风险等级分布。', content: '按应用维度统计：研发代码审查助手关联事件 18 起，智能客服 Copilot 关联事件 8 起，人事档案助理关联事件 6 起。按部门维度统计：研发部 22 起，客服部 12 起，财务部 8 起。' },
+          { title: '趋势分析', source: 'ai', hint: 'AI 根据时间序列生成趋势判断，需人工确认因果关系。', content: '本周风险趋势呈上升态势，周三达到峰值，单日风险事件 11 起。工具越界类风险在周二至周四期间集中出现，与研发代码审查助手功能迭代窗口重合。' },
+          { title: '处置总结', source: 'manual', content: '' },
+          { title: '建议措施', source: 'ai', hint: 'AI 生成建议不可直接作为处置结论，需结合负责人判断。', content: '建议复核研发代码审查助手的工具声明边界，重点关注 external_http_post 等外联工具授权范围；加强人事档案助理敏感数据输出检测规则；对新增自动响应规则进行灰度效果评估。' }
+        ]
+      },
+      monthly: {
+        label: '安全月报模板',
+        desc: '生成月度安全态势、应用风险排行、策略覆盖和处置总结。',
+        name: '2026年4月安全月报',
+        modules: ['月度态势', '应用风险排行', '策略覆盖', '处置效率', '下月计划'],
+        sections: [
+          { title: '月度态势', source: 'ai', hint: 'AI 汇总本月风险事件、策略命中和处置闭环数据。', content: '2026 年 4 月平台整体风险处于可控区间，累计发现风险事件 154 起，高风险事件占比 18%。风险主要集中在工具调用边界、敏感数据输出和提示词异常输入三类场景。' },
+          { title: '应用风险排行', source: 'ai', hint: 'AI 根据事件量、严重度和处置时长生成排行，请核对权重。', content: '研发代码审查助手、人事档案助理、智能客服 Copilot 位列本月风险关注前三。研发代码审查助手高风险事件占比最高，建议优先复核工具授权策略。' },
+          { title: '策略覆盖', source: 'manual', content: '' },
+          { title: '下月计划', source: 'ai', hint: 'AI 根据本月趋势生成计划草稿，需负责人确认优先级。', content: '下月建议重点推进敏感数据输出规则复核、工具调用最小权限检查、自动响应策略灰度评估和高风险应用专项治理。' }
+        ]
+      },
+      inspect: {
+        label: '巡检报告模板',
+        desc: '生成应用接入合规性、策略配置检查和基线偏离汇总。',
+        name: '应用合规巡检报告',
+        modules: ['巡检范围', '接入合规', '策略配置', '基线偏离', '整改建议'],
+        sections: [
+          { title: '巡检范围', source: 'manual', content: '本次巡检覆盖已接入平台的核心业务应用和高风险 AI 应用。' },
+          { title: '接入合规', source: 'ai', hint: 'AI 根据应用接入台账生成合规判断，请核对资产清单。', content: '当前已接入应用 38 个，其中 34 个完成基础安全策略绑定，4 个应用存在策略覆盖不完整或责任人信息缺失。' },
+          { title: '策略配置', source: 'ai', hint: 'AI 自动识别策略缺口，需人工确认误报。', content: '发现 6 个应用未启用敏感数据输出检测，3 个应用未配置工具调用白名单，2 个应用的高风险响应策略仍处于草稿状态。' },
+          { title: '整改建议', source: 'ai', hint: 'AI 生成整改建议需进入正式任务流后执行。', content: '建议按高风险优先原则建立整改清单，明确应用负责人、整改期限和复核方式，并在整改完成后重新执行巡检。' }
+        ]
+      },
+      custom: {
+        label: '空白自定义',
+        desc: '手动创建报告，可按需增加 AI 辅助段落。',
+        name: '',
+        modules: ['自定义章节', 'AI 辅助摘要', '附件说明'],
+        sections: [
+          { title: '自定义章节', source: 'manual', content: '' },
+          { title: 'AI 辅助摘要', source: 'ai', hint: '该段为 AI 辅助草稿，可删除或改写。', content: '请在左侧填写报告范围后重新生成 AI 段落，系统将基于选定数据范围生成摘要草稿。' }
+        ]
+      }
+    };
+
+    function previewTemplateConfig(tpl) {
+      document.getElementById('reportName').value = templateConfig[tpl].name;
+      document.getElementById('templateDesc').innerText = templateConfig[tpl].desc;
+      renderModuleOptions(tpl);
     }
+
+    function renderModuleOptions(tpl) {
+      var modules = templateConfig[tpl || currentTemplate].modules;
+      document.getElementById('moduleOptions').innerHTML = modules.map(function(item, index) {
+        return '<label class="checkbox-item"><input type="checkbox" checked data-module-index="' + index + '"> ' + item + '</label>';
+      }).join('');
+    }
+
+    function buildEditor() {
+      var sections = templateConfig[currentTemplate].sections;
+      document.getElementById('editorArea').innerHTML = sections.map(function(section, index) {
+        if (section.source === 'ai') {
+          return '<div class="ai-section" data-source="ai"><div class="source-label">AI 生成内容</div><div class="source-hint">' + section.hint + '</div><div class="source-label" style="background:#0EA5E9;">' + section.title + '</div><textarea data-title="' + section.title + '" data-source="ai">' + section.content + '</textarea></div>';
+        }
+        return '<div class="manual-section" data-source="manual"><div class="source-label">人工编辑 - ' + section.title + '</div><textarea data-title="' + section.title + '" data-source="manual" placeholder="请输入' + section.title + '">' + (section.content || '') + '</textarea></div>';
+      }).join('');
+    }
+
+    function showEditorEmpty() {
+      document.getElementById('editorArea').innerHTML = '<div class="editor-empty"><div style="font-weight:600;color:#606266;margin-bottom:6px;">尚未生成报告内容</div><div>请先点击“报告配置”，选择模板并填写基础信息后生成编辑页面。</div></div>';
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('show');
+    }
+
+    function goReportList() {
+      navigateTo('pages/report/report-list.html', '报告管理', 'report-list.html');
+    }
+
+    function openConfigModal() {
+      document.getElementById('templateSelect').value = currentTemplate;
+      document.getElementById('templateDesc').innerText = templateConfig[currentTemplate].desc;
+      renderModuleOptions(currentTemplate);
+      openModal('configModal');
+    }
+
+    function updateReportMeta() {
+      var reportName = document.getElementById('reportName').value || '未命名报告';
+      var range = document.getElementById('dateStart').value + ' 至 ' + document.getElementById('dateEnd').value;
+      document.getElementById('templateTag').innerText = templateConfig[currentTemplate].label;
+      document.getElementById('reportMetaName').innerText = reportName;
+      document.getElementById('reportMetaSub').innerText = range + ' | ' + document.getElementById('scopeApp').value;
+    }
+
+    function applyConfig() {
+      currentTemplate = document.getElementById('templateSelect').value;
+      buildEditor();
+      updateReportMeta();
+      configApplied = true;
+      setReportStatus('editing');
+      closeModal('configModal');
+      toastSuccess('报告配置已更新');
+    }
+
+    function openReviewModal() {
+      if (!configApplied) {
+        toastInfo('请先完成报告配置并生成编辑页面');
+        openConfigModal();
+        return;
+      }
+      openModal('reviewModal');
+    }
+
+    function openPublishModal() {
+      if (reportStatus !== 'approved') {
+        toastInfo('报告审核通过后才允许发布');
+        return;
+      }
+      openModal('publishModal');
+    }
+
+    function openPreviewModal() {
+      if (!configApplied) {
+        toastInfo('请先完成报告配置并生成编辑页面');
+        openConfigModal();
+        return;
+      }
+      var reportName = document.getElementById('reportName').value || '未命名报告';
+      var range = document.getElementById('dateStart').value + ' 至 ' + document.getElementById('dateEnd').value;
+      var sections = Array.prototype.map.call(document.querySelectorAll('#editorArea textarea'), function(textarea) {
+        var title = textarea.getAttribute('data-title');
+        var source = textarea.getAttribute('data-source');
+        var tag = source === 'ai' ? '<span class="preview-ai-tag">AI 生成</span>' : '';
+        return '<div class="preview-section"><div class="preview-section-title">' + title + tag + '</div><div>' + textarea.value.replace(/\n/g, '<br>') + '</div></div>';
+      }).join('');
+      document.getElementById('previewBody').innerHTML = '<div class="preview-title">' + reportName + '</div><div class="preview-meta">模板：' + templateConfig[currentTemplate].label + ' | 数据范围：' + range + ' | 覆盖应用：' + document.getElementById('scopeApp').value + '</div><div class="ai-notice">预览中标注“AI 生成”的章节为模型生成内容，发布前需人工审核确认。</div>' + sections;
+      openModal('previewModal');
+    }
+
+    function regenerateAiContent() {
+      if (reportStatus === 'reviewing' || reportStatus === 'published') {
+        toastInfo('当前状态不可重新生成 AI 段落');
+        return;
+      }
+      document.querySelectorAll('#editorArea textarea[data-source="ai"]').forEach(function(textarea) {
+        textarea.value = textarea.value + '\n\nAI 重新生成提示：请根据最新筛选范围复核本段统计与结论。';
+      });
+      toastSuccess('AI 段落已重新生成，请人工复核后保存');
+    }
+
+    function saveDraft() {
+      if (reportStatus === 'published') {
+        toastInfo('已发布报告不可保存为草稿');
+        return;
+      }
+      setReportStatus('draft');
+      toastSuccess('草稿已保存');
+    }
+
+    function submitReview() {
+      closeModal('reviewModal');
+      setReportStatus('reviewing');
+      toastSuccess('报告已提交审核，等待审核人确认');
+    }
+
+    function approveReport() {
+      closeModal('approveModal');
+      setReportStatus('approved');
+      toastSuccess('审核已通过，可以发布');
+    }
+
+    function submitPublish() {
+      closeModal('publishModal');
+      setReportStatus('published');
+      toastSuccess('报告已发布');
+    }
+
+    function setReportStatus(status) {
+      reportStatus = status;
+      var statusMap = {
+        draft: { tag: '草稿', cls: 'tag-warning', text: '请先确认报告配置，再编辑内容并提交审核。AI 生成内容审核通过后才允许发布。' },
+        editing: { tag: '编辑中', cls: 'tag-info', text: '报告配置已生成，请编辑内容、预览并提交审核。' },
+        reviewing: { tag: '审核中', cls: 'tag-warning', text: '报告已提交审核。审核通过前不能发布，建议等待审核结论或撤回修改。' },
+        approved: { tag: '审核通过', cls: 'tag-success', text: '报告已审核通过，可以选择发布渠道并发布。' },
+        published: { tag: '已发布', cls: 'tag-success', text: '报告已发布，可返回报告管理查看发布记录。' }
+      };
+      var current = statusMap[status];
+      var tag = document.getElementById('reportStatusTag');
+      tag.className = 'tag ' + current.cls;
+      tag.textContent = current.tag;
+      document.getElementById('reportStatusText').textContent = current.text;
+      document.getElementById('publishBtn').disabled = status !== 'approved';
+      document.getElementById('reviewBtn').disabled = status === 'reviewing' || status === 'published';
+      document.getElementById('saveDraftBtn').disabled = status === 'published';
+      document.getElementById('approveDemoBtn').style.display = status === 'reviewing' ? 'inline-flex' : 'none';
+      document.getElementById('stepConfig').className = 'flow-step ' + (configApplied ? 'done' : 'active');
+      document.getElementById('stepEdit').className = 'flow-step ' + (!configApplied ? '' : (status === 'editing' || status === 'draft' ? 'active' : (status === 'reviewing' || status === 'approved' || status === 'published' ? 'done' : '')));
+      document.getElementById('stepReview').className = 'flow-step ' + (status === 'reviewing' ? 'active' : (status === 'approved' || status === 'published' ? 'done' : ''));
+      document.getElementById('stepPublish').className = 'flow-step ' + (status === 'published' ? 'done' : (status === 'approved' ? 'active' : ''));
+      document.querySelectorAll('#editorArea textarea').forEach(function(textarea) {
+        textarea.disabled = status === 'reviewing' || status === 'published';
+      });
+    }
+
+    renderModuleOptions();
+    showEditorEmpty();
+    updateReportMeta();
+    setReportStatus('draft');
+    setTimeout(openConfigModal, 0);
   </script>
 </body>
 </html>
