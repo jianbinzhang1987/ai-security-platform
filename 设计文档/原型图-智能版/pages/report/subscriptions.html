@@ -1,15 +1,226 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><title>报告订阅</title><link rel="stylesheet" href="../../css/style.css"></head>
+<head>
+  <meta charset="UTF-8">
+  <title>报告订阅</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .toolbar-split{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+    .toolbar-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .channel-list{display:flex;gap:6px;flex-wrap:wrap}
+  </style>
+</head>
 <body class="page-content">
   <div class="sub-page">
-    <div class="page-header"><div><div class="page-title">报告订阅</div><div class="page-subtitle">配置周期生成、收件人和分享范围。</div></div><button class="btn btn-primary" onclick="toastSuccess('订阅已创建')">新增订阅</button></div>
-    <div class="card"><div class="table-wrapper"><table class="data-table"><thead><tr><th>订阅名称</th><th>周期</th><th>报告模板</th><th>收件人</th><th>状态</th><th>操作</th></tr></thead><tbody>
-      <tr><td>安全运营日报</td><td>每天 09:00</td><td>全局态势日报</td><td>SOC 群组</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
-      <tr><td>应用负责人周报</td><td>每周一 10:00</td><td>应用安全周报</td><td>应用负责人</td><td><span class="tag tag-success">启用</span></td><td><button class="btn btn-link">编辑</button></td></tr>
-    </tbody></table></div></div>
+    <div class="page-header">
+      <div>
+        <div class="page-title">报告订阅</div>
+        <div class="page-subtitle">统一维护周期生成、投递渠道、接收对象和执行状态。报告发布后的自动投递在这里配置。</div>
+      </div>
+      <button class="btn btn-primary" onclick="openCreateSubModal()">新增订阅</button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">订阅名称</span>
+        <input class="form-control" placeholder="订阅名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">报告模板</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>全局态势日报</option>
+          <option>应用安全周报</option>
+          <option>管理层月报</option>
+          <option>专项审计报告</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">状态</span>
+        <select class="form-select">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>停用</option>
+          <option>执行失败</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('订阅列表已筛选')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="toolbar-split">
+          <div class="toolbar-group">
+            <button class="btn btn-default btn-sm" onclick="toastSuccess('已刷新订阅状态')">刷新</button>
+            <button class="btn btn-default btn-sm" onclick="toastSuccess('已导出订阅配置')">导出</button>
+          </div>
+          <div class="toolbar-group">
+            <span class="tag tag-info">共 3 个订阅，1 个需处理</span>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>订阅名称</th>
+              <th>报告模板</th>
+              <th>周期</th>
+              <th>数据范围</th>
+              <th>接收对象</th>
+              <th>投递渠道</th>
+              <th>最近执行</th>
+              <th>下次执行</th>
+              <th>状态</th>
+              <th style="width: 220px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>安全运营日报</strong></td>
+              <td>全局态势日报</td>
+              <td>每天 09:00</td>
+              <td>前一自然日</td>
+              <td>SOC 群组</td>
+              <td><div class="channel-list"><span class="tag tag-info">邮件</span><span class="tag tag-primary">机器人</span></div></td>
+              <td>2026-05-08 09:00:12</td>
+              <td>2026-05-09 09:00:00</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openCreateSubModal()">编辑</button>
+                  <button class="btn btn-link" onclick="toastSuccess('订阅任务已立即执行')">立即执行</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已打开执行记录')">执行记录</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('订阅已停用')">停用</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>应用负责人周报</strong></td>
+              <td>应用安全周报</td>
+              <td>每周一 10:00</td>
+              <td>上一自然周</td>
+              <td>应用负责人</td>
+              <td><div class="channel-list"><span class="tag tag-info">邮件</span></div></td>
+              <td>2026-05-04 10:00:05</td>
+              <td>2026-05-11 10:00:00</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openCreateSubModal()">编辑</button>
+                  <button class="btn btn-link" onclick="toastSuccess('订阅任务已立即执行')">立即执行</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已打开执行记录')">执行记录</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('订阅已停用')">停用</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>管理层月报</strong></td>
+              <td>管理层月报</td>
+              <td>每月 1 日 08:30</td>
+              <td>上一自然月</td>
+              <td>安全委员会</td>
+              <td><div class="channel-list"><span class="tag tag-info">邮件</span><span class="tag tag-warning">平台内</span></div></td>
+              <td>2026-05-01 08:30:18</td>
+              <td>2026-06-01 08:30:00</td>
+              <td><span class="tag tag-danger">执行失败</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openCreateSubModal()">编辑</button>
+                  <button class="btn btn-link" onclick="toastSuccess('失败任务已重试')">重试</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已打开失败详情')">失败详情</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('订阅已删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
+
+  <div class="modal-overlay" id="subModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">订阅配置</div>
+        <div class="modal-close" onclick="closeModal('subModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="subForm">
+          <div class="form-row">
+            <div class="form-label required">订阅名称</div>
+            <div class="form-field"><input class="form-control" value="安全运营日报" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">报告模板</div>
+            <div class="form-field">
+              <select class="form-select" required>
+                <option>全局态势日报</option>
+                <option>应用安全周报</option>
+                <option>管理层月报</option>
+                <option>专项审计报告</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">执行周期</div>
+            <div class="form-field" style="display:flex;gap:8px;align-items:center;">
+              <select class="form-select" style="width:140px;" required>
+                <option>每日</option>
+                <option>每周</option>
+                <option>每月</option>
+              </select>
+              <input class="form-control" value="09:00" style="width:120px;" required>
+              <select class="form-select" style="width:160px;">
+                <option>前一自然日</option>
+                <option>上一自然周</option>
+                <option>上一自然月</option>
+                <option>自定义时间范围</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">投递渠道</div>
+            <div class="form-field">
+              <div class="checkbox-group">
+                <label class="checkbox-item"><input type="checkbox" checked> 邮件</label>
+                <label class="checkbox-item"><input type="checkbox" checked> 企业消息机器人</label>
+                <label class="checkbox-item"><input type="checkbox"> 平台内通知</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">接收对象</div>
+            <div class="form-field">
+              <textarea class="form-textarea" placeholder="填写接收人、用户组或邮箱，多个对象用逗号分隔" required>SOC 群组</textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('subModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitSub()">保存订阅</button>
+      </div>
+    </div>
+  </div>
+
   <script src="../../js/common.js"></script>
-  <script>if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告订阅' }]);</script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告订阅' }]);
+
+    function openCreateSubModal() {
+      openModal('subModal');
+    }
+
+    function submitSub() {
+      if (validateForm('subForm')) {
+        toastSuccess('报告订阅已保存');
+        closeModal('subModal');
+      }
+    }
+  </script>
 </body>
 </html>

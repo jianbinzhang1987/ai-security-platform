@@ -26,15 +26,14 @@
       <div style="display:flex;gap:8px;">
         <button class="btn btn-primary" onclick="goNewReport()">新建报告</button>
         <button class="btn btn-default" onclick="openTemplateModal()">模板管理</button>
-        <button class="btn btn-default" onclick="openSubModal()">订阅配置</button>
       </div>
     </div>
 
     <div class="status-summary">
       <div class="summary-item"><div class="summary-label">草稿</div><div class="summary-value">6</div></div>
       <div class="summary-item"><div class="summary-label">待我审核</div><div class="summary-value" style="color:#E6A23C;">4</div></div>
+      <div class="summary-item"><div class="summary-label">待发布</div><div class="summary-value" style="color:#409EFF;">3</div></div>
       <div class="summary-item"><div class="summary-label">已发布</div><div class="summary-value" style="color:#67C23A;">38</div></div>
-      <div class="summary-item"><div class="summary-label">含 AI 生成内容</div><div class="summary-value" style="color:#409EFF;">21</div></div>
     </div>
 
     <div class="view-tabs" style="margin-bottom:12px;">
@@ -61,7 +60,7 @@
         </select>
       </div>
       <div class="search-item">
-        <span class="form-label">来源</span>
+        <span class="form-label">内容来源</span>
         <select class="form-select">
           <option value="">全部</option>
           <option>人工编写</option>
@@ -70,13 +69,15 @@
         </select>
       </div>
       <div class="search-item">
-        <span class="form-label">审核状态</span>
+        <span class="form-label">报告状态</span>
         <select class="form-select">
           <option value="">全部</option>
-          <option>未审核</option>
+          <option>草稿</option>
           <option>审核中</option>
+          <option>待发布</option>
           <option>已发布</option>
           <option>已驳回</option>
+          <option>已归档</option>
         </select>
       </div>
       <div class="search-btns">
@@ -89,9 +90,8 @@
       <div class="table-toolbar">
         <div class="toolbar-split">
           <div class="toolbar-group">
-            <button class="btn btn-primary btn-sm" onclick="goNewReport()">新建报告</button>
-            <button class="btn btn-default btn-sm" onclick="openTemplateModal()">模板管理</button>
-            <button class="btn btn-default btn-sm" onclick="openSubModal()">订阅配置</button>
+            <button class="btn btn-default btn-sm" onclick="toastSuccess('已刷新报告列表')">刷新</button>
+            <button class="btn btn-default btn-sm" onclick="toastSuccess('已导出当前筛选结果')">导出</button>
           </div>
           <div class="toolbar-group">
             <span class="tag tag-info" id="currentReportView">当前视图：全部报告</span>
@@ -105,15 +105,31 @@
               <th>报告编号</th>
               <th>报告名称</th>
               <th>报告类型</th>
-              <th>来源</th>
-              <th>审核状态</th>
+              <th>内容来源</th>
+              <th>报告状态</th>
               <th>覆盖范围</th>
               <th>生成日期</th>
-              <th>生成情况</th>
-              <th style="width: 180px;">操作</th>
+              <th style="width: 220px;">操作</th>
             </tr>
           </thead>
           <tbody>
+            <tr>
+              <td class="mono">RPT-DRAFT-W18</td>
+              <td><strong>2026-W18 安全周报</strong></td>
+              <td><span class="tag tag-primary">周报</span></td>
+              <td><span class="tag tag-info">AI 初稿</span></td>
+              <td><span class="tag tag-warning">草稿</span></td>
+              <td>2026-04-28 至 2026-05-04</td>
+              <td>2026-05-05 02:00:00</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="goNewReport()">编辑</button>
+                  <button class="btn btn-link" onclick="downloadRpt()">预览</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已提交审核')">提交审核</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('草稿已删除')">删除</button>
+                </div>
+              </td>
+            </tr>
             <tr>
               <td class="mono">RPT-20260430-MON</td>
               <td><strong>2026年4月安全月报</strong></td>
@@ -122,11 +138,12 @@
               <td><span class="tag tag-success">已发布</span></td>
               <td>2026-04-01 至 2026-04-30</td>
               <td>2026-04-30 02:00:00</td>
-              <td><span class="tag tag-success">已发布</span></td>
               <td>
                 <div class="table-action-col">
+                  <button class="btn btn-link" onclick="downloadRpt()">查看</button>
                   <button class="btn btn-link" onclick="downloadRpt()">下载</button>
                   <button class="btn btn-link" onclick="shareRpt()">分享</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已复制为新报告草稿')">复制</button>
                 </div>
               </td>
             </tr>
@@ -138,12 +155,11 @@
               <td><span class="tag tag-warning">审核中</span></td>
               <td>2026-04-21 至 2026-04-27</td>
               <td>2026-04-28 02:00:00</td>
-              <td><span class="tag tag-warning">审核中</span></td>
               <td>
                 <div class="table-action-col">
                   <button class="btn btn-link" onclick="toastSuccess('进入审核流程')">审核</button>
-                  <button class="btn btn-link" onclick="downloadRpt()">预览</button>
-                  <button class="btn btn-link danger" onclick="toastSuccess('已驳回')">驳回</button>
+                  <button class="btn btn-link" onclick="downloadRpt()">查看</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已打开审核记录')">审核记录</button>
                 </div>
               </td>
             </tr>
@@ -155,11 +171,29 @@
               <td><span class="tag tag-success">已发布</span></td>
               <td>2026-04-14 至 2026-04-20</td>
               <td>2026-04-21 02:00:00</td>
-              <td><span class="tag tag-success">已发布</span></td>
               <td>
                 <div class="table-action-col">
+                  <button class="btn btn-link" onclick="downloadRpt()">查看</button>
                   <button class="btn btn-link" onclick="downloadRpt()">下载</button>
                   <button class="btn btn-link" onclick="shareRpt()">分享</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已复制为新报告草稿')">复制</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="mono">RPT-REJECT-W15</td>
+              <td><strong>2026-W15 安全周报</strong></td>
+              <td><span class="tag tag-primary">周报</span></td>
+              <td><span class="tag tag-warning">AI生成(未审核)</span></td>
+              <td><span class="tag tag-danger">已驳回</span></td>
+              <td>2026-04-07 至 2026-04-13</td>
+              <td>2026-04-14 02:00:00</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="goNewReport()">编辑</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已打开驳回原因')">驳回原因</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已重新提交审核')">重新提交</button>
+                  <button class="btn btn-link danger" onclick="toastSuccess('报告已归档')">归档</button>
                 </div>
               </td>
             </tr>
@@ -171,11 +205,12 @@
               <td><span class="tag tag-success">已发布</span></td>
               <td>2026-01-01 至 2026-04-14</td>
               <td>2026-04-14 10:15:33</td>
-              <td><span class="tag tag-success">已发布</span></td>
               <td>
                 <div class="table-action-col">
+                  <button class="btn btn-link" onclick="downloadRpt()">查看</button>
                   <button class="btn btn-link" onclick="downloadRpt()">下载</button>
                   <button class="btn btn-link" onclick="shareRpt()">分享</button>
+                  <button class="btn btn-link" onclick="toastSuccess('已归档')">归档</button>
                 </div>
               </td>
             </tr>
@@ -208,41 +243,6 @@
     </div>
   </div>
 
-  <!-- 订阅配置弹框 -->
-  <div class="modal-overlay" id="subModal">
-    <div class="modal-box">
-      <div class="modal-header">
-        <div class="modal-title">订阅配置</div>
-        <div class="modal-close" onclick="closeModal('subModal')">×</div>
-      </div>
-      <div class="modal-body">
-        <form id="subForm">
-          <div class="form-row">
-            <div class="form-label required">订阅周期</div>
-            <div class="form-field">
-              <select class="form-select" required>
-                <option value="">请选择订阅周期</option>
-                <option value="daily">每日</option>
-                <option value="weekly">每周</option>
-                <option value="monthly">每月</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-label required">接收人</div>
-            <div class="form-field">
-              <textarea class="form-textarea" placeholder="填写接收人邮箱，多个邮箱用英文逗号分隔" required></textarea>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-default" onclick="closeModal('subModal')">取消</button>
-        <button class="btn btn-success" onclick="submitSub()">保存订阅</button>
-      </div>
-    </div>
-  </div>
-
   <script src="../../js/common.js"></script>
   <script>
     if (typeof updateBreadcrumb === 'function') updateBreadcrumb([{ label: '报告中心' }, { label: '报告管理' }]);
@@ -270,17 +270,6 @@
       openModal('templateModal');
     }
     
-    function openSubModal() {
-      document.getElementById('subForm').reset();
-      openModal('subModal');
-    }
-    function submitSub() {
-      if (validateForm('subForm')) {
-        toastSuccess('报告订阅已保存');
-        closeModal('subModal');
-      }
-    }
-
     function downloadRpt() { toastSuccess('报告下载已开始'); }
     function shareRpt() { toastSuccess('报告分享链接已生成'); }
   </script>

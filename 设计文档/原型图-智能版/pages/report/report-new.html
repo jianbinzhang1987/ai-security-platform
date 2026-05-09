@@ -60,7 +60,6 @@
     <div class="status-line">
       <span class="tag tag-warning" id="reportStatusTag">草稿</span>
       <span class="status-text" id="reportStatusText">请先确认报告配置，再编辑内容并提交审核。AI 生成内容审核通过后才允许发布。</span>
-      <button class="btn btn-link" id="approveDemoBtn" style="display:none;" onclick="openModal('approveModal')">模拟审核通过</button>
     </div>
 
     <div class="report-meta-bar">
@@ -123,18 +122,6 @@
         <div class="form-row"><div class="form-label required">审核备注</div><div class="form-field"><textarea class="form-textarea" placeholder="说明提交审核原因、需要重点关注的 AI 生成段落或数据口径"></textarea></div></div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('reviewModal')">取消</button><button class="btn btn-warning" onclick="submitReview()">确认提交审核</button></div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="approveModal">
-    <div class="modal-box modal-md">
-      <div class="modal-header"><div class="modal-title">模拟审核通过</div><div class="modal-close" onclick="closeModal('approveModal')">×</div></div>
-      <div class="modal-body">
-        <div class="alert-box alert-info"><span class="alert-icon">i</span><span>原型中用于展示审核通过后的发布状态。真实系统中该动作应由审核人在待审核列表中完成。</span></div>
-        <div class="form-row"><div class="form-label">审核结论</div><div class="form-field"><select class="form-select"><option>审核通过，允许发布</option><option>退回修改</option></select></div></div>
-        <div class="form-row"><div class="form-label">审核意见</div><div class="form-field"><textarea class="form-textarea" placeholder="填写审核意见"></textarea></div></div>
-      </div>
-      <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('approveModal')">取消</button><button class="btn btn-primary" onclick="approveReport()">确认通过</button></div>
     </div>
   </div>
 
@@ -337,12 +324,6 @@
       toastSuccess('报告已提交审核，等待审核人确认');
     }
 
-    function approveReport() {
-      closeModal('approveModal');
-      setReportStatus('approved');
-      toastSuccess('审核已通过，可以发布');
-    }
-
     function submitPublish() {
       closeModal('publishModal');
       setReportStatus('published');
@@ -366,7 +347,6 @@
       document.getElementById('publishBtn').disabled = status !== 'approved';
       document.getElementById('reviewBtn').disabled = status === 'reviewing' || status === 'published';
       document.getElementById('saveDraftBtn').disabled = status === 'published';
-      document.getElementById('approveDemoBtn').style.display = status === 'reviewing' ? 'inline-flex' : 'none';
       document.getElementById('stepConfig').className = 'flow-step ' + (configApplied ? 'done' : 'active');
       document.getElementById('stepEdit').className = 'flow-step ' + (!configApplied ? '' : (status === 'editing' || status === 'draft' ? 'active' : (status === 'reviewing' || status === 'approved' || status === 'published' ? 'done' : '')));
       document.getElementById('stepReview').className = 'flow-step ' + (status === 'reviewing' ? 'active' : (status === 'approved' || status === 'published' ? 'done' : ''));
