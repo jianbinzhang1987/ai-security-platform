@@ -458,6 +458,22 @@
               <td><span class="tag tag-success">FP-SAMPLE-009 规则优化</span></td>
               <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
+            <!-- 复合事件示例：属于分片逃逸链路 -->
+            <tr data-id="EVT-2026-00025" style="background:#fff7f7;">
+              <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00025" onchange="checkBtnState()"></td>
+              <td><span class="event-id">EVT-2026-00025</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;">&#9888; 复合事件</span></td>
+              <td><span class="mono">TRC-20260420-125</span><br><span class="form-hint mono">sp_03_llm</span></td>
+              <td><span class="event-time">04-20 10:25</span><div class="form-hint">分片逃逸链路</div></td>
+              <td>代码助手<br><span class="form-hint">app_id: app_code_assistant</span><br><span class="form-hint">llm.chat</span></td>
+              <td><span class="tag tag-danger">高风险</span></td>
+              <td>意图分片逃逸<br><span class="form-hint" style="color:#f56c6c;">阶段3/3: 验证执行</span></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">AI复合检出</span><span class="tag tag-ai">跨会话关联</span><span class="tag tag-ai">意图链连续</span><div class="form-hint">置信等级：高 (0.94)</div></td>
+              <td><div class="evidence-tags"><span class="tag tag-danger">内网IP引用</span><span class="tag tag-warning">实体引用链</span><span class="tag tag-info">23min窗口</span></div><div class="evidence-summary">会话3引用会话2的"PoC"实体，构成完整攻击链验证阶段。</div></td>
+              <td><span class="status-badge status-new"></span>待处置</td>
+              <td>--</td>
+              <td><span class="tag tag-warning">链路 CE-IF-20260420-001</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00025')">详情</button><button class="btn btn-link" style="color:#f56c6c;" onclick="goFragmentChain('CE-IF-20260420-001')">查看链路</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260420-125','sp_03_llm')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -905,6 +921,10 @@
     function goTrace(traceId, spanId) {
       var url = 'pages/monitor/trace-list.html?trace_id=' + encodeURIComponent(traceId || '') + '&span_id=' + encodeURIComponent(spanId || '');
       openShellPage(url, '风险溯源', '../monitor/trace-list.html?trace_id=' + encodeURIComponent(traceId || '') + '&span_id=' + encodeURIComponent(spanId || ''));
+    }
+    function goFragmentChain(chainId) {
+      var url = 'pages/monitor/intent-fragment-detection.html?id=' + encodeURIComponent(chainId || '');
+      openShellPage(url, '意图分片逃逸检测', '../monitor/intent-fragment-detection.html?id=' + encodeURIComponent(chainId || ''));
     }
     function openShellPage(shellPath, label, fallbackPath) {
       navigateTo(shellPath, label, fallbackPath);

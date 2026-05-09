@@ -40,6 +40,7 @@
 <div class="tab-item active" onclick="switchTab(this,'spread')">跨应用风险传播</div>
 <div class="tab-item" onclick="switchTab(this,'toolchain')">工具传播链</div>
 <div class="tab-item" onclick="switchTab(this,'attack')">攻击链路关联</div>
+<div class="tab-item" onclick="switchTab(this,'fragment')">意图分片逃逸</div>
 </div>
 
 <div id="panel-spread">
@@ -124,6 +125,40 @@
 </div>
 </div>
 
+<div id="panel-fragment" style="display:none;">
+<div class="card" style="margin-bottom:14px;">
+<div class="card-header"><div class="card-title">意图分片逃逸链路列表</div>
+<div style="display:flex;gap:8px;">
+<select class="form-select" style="width:auto;font-size:12px;"><option>全部模式</option><option>探测→武器化→验证</option><option>越狱分片</option><option>数据外泄流水线</option></select>
+<select class="form-select" style="width:auto;font-size:12px;"><option>全部等级</option><option>高风险</option><option>中风险</option><option>低风险</option></select>
+</div>
+</div>
+<div class="card-body">
+<table class="data-table">
+<thead><tr><th>链路 ID</th><th>用户</th><th>涉及会话</th><th>检测模式</th><th>匹配度</th><th>时间跨度</th><th>风险等级</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td class="mono">CE-IF-20260420-001</td><td>张三</td><td>3</td><td>探测→武器化→验证</td><td><strong style="color:#f56c6c;">0.94</strong></td><td>23 分钟</td><td><span class="tag tag-danger">高风险</span></td><td><button class="btn btn-link" onclick="goFragment('CE-IF-20260420-001')">查看</button></td></tr>
+<tr><td class="mono">CE-IF-20260419-002</td><td>李四</td><td>4</td><td>越狱分片</td><td><strong style="color:#f56c6c;">0.91</strong></td><td>41 分钟</td><td><span class="tag tag-danger">高风险</span></td><td><button class="btn btn-link" onclick="goFragment('CE-IF-20260419-002')">查看</button></td></tr>
+<tr><td class="mono">CE-IF-20260418-003</td><td>王五</td><td>2</td><td>数据外泄流水线</td><td><strong style="color:#e6a23c;">0.68</strong></td><td>8 分钟</td><td><span class="tag tag-warning">中风险</span></td><td><button class="btn btn-link" onclick="goFragment('CE-IF-20260418-003')">查看</button></td></tr>
+<tr><td class="mono">CE-IF-20260417-004</td><td>赵六</td><td>3</td><td>权限提升分片</td><td><strong style="color:#409EFF;">0.52</strong></td><td>56 分钟</td><td><span class="tag tag-primary">低风险</span></td><td><button class="btn btn-link" onclick="goFragment('CE-IF-20260417-004')">查看</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<div class="card-header"><div class="card-title">检测模式统计</div></div>
+<div class="card-body">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+<div style="text-align:center;padding:16px;background:#fff7f7;border-radius:6px;"><div style="font-size:24px;font-weight:600;color:#f56c6c;">7</div><div style="font-size:12px;color:#909399;margin-top:4px;">探测→武器化→验证</div></div>
+<div style="text-align:center;padding:16px;background:#fff7f7;border-radius:6px;"><div style="font-size:24px;font-weight:600;color:#f56c6c;">4</div><div style="font-size:12px;color:#909399;margin-top:4px;">越狱分片</div></div>
+<div style="text-align:center;padding:16px;background:#fffbe6;border-radius:6px;"><div style="font-size:24px;font-weight:600;color:#e6a23c;">5</div><div style="font-size:12px;color:#909399;margin-top:4px;">数据外泄流水线</div></div>
+<div style="text-align:center;padding:16px;background:#f0f9ff;border-radius:6px;"><div style="font-size:24px;font-weight:600;color:#409EFF;">3</div><div style="font-size:12px;color:#909399;margin-top:4px;">权限提升分片</div></div>
+</div>
+</div>
+</div>
+</div>
+
 <script src="../../js/common.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded',function(){
@@ -132,9 +167,10 @@ if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'}
 function switchTab(el,tab){
 document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active');});
 el.classList.add('active');
-['spread','toolchain','attack'].forEach(function(id){document.getElementById('panel-'+id).style.display=(id===tab)?'block':'none';});
+['spread','toolchain','attack','fragment'].forEach(function(id){document.getElementById('panel-'+id).style.display=(id===tab)?'block':'none';});
 }
 function goChain(id){toastSuccess('查看攻击链: '+id);}
+function goFragment(id){navigateTo('pages/monitor/intent-fragment-detection.html?id='+id,'意图分片逃逸检测','intent-fragment-detection.html?id='+id);}
 </script>
 </body>
 </html>
