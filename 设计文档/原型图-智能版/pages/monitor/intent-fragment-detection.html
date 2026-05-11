@@ -364,7 +364,7 @@
         <!-- AI 综合评估 -->
         <div style="margin-top:16px; padding:12px; background:#fff7f7; border:1px solid #f5c2c2; border-radius:6px;">
           <div style="font-weight:600; color:#c45650; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-            <span style="font-size:16px;">&#9888;</span> AI 综合研判
+            <span style="font-size:16px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></span> AI 综合研判
           </div>
           <div style="font-size:13px; color:#606266; line-height:1.8;">
             <strong>攻击链重构结论：</strong>用户张三在 23 分钟内通过 3 个独立会话，完成了「探测技术栈 → 构造漏洞利用 → 针对内网目标验证」的完整攻击链。
@@ -398,7 +398,7 @@
         <div class="pattern-match-item matched">
           <div class="match-stage-header">
             <span class="match-stage-name">阶段 1：信息探测</span>
-            <span class="match-stage-status hit">&#10003; 命中</span>
+            <span class="match-stage-status hit"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> 命中</span>
           </div>
           <div class="match-stage-detail">
             匹配意图类型: <code>reconnaissance</code><br>
@@ -411,12 +411,12 @@
         <div class="pattern-match-item matched">
           <div class="match-stage-header">
             <span class="match-stage-name">阶段 2：武器化构造</span>
-            <span class="match-stage-status hit">&#10003; 命中</span>
+            <span class="match-stage-status hit"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> 命中</span>
           </div>
           <div class="match-stage-detail">
             匹配意图类型: <code>weaponization</code><br>
             命中关键词: <code>"构造"</code>, <code>"漏洞利用"</code>, <code>"PoC"</code>, <code>"远程执行"</code><br>
-            实体引用验证: <code>Spring Boot 2.7</code> &#8594; <code style="color:#67c23a;">&#10003; 引用链连续</code><br>
+            实体引用验证: <code>Spring Boot 2.7</code> &#8594; <code style="color:#67c23a;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> 引用链连续</code><br>
             会话: <code>SES-20260420-118</code>
           </div>
         </div>
@@ -424,12 +424,12 @@
         <div class="pattern-match-item matched">
           <div class="match-stage-header">
             <span class="match-stage-name">阶段 3：验证执行</span>
-            <span class="match-stage-status hit">&#10003; 命中</span>
+            <span class="match-stage-status hit"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> 命中</span>
           </div>
           <div class="match-stage-detail">
             匹配意图类型: <code>validation</code><br>
             命中关键词: <code>"验证"</code>, <code>"测试"</code>, <code>"是否存在"</code><br>
-            实体引用验证: <code>PoC</code>, <code>漏洞</code> &#8594; <code style="color:#67c23a;">&#10003; 引用链连续</code><br>
+            实体引用验证: <code>PoC</code>, <code>漏洞</code> &#8594; <code style="color:#67c23a;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/></svg> 引用链连续</code><br>
             附加风险: <code style="color:#f56c6c;">含内网IP (10.0.0.15)</code><br>
             会话: <code>SES-20260420-125</code>
           </div>

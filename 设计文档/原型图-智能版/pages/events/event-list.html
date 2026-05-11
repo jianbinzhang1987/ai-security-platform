@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -35,7 +35,7 @@
 
     /* 视图切换Tab */
     .view-tabs {
-      display: flex;
+      display: flex !important;
       gap: 4px;
       margin-bottom: 16px;
       padding: 4px;
@@ -201,6 +201,7 @@
       <div class="view-tab" onclick="switchView(this, 'my-pending')">待我处理 <span class="badge">12</span></div>
       <div class="view-tab" onclick="switchView(this, 'unclaimed')">未认领</div>
       <div class="view-tab" onclick="switchView(this, 'critical')">高危未处理 <span class="badge">3</span></div>
+      <div class="view-tab" onclick="switchView(this, 'composite')">复合事件 <span class="badge">5</span></div>
     </div>
 
     <!-- 待我处理视图统计概览 -->
@@ -317,20 +318,29 @@
             <option>规则检出</option>
             <option>AI检出</option>
             <option>规则+AI联合检出</option>
+            <option>复合事件分析引擎</option>
             <option>AI跳过</option>
+          </select>
+        </div>
+        <div class="search-item">
+          <span class="form-label">事件类型</span>
+          <select class="form-select">
+            <option value="">全部</option>
+            <option>单事件</option>
+            <option>复合事件</option>
           </select>
         </div>
         <div class="search-item">
           <span class="form-label">AI研判状态</span>
           <select class="form-select" id="filterAiStatus">
             <option value="">全部</option>
-            <option value="pending">⏳ pending</option>
-            <option value="generated">✅ generated</option>
-            <option value="confirmed">✅ confirmed</option>
-            <option value="modified">📝 modified</option>
-            <option value="rejected">❌ rejected</option>
-            <option value="timeout">⚠️ timeout</option>
-            <option value="error">🔴 error</option>
+            <option value="pending"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M6 2v6h.01L6 8.01 10 12l-4 4 .01.01H6V22h12v-5.99h-.01L18 16l-4-4 4-3.99-.01-.01H18V2H6zm10 14.5V20H8v-3.5l4-4 4 4zm-4-5l-4-4V4h8v3.5l-4 4z"/></svg> pending</option>
+            <option value="generated"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> generated</option>
+            <option value="confirmed"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg> confirmed</option>
+            <option value="modified"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> modified</option>
+            <option value="rejected"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/></svg> rejected</option>
+            <option value="timeout"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> timeout</option>
+            <option value="error"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><circle cx="12" cy="12" r="10"/></svg> error</option>
           </select>
         </div>
         <div class="search-item">
@@ -426,7 +436,7 @@
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
               <td><span class="tag tag-warning">ACT-20260416-018 建议限制</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-018','sp_04_tool')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00018')">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00018')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
             <tr data-id="EVT-2026-00012">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00012" onchange="checkBtnState()"></td>
@@ -441,7 +451,7 @@
               <td><span class="status-badge status-confirmed"></span>已处置</td>
               <td>李运营</td>
               <td><span class="tag tag-info">ACT-20260416-012 已通知</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-012','sp_06_output')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00012')">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00012')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
             <tr data-id="EVT-2026-00009">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00009" onchange="checkBtnState()"></td>
@@ -456,23 +466,71 @@
               <td><span class="status-badge status-fp"></span>误报</td>
               <td>张安全</td>
               <td><span class="tag tag-success">FP-SAMPLE-009 规则优化</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260416-009','sp_02_llm')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00009')">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00009')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
-            <!-- 复合事件示例：属于分片逃逸链路 -->
+            <!-- 场景四：意图分片逃逸 -->
             <tr data-id="EVT-2026-00025" style="background:#fff7f7;">
               <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00025" onchange="checkBtnState()"></td>
-              <td><span class="event-id">EVT-2026-00025</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;">&#9888; 复合事件</span></td>
-              <td><span class="mono">TRC-20260420-125</span><br><span class="form-hint mono">sp_03_llm</span></td>
-              <td><span class="event-time">04-20 10:25</span><div class="form-hint">分片逃逸链路</div></td>
-              <td>代码助手<br><span class="form-hint">app_id: app_code_assistant</span><br><span class="form-hint">llm.chat</span></td>
+              <td><span class="event-id">EVT-2026-00025</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 复合事件</span></td>
+              <td><span class="mono" style="color:#e6a23c;">包含 3 个关联会话</span><br><span class="form-hint">多路追踪</span></td>
+              <td><span class="event-time">04-20 10:05 - 10:25</span><div class="form-hint">持续 20 分钟</div></td>
+              <td>张三 (研发部)<br><span class="form-hint">app_id: 知识库助手</span></td>
               <td><span class="tag tag-danger">高风险</span></td>
-              <td>意图分片逃逸<br><span class="form-hint" style="color:#f56c6c;">阶段3/3: 验证执行</span></td>
-              <td class="ai-state-cell"><span class="tag tag-ai">AI复合检出</span><span class="tag tag-ai">跨会话关联</span><span class="tag tag-ai">意图链连续</span><div class="form-hint">置信等级：高 (0.94)</div></td>
-              <td><div class="evidence-tags"><span class="tag tag-danger">内网IP引用</span><span class="tag tag-warning">实体引用链</span><span class="tag tag-info">23min窗口</span></div><div class="evidence-summary">会话3引用会话2的"PoC"实体，构成完整攻击链验证阶段。</div></td>
+              <td>意图分片逃逸<br><span class="form-hint" style="color:#f56c6c;">模式: recon-to-exploit</span></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">AI复合检出</span><span class="tag tag-ai">意图链连续</span><div class="form-hint">置信等级：高 (0.94)</div></td>
+              <td><div class="evidence-tags"><span class="tag tag-danger">分片提问</span><span class="tag tag-warning">实体引用链</span><span class="tag tag-info">20min窗口</span></div><div class="evidence-summary">单独会话合规，组合后构成完整的攻击链验证。</div></td>
               <td><span class="status-badge status-new"></span>待处置</td>
               <td>--</td>
-              <td><span class="tag tag-warning">链路 CE-IF-20260420-001</span></td>
-              <td><div class="table-action-col"><button class="btn btn-link" onclick="openDetail('EVT-2026-00025')">详情</button><button class="btn btn-link" style="color:#f56c6c;" onclick="goFragmentChain('CE-IF-20260420-001')">查看链路</button><button class="btn btn-link warning" onclick="goTrace('TRC-20260420-125','sp_03_llm')">溯源</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+              <td><span class="tag tag-warning">建议限制访问</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="navigateTo('pages/monitor/complex-event-detail.html', '事件详情', this)">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00025')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+            </tr>
+            <!-- 场景一：渐进式敏感信息获取 -->
+            <tr data-id="EVT-2026-00026" style="background:#fff7f7;">
+              <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00026" onchange="checkBtnState()"></td>
+              <td><span class="event-id">EVT-2026-00026</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 复合事件</span></td>
+              <td><span class="mono" style="color:#e6a23c;">包含 4 个关联会话</span><br><span class="form-hint">会话聚合</span></td>
+              <td><span class="event-time">04-20 11:30 - 12:00</span><div class="form-hint">持续 30 分钟</div></td>
+              <td>李研发<br><span class="form-hint">app_id: 研发代码审查助手</span></td>
+              <td><span class="tag tag-danger">高风险</span></td>
+              <td>渐进式敏感信息获取<br><span class="form-hint" style="color:#f56c6c;">模式: info-jigsaw</span></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">主题聚合分析</span><span class="tag tag-ai">信息拼图</span><div class="form-hint">置信等级：高 (0.91)</div></td>
+              <td><div class="evidence-tags"><span class="tag tag-danger">信息拼图</span><span class="tag tag-warning">低频多点探测</span></div><div class="evidence-summary">短窗口内先后查询零散低密文档，最终通过Agent拼凑出完整高密架构设计。</div></td>
+              <td><span class="status-badge status-new"></span>待处置</td>
+              <td>--</td>
+              <td><span class="tag tag-warning">已阻断最终生成</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="navigateTo('pages/monitor/complex-event-detail.html', '事件详情', this)">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00026')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+            </tr>
+            <!-- 场景二：数据外泄链路追踪 -->
+            <tr data-id="EVT-2026-00027" style="background:#fff7f7;">
+              <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00027" onchange="checkBtnState()"></td>
+              <td><span class="event-id">EVT-2026-00027</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 复合事件</span></td>
+              <td><span class="mono" style="color:#e6a23c;">包含 2 个跨应用关联</span><br><span class="form-hint">链路追踪</span></td>
+              <td><span class="event-time">04-20 14:10 - 14:15</span><div class="form-hint">持续 5 分钟</div></td>
+              <td>王运营<br><span class="form-hint">人事档案助理 -> 数据分析仪</span></td>
+              <td><span class="tag tag-danger">极高风险</span></td>
+              <td>数据外泄链路追踪<br><span class="form-hint" style="color:#f56c6c;">模式: cross-app-exfil</span></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">语义指纹追踪</span><span class="tag tag-ai">异常外联</span><div class="form-hint">置信等级：极高 (0.98)</div></td>
+              <td><div class="evidence-tags"><span class="tag tag-danger">高管薪酬数据</span><span class="tag tag-warning">图表API外联</span></div><div class="evidence-summary">机密数据从 Agent A 输出后，被复制输入至 Agent B，并尝试通过工具调用外发。</div></td>
+              <td><span class="status-badge status-confirmed"></span>已处置</td>
+              <td>张安全</td>
+              <td><span class="tag tag-info">已冻结账号</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="navigateTo('pages/monitor/complex-event-detail.html', '事件详情', this)">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00027')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
+            </tr>
+            <!-- 场景五：工具调用链的累积越权 -->
+            <tr data-id="EVT-2026-00028" style="background:#fff7f7;">
+              <td><input type="checkbox" class="row-checkbox" data-id="EVT-2026-00028" onchange="checkBtnState()"></td>
+              <td><span class="event-id">EVT-2026-00028</span><br><span class="tag tag-danger" style="margin-top:4px;font-size:11px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 复合事件</span></td>
+              <td><span class="mono" style="color:#e6a23c;">1 个 Trace (包含 3 个 Span)</span><br><span class="form-hint">单链追踪</span></td>
+              <td><span class="event-time">04-20 15:22 - 15:24</span><div class="form-hint">持续 2 分钟</div></td>
+              <td>智能运维 Copilot<br><span class="form-hint">app_id: app_ops_copilot</span></td>
+              <td><span class="tag tag-danger">高风险</span></td>
+              <td>工具调用链累积越权<br><span class="form-hint" style="color:#f56c6c;">模式: chain-privilege-esc</span></td>
+              <td class="ai-state-cell"><span class="tag tag-ai">调用链闭环</span><span class="tag tag-ai">逻辑提权</span><div class="form-hint">置信等级：高 (0.89)</div></td>
+              <td><div class="evidence-tags"><span class="tag tag-danger">越权写入</span><span class="tag tag-warning">闭环修改链路</span></div><div class="evidence-summary">同一Trace内经历Read->Analyze->Write，最终导致未授权的配置覆写。</div></td>
+              <td><span class="status-badge status-new"></span>待处置</td>
+              <td>--</td>
+              <td><span class="tag tag-warning">写入动作已拦截</span></td>
+              <td><div class="table-action-col"><button class="btn btn-link" onclick="navigateTo('pages/monitor/complex-event-detail.html', '事件详情', this)">详情</button><span style="display:inline-block;position:relative;margin-left:4px;"><button class="btn btn-link" onclick="toggleMoreActions(this)">更多 ▾</button><div class="action-dropdown" style="display:none;position:absolute;right:0;top:28px;min-width:120px;background:#fff;border:1px solid #EBEEF5;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;padding:4px 0;"><button class="btn btn-link" onclick="openAssignModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">指派</button><button class="btn btn-link" onclick="openConfirmModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">确认风险</button><button class="btn btn-link" onclick="openFalsePositiveModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">标记误报</button><button class="btn btn-link" onclick="openAcceptRiskModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">接受风险</button><button class="btn btn-link" onclick="openCloseModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">处置登记</button><button class="btn btn-link" onclick="openFinalCloseModal('EVT-2026-00028')" style="display:block;text-align:left;padding:6px 12px;white-space:nowrap;">关闭</button></div></span></div></td>
             </tr>
           </tbody>
         </table>
@@ -484,7 +542,7 @@
           <button class="btn btn-link" onclick="clearSelection()">清空选择</button>
         </div>
         <div class="batch-action-right">
-          <span class="batch-warning" id="batchWarning" style="display:none;">⚠️ 选中事件包含 <strong>2</strong> 条高危(critical)事件</span>
+          <span class="batch-warning" id="batchWarning" style="display:none;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 选中事件包含 <strong>2</strong> 条高危(critical)事件</span>
           <button class="btn btn-default" onclick="openBatchClaimModal()">批量认领</button>
           <button class="btn btn-default" onclick="openBatchAssignModal()">批量分派</button>
           <button class="btn btn-default" onclick="openBatchConfirmModal()">批量确认AI研判</button>
@@ -645,7 +703,7 @@
           </div>
         </form>
         <div style="background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;padding:12px;margin-top:16px;color:#e6a23c;font-size:13px;">
-          ⚠️ 高危事件将同时通知安全负责人
+          <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 高危事件将同时通知安全负责人
         </div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('batchAssignModal')">取消</button><button class="btn btn-primary" onclick="submitBatchAssign()">确认分派</button></div>
@@ -683,7 +741,7 @@
           </div>
         </form>
         <div style="background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;padding:12px;margin-top:16px;color:#e6a23c;font-size:13px;">
-          ⚠️ 此操作将关闭事件并更新规则命中率统计
+          <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> 此操作将关闭事件并更新规则命中率统计
         </div>
       </div>
       <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('batchFpModal')">取消</button><button class="btn btn-primary" onclick="submitBatchFp()">确认标记</button></div>

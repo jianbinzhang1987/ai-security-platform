@@ -222,7 +222,7 @@
             <div class="evidence-tab" onclick="switchEvidenceTab(this,'attackchain')">AI攻击链</div>
           </div>
           <div class="ai-summary-box" id="aiEvidenceSummary">
-            <div class="ai-label"><span style="font-size:14px;">&#x1F916;</span> AI 证据摘要</div>
+            <div class="ai-label"><span style="font-size:14px;"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M21 11c0-1.1-.9-2-2-2h-1V7c0-1.1-.9-2-2-2h-3.5V3.5C12.5 2.67 11.83 2 11 2s-1.5.67-1.5 1.5V5H6c-1.1 0-2 .9-2 2v2H3c-1.1 0-2 .9-2 2v2c0 1.1.9 2 2 2h1v4c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-4h1c1.1 0 2-.9 2-2v-2zm-9 6c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/></svg></span> AI 证据摘要</div>
             <div>该 Trace 属于攻击链 <strong>CHAIN-20260420-003</strong>（阶段 3/4）。当前 Span 为关键转折点：工具输入携带内部仓库路径 "internal/payment"，触发工具能力边界越界风险（置信度 0.91）。建议优先确认该工具声明状态，并评估是否需追加 Session 级限制。</div>
           </div>
           <div class="alert-box alert-warning"><span class="alert-icon">!</span><span id="evidenceFinding">检测到未声明工具发起外联数据流，Tool Input 中包含内部仓库路径片段，当前应用未声明外部 HTTP POST 能力。</span></div>

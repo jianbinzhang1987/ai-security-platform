@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>检测模式管理</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.pattern-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; align-items: start; }
+
+.pattern-cat-list { display: grid; gap: 8px; }
+.pattern-cat {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px; border-radius: 6px; border: 1px solid #EBEEF5;
+  background: #fff; cursor: pointer; transition: all .15s; font-size: 13px;
+}
+.pattern-cat:hover { border-color: #B3D8FF; }
+.pattern-cat.active { border-color: #409EFF; background: #F5FAFF; font-weight: 600; }
+.pattern-cat .cat-count { font-size: 11px; color: #909399; background: #f5f7fa; padding: 1px 6px; border-radius: 4px; }
+
+.pattern-card {
+  border: 1px solid #EBEEF5; border-radius: 6px; padding: 16px;
+  background: #fff; margin-bottom: 12px; transition: all .15s;
+}
+.pattern-card:hover { border-color: #B3D8FF; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.pattern-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.pattern-card-title { font-weight: 600; font-size: 14px; color: #303133; }
+.pattern-card-id { font-family: Consolas, monospace; font-size: 12px; color: #909399; }
+.pattern-card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.meta-tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; }
+.meta-tag.type-seq { background: #e6f7ff; color: #096dd9; }
+.meta-tag.type-acc { background: #f2f9f2; color: #389e0d; }
+.meta-tag.type-ref { background: #fff0f0; color: #c45650; }
+.meta-tag.type-dev { background: #fdf6ec; color: #a0782c; }
+.meta-tag.type-clo { background: #f5f0ff; color: #722ed1; }
+.meta-tag.status-on { background: #f2f9f2; color: #67c23a; }
+.meta-tag.status-off { background: #f4f4f5; color: #909399; }
+
+.pattern-card-desc { font-size: 13px; color: #606266; line-height: 1.6; margin-bottom: 10px; }
+.pattern-stages { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+.stage-box { padding: 4px 10px; border-radius: 4px; font-size: 12px; background: #f5f7fa; border: 1px solid #e4e7ed; }
+.stage-box.active { background: #ecf5ff; border-color: #b3d8ff; color: #409EFF; }
+.stage-arrow { color: #c0c4cc; font-size: 12px; }
+
+.dsl-editor {
+  background: #1e1e1e; color: #d4d4d4; border-radius: 6px; padding: 14px;
+  font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.7;
+  overflow-x: auto; white-space: pre;
+}
+.dsl-editor .k { color: #569cd6; }
+.dsl-editor .s { color: #ce9178; }
+.dsl-editor .n { color: #b5cea8; }
+.dsl-editor .c { color: #6a9955; }
+
+.rule-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.rule-table th, .rule-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #ebeef5; }
+.rule-table th { background: #f5f7fa; font-weight: 500; color: #606266; font-size: 12px; }
+.rule-table tr:last-child td { border-bottom: none; }
+
+.overview-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.ov-card { background: #fff; border: 1px solid #EBEEF5; border-radius: 6px; padding: 14px; text-align: center; }
+.ov-value { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.ov-label { font-size: 12px; color: #909399; }
+
+.toggle-switch {
+  position: relative; width: 40px; height: 20px; background: #dcdfe6; border-radius: 10px; cursor: pointer; transition: background .2s;
+}
+.toggle-switch.on { background: #409EFF; }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px;
+  background: #fff; border-radius: 50%; transition: transform .2s;
+}
+.toggle-switch.on::after { transform: translateX(20px); }
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">检测模式管理</div>
+      <div class="page-subtitle">统一管理复杂事件检测的模式定义：支持时序、累积、引用链、偏离、闭环五种模式类型，通过配置化规则覆盖所有场景。</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-default" onclick="toastSuccess('模式配置已导出')">导出配置</button>
+      <button class="btn btn-primary" onclick="openModal('addPatternModal')">+ 新建模式</button>
+    </div>
+  </div>
+
+  <div class="overview-stats">
+    <div class="ov-card"><div class="ov-value" style="color:#409EFF;">18</div><div class="ov-label">已启用模式</div></div>
+    <div class="ov-card"><div class="ov-value" style="color:#f56c6c;">5</div><div class="ov-label">高风险场景</div></div>
+    <div class="ov-card"><div class="ov-value" style="color:#e6a23c;">3</div><div class="ov-label">自定义模式</div></div>
+    <div class="ov-card"><div class="ov-value" style="color:#67c23a;">2</div><div class="ov-label">今日新增命中</div></div>
+  </div>
+
+  <div class="pattern-layout">
+
+    <!-- 左栏：场景分类 -->
+    <div class="left-panel">
+      <div class="card" style="margin:0;">
+        <div class="card-header"><div class="card-title">场景分类</div></div>
+        <div class="card-body" style="padding:12px;">
+          <div class="pattern-cat-list">
+            <div class="pattern-cat active" onclick="selectCat(this,'all')">
+              <span>全部场景</span><span class="cat-count">23</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'info')">
+              <span>渐进式信息获取</span><span class="cat-count">4</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'fragment')">
+              <span>意图分片逃逸</span><span class="cat-count">6</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'exfil')">
+              <span>数据外泄链路</span><span class="cat-count">5</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'baseline')">
+              <span>行为基线偏离</span><span class="cat-count">3</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'toolchain')">
+              <span>工具链越权</span><span class="cat-count">3</span>
+            </div>
+            <div class="pattern-cat" onclick="selectCat(this,'custom')">
+              <span>自定义</span><span class="cat-count">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <div class="card-header"><div class="card-title">模式类型说明</div></div>
+        <div class="card-body" style="padding:12px; font-size:12px; color:#606266; line-height:1.8;">
+          <div style="margin-bottom:8px;"><span class="meta-tag type-seq">时序模式</span> 多阶段按序发生，如 探测->武器化->验证</div>
+          <div style="margin-bottom:8px;"><span class="meta-tag type-acc">累积模式</span> 同一上下文中指标单调递增，如信息面覆盖度</div>
+          <div style="margin-bottom:8px;"><span class="meta-tag type-ref">引用链模式</span> 后事件引用前事件的实体，如分片逃逸</div>
+          <div style="margin-bottom:8px;"><span class="meta-tag type-dev">偏离模式</span> 当前值偏离历史基线，如行为突变</div>
+          <div><span class="meta-tag type-clo">闭环模式</span> 状态转换形成完整环路，如 read->analyze->write</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右栏：模式列表 -->
+    <div class="right-panel">
+
+      <!-- 模式卡片 1 -->
+      <div class="pattern-card">
+        <div class="pattern-card-header">
+          <div>
+            <div class="pattern-card-title">探测->武器化->验证</div>
+            <div class="pattern-card-id">recon-to-exploit | 意图分片逃逸</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')" title="启用/禁用"></div>
+            <button class="btn btn-link" onclick="openModal('editPatternModal')">编辑</button>
+            <button class="btn btn-link danger" onclick="toastSuccess('模式已删除')">删除</button>
+          </div>
+        </div>
+        <div class="pattern-card-meta">
+          <span class="meta-tag type-seq">时序模式 (SEQUENCE)</span>
+          <span class="meta-tag status-on">已启用</span>
+          <span class="meta-tag">聚合: user_id + device_fp</span>
+          <span class="meta-tag">窗口: 1h</span>
+          <span class="meta-tag">阈值: >= 2 阶段</span>
+        </div>
+        <div class="pattern-card-desc">识别用户将高风险意图拆分为多个独立会话、以规避单次请求检测的策略对抗行为。典型攻击链：获取系统技术栈 -> 构造漏洞利用 -> 针对内网目标验证。</div>
+        <div class="pattern-stages">
+          <span class="stage-box active">阶段1: 信息探测</span><span class="stage-arrow">-></span>
+          <span class="stage-box active">阶段2: 武器化构造</span><span class="stage-arrow">-></span>
+          <span class="stage-box active">阶段3: 验证执行</span>
+        </div>
+        <div class="dsl-editor">pattern_id: <span class="s">"recon-to-exploit"</span>
+match_type: <span class="k">SEQUENCE</span>
+context_key: <span class="s">"user_id"</span>
+time_window: <span class="s">"1h"</span>
+stages:
+  - stage: <span class="n">1</span>
+    intent_filter: [<span class="s">"reconnaissance"</span>]
+    entity_extract: [<span class="s">"framework"</span>, <span class="s">"system_info"</span>]
+  - stage: <span class="n">2</span>
+    intent_filter: [<span class="s">"weaponization"</span>]
+    entity_reference_required: <span class="k">true</span>
+  - stage: <span class="n">3</span>
+    intent_filter: [<span class="s">"validation"</span>]
+    entity_reference_required: <span class="k">true</span>
+trigger:
+  matched_stages: <span class="s">">= 2"</span>
+  require_continuity: <span class="k">true</span></div>
+      </div>
+
+      <!-- 模式卡片 2 -->
+      <div class="pattern-card">
+        <div class="pattern-card-header">
+          <div>
+            <div class="pattern-card-title">信息面覆盖度累积</div>
+            <div class="pattern-card-id">info-surface-escalation | 渐进式信息获取</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+            <button class="btn btn-link" onclick="openModal('editPatternModal')">编辑</button>
+            <button class="btn btn-link danger" onclick="toastSuccess('模式已删除')">删除</button>
+          </div>
+        </div>
+        <div class="pattern-card-meta">
+          <span class="meta-tag type-acc">累积模式 (ACCUMULATION)</span>
+          <span class="meta-tag status-on">已启用</span>
+          <span class="meta-tag">聚合: session_id</span>
+          <span class="meta-tag">窗口: session</span>
+          <span class="meta-tag">阈值: >= 75%</span>
+        </div>
+        <div class="pattern-card-desc">同一会话内用户逐步扩大信息面覆盖范围，从公开信息(L1)到内部信息(L2)再到敏感信息(L3)，累积覆盖度超过阈值即触发。</div>
+        <div class="pattern-stages">
+          <span class="stage-box">L1 公开: 0-30%</span><span class="stage-arrow">-></span>
+          <span class="stage-box">L2 内部: 30-60%</span><span class="stage-arrow">-></span>
+          <span class="stage-box active">L3 敏感: >75%</span>
+        </div>
+        <div class="dsl-editor">pattern_id: <span class="s">"info-surface-escalation"</span>
+match_type: <span class="k">ACCUMULATION</span>
+context_key: <span class="s">"session_id"</span>
+time_window: <span class="s">"session"</span>
+entities_to_track:
+  - type: <span class="s">"InfoSurfaceEntity"</span>
+    field: <span class="s">"coverage_score"</span>
+    aggregation: <span class="k">SUM</span>
+trigger:
+  metric: <span class="s">"total_coverage_score"</span>
+  operator: <span class="s">">="</span>
+  threshold: <span class="n">0.75</span></div>
+      </div>
+
+      <!-- 模式卡片 3 -->
+      <div class="pattern-card">
+        <div class="pattern-card-header">
+          <div>
+            <div class="pattern-card-title">数据外泄流水线</div>
+            <div class="pattern-card-id">data-exfil-pipeline | 数据外泄链路</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+            <button class="btn btn-link" onclick="openModal('editPatternModal')">编辑</button>
+            <button class="btn btn-link danger" onclick="toastSuccess('模式已删除')">删除</button>
+          </div>
+        </div>
+        <div class="pattern-card-meta">
+          <span class="meta-tag type-clo">闭环模式 (CLOSURE)</span>
+          <span class="meta-tag status-on">已启用</span>
+          <span class="meta-tag">聚合: user_id</span>
+          <span class="meta-tag">窗口: 4h</span>
+          <span class="meta-tag">阈值: 闭环完整</span>
+        </div>
+        <div class="pattern-card-desc">检测数据访问->编码转换->传输外发的完整外泄闭环。通过数据指纹引擎标记敏感数据，追踪其从访问到传输的全生命周期。</div>
+        <div class="pattern-stages">
+          <span class="stage-box active">数据访问</span><span class="stage-arrow">-></span>
+          <span class="stage-box active">编码/转换</span><span class="stage-arrow">-></span>
+          <span class="stage-box active">传输外发</span>
+        </div>
+        <div class="dsl-editor">pattern_id: <span class="s">"data-exfil-pipeline"</span>
+match_type: <span class="k">CLOSURE</span>
+context_key: <span class="s">"user_id"</span>
+time_window: <span class="s">"4h"</span>
+stages:
+  - stage: <span class="n">1</span>
+    action: <span class="s">"data_access"</span>
+    fingerprint_required: <span class="k">true</span>
+  - stage: <span class="n">2</span>
+    action: <span class="s">"data_encoding"</span>
+  - stage: <span class="n">3</span>
+    action: <span class="s">"data_transmission"</span>
+    fingerprint_match_required: <span class="k">true</span>
+trigger:
+  closure_complete: <span class="k">true</span>
+  fingerprint_continuity: <span class="k">true</span></div>
+      </div>
+
+      <!-- 模式卡片 4 -->
+      <div class="pattern-card">
+        <div class="pattern-card-header">
+          <div>
+            <div class="pattern-card-title">行为基线偏离检测</div>
+            <div class="pattern-card-id">behavior-baseline-drift | 行为基线偏离</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+            <button class="btn btn-link" onclick="openModal('editPatternModal')">编辑</button>
+            <button class="btn btn-link danger" onclick="toastSuccess('模式已删除')">删除</button>
+          </div>
+        </div>
+        <div class="pattern-card-meta">
+          <span class="meta-tag type-dev">偏离模式 (DEVIATION)</span>
+          <span class="meta-tag status-off">已禁用</span>
+          <span class="meta-tag">聚合: user_id</span>
+          <span class="meta-tag">窗口: 30d基线</span>
+          <span class="meta-tag">阈值: >= 3sigma</span>
+        </div>
+        <div class="pattern-card-desc">基于用户历史行为基线（访问时间、资源类型、请求频率），检测当前行为是否显著偏离。适用于发现内部人员异常活动。</div>
+        <div class="pattern-stages">
+          <span class="stage-box">基线学习</span><span class="stage-arrow">vs</span>
+          <span class="stage-box active">当前行为</span><span class="stage-arrow">=></span>
+          <span class="stage-box" style="border-color:#f56c6c;color:#f56c6c;">偏离 >= 3sigma</span>
+        </div>
+        <div class="dsl-editor">pattern_id: <span class="s">"behavior-baseline-drift"</span>
+match_type: <span class="k">DEVIATION</span>
+context_key: <span class="s">"user_id"</span>
+time_window: <span class="s">"30d_baseline"</span>
+metrics:
+  - name: <span class="s">"access_time_entropy"</span>
+  - name: <span class="s">"resource_type_diversity"</span>
+  - name: <span class="s">"request_frequency"</span>
+trigger:
+  deviation_operator: <span class="s">">="</span>
+  deviation_threshold: <span class="n">3</span>  <span class="c"># sigma</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addPatternModal">
+  <div class="modal-box modal-lg">
+    <div class="modal-header"><div class="modal-title">新建检测模式</div><div class="modal-close" onclick="closeModal('addPatternModal')">&#215;</div></div>
+    <div class="modal-body">
+      <form>
+        <div class="form-row"><div class="form-label required">模式名称</div><div class="form-field"><input class="form-control" placeholder="如：探测->武器化->验证"></div></div>
+        <div class="form-row"><div class="form-label required">模式ID</div><div class="form-field"><input class="form-control mono" placeholder="recon-to-exploit"></div></div>
+        <div class="form-row"><div class="form-label required">模式类型</div><div class="form-field">
+          <select class="form-select"><option value="">请选择</option><option>时序模式 (SEQUENCE)</option><option>累积模式 (ACCUMULATION)</option><option>引用链模式 (REFERENCE)</option><option>偏离模式 (DEVIATION)</option><option>闭环模式 (CLOSURE)</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">所属场景</div><div class="form-field">
+          <select class="form-select"><option>渐进式信息获取</option><option>意图分片逃逸</option><option>数据外泄链路</option><option>行为基线偏离</option><option>工具链越权</option><option>自定义</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">聚合维度</div><div class="form-field">
+          <select class="form-select"><option>user_id</option><option>session_id</option><option>user_id + device_fingerprint</option><option>app_id</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">时间窗口</div><div class="form-field">
+          <select class="form-select"><option>会话生命周期</option><option>1 小时</option><option selected>4 小时</option><option>24 小时</option><option>7 天</option><option>30 天基线</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">触发阈值</div><div class="form-field"><input class="form-control" placeholder="如：匹配 >= 2 个阶段"></div></div>
+        <div class="form-row"><div class="form-label">DSL 定义</div><div class="form-field">
+          <textarea class="form-textarea mono" rows="8" placeholder="pattern_id: ...
+match_type: ..."></textarea>
+        </div></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('addPatternModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('检测模式已创建');closeModal('addPatternModal')">创建模式</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editPatternModal">
+  <div class="modal-box modal-lg">
+    <div class="modal-header"><div class="modal-title">编辑检测模式</div><div class="modal-close" onclick="closeModal('editPatternModal')">&#215;</div></div>
+    <div class="modal-body">
+      <form>
+        <div class="form-row"><div class="form-label required">模式名称</div><div class="form-field"><input class="form-control" value="探测->武器化->验证"></div></div>
+        <div class="form-row"><div class="form-label required">模式类型</div><div class="form-field">
+          <select class="form-select"><option selected>时序模式 (SEQUENCE)</option><option>累积模式 (ACCUMULATION)</option><option>引用链模式 (REFERENCE)</option><option>偏离模式 (DEVIATION)</option><option>闭环模式 (CLOSURE)</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">聚合维度</div><div class="form-field">
+          <select class="form-select"><option selected>user_id + device_fingerprint</option><option>user_id</option><option>session_id</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">时间窗口</div><div class="form-field">
+          <select class="form-select"><option selected>1 小时</option><option>4 小时</option><option>24 小时</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">触发阈值</div><div class="form-field"><input class="form-control" value="匹配 >= 2 个阶段"></div></div>
+        <div class="form-row"><div class="form-label">DSL 定义</div><div class="form-field">
+          <textarea class="form-textarea mono" rows="10">pattern_id: "recon-to-exploit"
+match_type: SEQUENCE
+context_key: "user_id"
+time_window: "1h"
+stages:
+  - stage: 1
+    intent_filter: ["reconnaissance"]
+    entity_extract: ["framework", "system_info"]
+  - stage: 2
+    intent_filter: ["weaponization"]
+    entity_reference_required: true
+  - stage: 3
+    intent_filter: ["validation"]
+    entity_reference_required: true
+trigger:
+  matched_stages: ">= 2"
+  require_continuity: true</textarea>
+        </div></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('editPatternModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('模式已保存');closeModal('editPatternModal')">保存更改</button></div>
+  </div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof updateBreadcrumb === 'function') {
+    updateBreadcrumb([{ label: '安全监控' }, { label: '检测模式管理' }]);
+  }
+});
+function selectCat(el, cat) {
+  document.querySelectorAll('.pattern-cat').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  toastInfo('已切换场景: ' + cat);
+}
+</script>
+</body>
+</html>

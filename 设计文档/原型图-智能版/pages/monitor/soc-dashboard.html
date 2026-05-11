@@ -20,8 +20,12 @@
 .icon-time{background:#ecf5ff;color:#409eff}
 .icon-link{background:#e1f3d8;color:#67c23a}
 .icon-baseline{background:#f5f0ff;color:#7c3aed}
+
 .soc-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.user-mini-list{display:grid;gap:8px}
+.soc-layout-3col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* Users & Apps */
+.user-mini-list, .app-mini-list{display:grid;gap:8px}
 .user-mini-item{display:grid;grid-template-columns:32px 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer}
 .user-mini-item:hover{background:#F5FAFF;border-color:#B3D8FF}
 .user-avatar-mini{width:32px;height:32px;border-radius:50%;background:#409EFF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600}
@@ -29,6 +33,14 @@
 .user-risk-ring.high{border-color:#f56c6c;color:#f56c6c}
 .user-risk-ring.mid{border-color:#e6a23c;color:#e6a23c}
 .user-risk-ring.low{border-color:#67c23a;color:#67c23a}
+
+.app-mini-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #EBEEF5;border-radius:4px;}
+.app-icon{width:32px;height:32px;border-radius:6px;background:#f5f7fa;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.app-info{flex:1;}
+.app-name{font-size:13px;font-weight:600;color:#303133;margin-bottom:2px;}
+.app-desc{font-size:12px;color:#909399;}
+
+/* Chains */
 .chain-mini-list{display:grid;gap:8px}
 .chain-mini-item{border:1px solid #EBEEF5;border-radius:4px;padding:10px 12px;cursor:pointer}
 .chain-mini-item:hover{background:#F5FAFF}
@@ -37,86 +49,239 @@
 .chain-dot.active{background:#409EFF}
 .chain-dot.predict{background:#c0c4cc;border:2px dashed #909399;opacity:.6}
 .chain-predict-label{color:#909399;font-size:11px;background:#f4f4f5;padding:1px 6px;border-radius:4px;margin-left:4px}
+
+/* Threat Types & Ops */
+.threat-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.threat-label{width:70px;font-size:12px;color:#606266;text-align:right;}
+.threat-track{flex:1;height:8px;background:#EBEEF5;border-radius:4px;overflow:hidden;}
+.threat-fill{height:100%;border-radius:4px;}
+.threat-val{width:36px;font-size:12px;font-weight:600;color:#303133;text-align:left;}
+
+.ops-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.ops-box{background:#f8f9fb;border:1px solid #ebeef5;border-radius:6px;padding:16px;text-align:center;}
+.ops-num{font-size:24px;font-weight:700;color:#409EFF;margin:8px 0 4px;}
+.ops-label{font-size:12px;color:#909399;}
+
+/* Timeline & Trend */
 .timeline-row{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid #F5F7FA}
 .timeline-row:last-child{border-bottom:none}
 .timeline-time{width:48px;font-size:12px;color:#909399;flex-shrink:0}
 .timeline-badge{padding:2px 6px;border-radius:4px;font-size:11px;font-weight:600}
+
 .stacked-area{height:200px;display:flex;align-items:flex-end;gap:4px;padding:0 8px 28px;border:1px solid #EBEEF5;border-radius:4px;background:#fff}
-.stacked-col{flex:1;display:flex;flex-direction:column-reverse;gap:1px;position:relative}
+.stacked-col{flex:1;display:flex;flex-direction:column-reverse;gap:1px;position:relative;height:100%}
 .stacked-col::after{content:attr(data-day);position:absolute;left:50%;bottom:-22px;transform:translateX(-50%);color:#909399;font-size:11px}
 .stack-seg{width:100%;border-radius:2px 2px 0 0;min-height:2px}
+
+/* Dark Mode Overrides for SOC Dashboard Big Screen */
+html, body.page-content { background-color: #0b1120 !important; color: #e2e8f0; min-height: 100vh; margin: 0; }
+.sub-page { background: transparent !important; box-shadow: none !important; padding: 16px 24px; border: none !important;}
+.page-title { color: #f8fafc !important; }
+.page-subtitle { color: #94a3b8 !important; }
+.five-card { background: #1e293b; border-color: #334155; }
+.five-card:hover { border-color: #3b82f6; box-shadow: 0 6px 16px rgba(59,130,246,.2); background: #1e293b; }
+.five-card .label { color: #94a3b8; }
+.five-card .value { color: #f8fafc; }
+.card { background: #1e293b !important; border-color: #334155 !important; }
+.card-header { border-bottom: 1px solid #334155 !important; }
+.card-title { color: #f8fafc !important; }
+.user-mini-item, .app-mini-item, .chain-mini-item { background: #0f172a; border-color: #334155; }
+.user-mini-item:hover, .chain-mini-item:hover { background: #1e293b; border-color: #3b82f6; }
+.app-icon { background: #334155; }
+.app-name { color: #f8fafc; }
+.app-desc { color: #94a3b8; }
+.threat-label, .threat-val { color: #cbd5e1; }
+.threat-track { background: #334155; }
+.ops-box { background: #0f172a; border-color: #334155; }
+.ops-label { color: #94a3b8; }
+.timeline-row { border-bottom-color: #334155; }
+.timeline-time { color: #94a3b8; }
+.stacked-area { background: #0f172a; border-color: #334155; }
+.chain-predict-label { background: #334155; color: #cbd5e1; }
+.chain-status { color: #94a3b8; }
+.form-select { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+.btn-default { background: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+.btn-default:hover { border-color: #3b82f6 !important; color: #3b82f6 !important; }
+.icon-persona{background:rgba(239, 68, 68, 0.1);color:#ef4444}
+.icon-org{background:rgba(245, 158, 11, 0.1);color:#f59e0b}
+.icon-time{background:rgba(59, 130, 246, 0.1);color:#3b82f6}
+.icon-link{background:rgba(16, 185, 129, 0.1);color:#10b981}
+.icon-baseline{background:rgba(139, 92, 246, 0.1);color:#8b5cf6}
+.five-card .trend.up{color:#ef4444}
+.five-card .trend.down{color:#10b981}
+.user-risk-ring { border-color: #334155; }
+.user-risk-ring.high { border-color: #ef4444; color: #ef4444; }
+.user-risk-ring.mid { border-color: #f59e0b; color: #f59e0b; }
+.user-risk-ring.low { border-color: #10b981; color: #10b981; }
+.page-header { background: transparent !important; border-bottom: 1px solid #334155 !important; }
+.tag { background-color: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.2) !important; }
+.tag-danger { color: #ef4444 !important; background: rgba(239, 68, 68, 0.1) !important; border-color: rgba(239, 68, 68, 0.2) !important; }
+.tag-warning { color: #f59e0b !important; background: rgba(245, 158, 11, 0.1) !important; border-color: rgba(245, 158, 11, 0.2) !important; }
+.tag-info { color: #3b82f6 !important; background: rgba(59, 130, 246, 0.1) !important; border-color: rgba(59, 130, 246, 0.2) !important; }
+.tag-primary { color: #8b5cf6 !important; background: rgba(139, 92, 246, 0.1) !important; border-color: rgba(139, 92, 246, 0.2) !important; }
+.timeline-badge { border: 1px solid transparent; }
 </style>
 </head>
 <body class="page-content">
 <div class="sub-page">
 <div class="page-header">
-<div><div class="page-title">SOC 分析驾驶舱</div><div class="page-subtitle">五维高级分析入口：人员、组织、时序、关联、行为基线。点击卡片下钻到对应分析页面。</div></div>
-<div style="display:flex;gap:8px;">
-<button class="btn btn-default" onclick="toastSuccess('SOC 驾驶舱数据已刷新')">刷新</button>
-<select class="form-select" style="width:auto;" onchange="toastSuccess('刷新周期已切换')"><option>实时</option><option selected>5 分钟</option><option>1 小时</option></select>
-<button class="btn btn-primary" onclick="toastSuccess('SOC 分析报告导出中')">导出</button>
-</div>
+  <div><div class="page-title">SOC 分析驾驶舱</div><div class="page-subtitle">全面覆盖资产、威胁、人员与基线。监测大模型安全态势，闭环运营效能。</div></div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn btn-default" onclick="toastSuccess('SOC 驾驶舱数据已刷新')">刷新</button>
+    <select class="form-select" style="width:auto;" onchange="toastSuccess('刷新周期已切换')"><option>实时</option><option selected>5 分钟</option><option>1 小时</option></select>
+    <button class="btn btn-primary" onclick="toastSuccess('SOC 分析报告导出中')">导出</button>
+  </div>
 </div>
 
 <div class="five-cards">
-<div class="five-card" onclick="goPage('persona-analysis.html','人员风险分析')"><div class="icon icon-persona">&#x1F464;</div><div class="label">高风险用户</div><div class="value" style="color:#f56c6c;">12</div><div class="trend up">&#x2191; 较昨日 +3</div></div>
-<div class="five-card" onclick="goPage('org-risk-posture.html','组织风险态势')"><div class="icon icon-org">&#x1F3E2;</div><div class="label">风险热点部门</div><div class="value" style="color:#e6a23c;">3</div><div class="trend stable">&#x2192; 与昨日持平</div></div>
-<div class="five-card" onclick="goPage('../events/event-list.html','风险事件')"><div class="icon icon-time">&#x23F0;</div><div class="label">攻击趋势</div><div class="value" style="color:#409eff;">上升</div><div class="trend up">&#x2191; 提示词攻击周期活跃</div></div>
-<div class="five-card" onclick="goPage('correlation-analysis.html','风险关联分析')"><div class="icon icon-link">&#x1F517;</div><div class="label">活跃攻击链</div><div class="value" style="color:#67c23a;">5</div><div class="trend down">&#x2193; 较昨日 -2</div></div>
-<div class="five-card" onclick="goPage('behavior-baseline.html','行为基线管理')"><div class="icon icon-baseline">&#x1F4CA;</div><div class="label">偏离告警</div><div class="value" style="color:#7c3aed;">8</div><div class="trend up">&#x2191; 新增 2 条未确认</div></div>
+  <div class="five-card" onclick="goPage('persona-analysis.html','人员风险分析')"><div class="icon icon-persona"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><div class="label">高风险用户</div><div class="value" style="color:#f56c6c;">12</div><div class="trend up">&#x2191; 较昨日 +3</div></div>
+  <div class="five-card"><div class="icon icon-org"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></div><div class="label">受威胁应用</div><div class="value" style="color:#e6a23c;">8</div><div class="trend stable">&#x2192; 核心资产受控</div></div>
+  <div class="five-card" onclick="goPage('../events/event-list.html','风险事件')"><div class="icon icon-time"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg></div><div class="label">网关自动拦截</div><div class="value" style="color:#409eff;">4,521</div><div class="trend up">&#x2191; 防御面扩大 12%</div></div>
+  <div class="five-card" onclick="goPage('../events/event-list.html','风险事件')"><div class="icon icon-link"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></div><div class="label">复合攻击链</div><div class="value" style="color:#f56c6c;">5</div><div class="trend down">&#x2193; 较昨日 -2</div></div>
+  <div class="five-card" onclick="goPage('behavior-baseline.html','行为基线管理')"><div class="icon icon-baseline"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></div><div class="label">基线偏离告警</div><div class="value" style="color:#7c3aed;">8</div><div class="trend up">&#x2191; 新增 2 条</div></div>
+</div>
+
+<div class="soc-layout-3col">
+  <!-- Col 1: 运营效能 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">安全防御与运营效能</div></div>
+    <div class="card-body">
+      <div class="ops-grid">
+        <div class="ops-box">
+          <div class="icon icon-time" style="margin:0 auto;"></div>
+          <div class="ops-num">12 <span style="font-size:14px;font-weight:normal;">min</span></div>
+          <div class="ops-label">平均处置耗时 (MTTR)</div>
+        </div>
+        <div class="ops-box">
+          <div class="icon icon-baseline" style="margin:0 auto;"></div>
+          <div class="ops-num" style="color:#3b82f6;">92 <span style="font-size:14px;font-weight:normal;">%</span></div>
+          <div class="ops-label">AI 自动研判覆盖率</div>
+        </div>
+      </div>
+      <div style="margin-top:16px; font-size:13px; color:#cbd5e1; line-height:1.6; background:rgba(59, 130, 246, 0.1); border:1px solid rgba(59, 130, 246, 0.2); padding:10px; border-radius:4px;">
+        <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-1.3l-.85-.6C7.8 13.06 7 11.13 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 2.13-.8 4.06-2.15 5.1z"/></svg> <strong>今日拦截效能：</strong> Higress 网关已成功在边缘节点阻断 <strong style="color:#f8fafc;">4,521</strong> 次恶意注入，极大减轻了后方大模型推理成本。
+      </div>
+    </div>
+  </div>
+
+  <!-- Col 2: 威胁类型 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">AI 核心威胁类型分布</div></div>
+    <div class="card-body" style="padding-top:20px;">
+      <div class="threat-bar">
+        <div class="threat-label">提示词注入</div>
+        <div class="threat-track"><div class="threat-fill" style="width: 45%; background: #f56c6c;"></div></div>
+        <div class="threat-val">45%</div>
+      </div>
+      <div class="threat-bar">
+        <div class="threat-label">工具越界调用</div>
+        <div class="threat-track"><div class="threat-fill" style="width: 25%; background: #e6a23c;"></div></div>
+        <div class="threat-val">25%</div>
+      </div>
+      <div class="threat-bar">
+        <div class="threat-label">敏感数据泄露</div>
+        <div class="threat-track"><div class="threat-fill" style="width: 15%; background: #409EFF;"></div></div>
+        <div class="threat-val">15%</div>
+      </div>
+      <div class="threat-bar">
+        <div class="threat-label">意图偏离</div>
+        <div class="threat-track"><div class="threat-fill" style="width: 10%; background: #7c3aed;"></div></div>
+        <div class="threat-val">10%</div>
+      </div>
+      <div class="threat-bar">
+        <div class="threat-label">模型拒绝DoS</div>
+        <div class="threat-track"><div class="threat-fill" style="width: 5%; background: #909399;"></div></div>
+        <div class="threat-val">5%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Col 3: 资产视角 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">受威胁应用/Agent Top 3</div></div>
+    <div class="card-body">
+      <div class="app-mini-list">
+        <div class="app-mini-item">
+          <div class="app-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M20 18c1.1 0 1.99-.9 1.99-2L22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z"/></svg></div>
+          <div class="app-info">
+            <div class="app-name">研发代码审查助手</div>
+            <div class="app-desc">被拦截 142 次 | 涉及 3 条攻击链</div>
+          </div>
+          <span class="tag tag-danger">高危</span>
+        </div>
+        <div class="app-mini-item">
+          <div class="app-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M14 6v15H3v-2l2-3v-1h1v1l2-3v1h1v-1l2 3v1h1v-1l2 3v2zM14 5h-4V3h4v2zM21 6v15h-4V6h4z"/></svg></div>
+          <div class="app-info">
+            <div class="app-name">人事档案助理</div>
+            <div class="app-desc">数据越权尝试 89 次</div>
+          </div>
+          <span class="tag tag-warning">中危</span>
+        </div>
+        <div class="app-mini-item">
+          <div class="app-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" style="vertical-align: middle;"><path d="M12 3c-4.97 0-9 4.03-9 9v7c0 1.1.9 2 2 2h4v-8H5v-1c0-3.87 3.13-7 7-7s7 3.13 7 7v1h-4v8h4c1.1 0 2-.9 2-2v-7c0-4.97-4.03-9-9-9z"/></svg></div>
+          <div class="app-info">
+            <div class="app-name">智能客服 Copilot</div>
+            <div class="app-desc">意图偏离 34 次</div>
+          </div>
+          <span class="tag tag-primary">监测中</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="soc-layout">
-<div class="card">
-<div class="card-header"><div class="card-title">高风险用户 Top 10</div><button class="btn btn-link" onclick="goPage('persona-analysis.html','人员风险分析')">查看全部</button></div>
-<div class="card-body">
-<div class="user-mini-list">
-<div class="user-mini-item" onclick="goPersona('user_zhangsan')"><div class="user-avatar-mini">张</div><div><div style="font-weight:600;">张三 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 8 | 跨应用 3 | 基线偏离 2</div></div><div class="user-risk-ring high">92</div><span class="tag tag-danger">上升</span></div>
-<div class="user-mini-item" onclick="goPersona('user_lisi')"><div class="user-avatar-mini">李</div><div><div style="font-weight:600;">李四 <span class="tag tag-info">财务中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 6 | 跨应用 2 | 基线偏离 1</div></div><div class="user-risk-ring high">87</div><span class="tag tag-danger">上升</span></div>
-<div class="user-mini-item" onclick="goPersona('user_wangwu')"><div class="user-avatar-mini">王</div><div><div style="font-weight:600;">王五 <span class="tag tag-info">客服部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 5 | 跨应用 1 | 基线偏离 0</div></div><div class="user-risk-ring mid">68</div><span class="tag tag-warning">平稳</span></div>
-<div class="user-mini-item" onclick="goPersona('user_zhaoliu')"><div class="user-avatar-mini">赵</div><div><div style="font-weight:600;">赵六 <span class="tag tag-info">运营中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 4 | 跨应用 2 | 基线偏离 1</div></div><div class="user-risk-ring mid">55</div><span class="tag tag-warning">上升</span></div>
-<div class="user-mini-item" onclick="goPersona('user_qianqi')"><div class="user-avatar-mini">钱</div><div><div style="font-weight:600;">钱七 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 3 | 跨应用 1 | 基线偏离 0</div></div><div class="user-risk-ring low">42</div><span class="tag tag-success">下降</span></div>
-</div>
-</div>
-</div>
+  <!-- 高风险用户 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">高风险用户 Top 5</div><button class="btn btn-link" onclick="goPage('persona-analysis.html','人员风险分析')">查看全部</button></div>
+    <div class="card-body">
+      <div class="user-mini-list">
+        <div class="user-mini-item" onclick="goPersona('user_zhangsan')"><div class="user-avatar-mini">张</div><div><div style="font-weight:600;">张三 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 8 | 跨应用 3 | 基线偏离 2</div></div><div class="user-risk-ring high">92</div><span class="tag tag-danger">上升</span></div>
+        <div class="user-mini-item" onclick="goPersona('user_lisi')"><div class="user-avatar-mini">李</div><div><div style="font-weight:600;">李四 <span class="tag tag-info">财务中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 6 | 跨应用 2 | 基线偏离 1</div></div><div class="user-risk-ring high">87</div><span class="tag tag-danger">上升</span></div>
+        <div class="user-mini-item" onclick="goPersona('user_wangwu')"><div class="user-avatar-mini">王</div><div><div style="font-weight:600;">王五 <span class="tag tag-info">客服部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 5 | 跨应用 1 | 基线偏离 0</div></div><div class="user-risk-ring mid">68</div><span class="tag tag-warning">平稳</span></div>
+      </div>
+    </div>
+  </div>
 
-<div class="card">
-<div class="card-header"><div class="card-title">活跃攻击链态势</div><button class="btn btn-link" onclick="goPage('correlation-analysis.html','风险关联分析')">查看详情</button></div>
-<div class="card-body">
-<div class="chain-mini-list">
-<div class="chain-mini-item" onclick="goChain('CHAIN-20260420-003')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260420-003</strong><span class="tag tag-danger">进行中</span></div><div class="chain-status"><span class="chain-dot active"></span>提示词注入<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>探测边界<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>工具越界<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot predict"></span>数据外发<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 2 个应用 | 4 个 Trace | 攻击者: 张三</div></div>
-<div class="chain-mini-item" onclick="goChain('CHAIN-20260419-001')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260419-001</strong><span class="tag tag-warning">监测中</span></div><div class="chain-status"><span class="chain-dot active"></span>角色扮演<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>模板诱导<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot predict"></span>越界调用<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 1 个应用 | 3 个 Trace | 攻击者: 未识别</div></div>
-<div class="chain-mini-item" onclick="goChain('CHAIN-20260418-002')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260418-002</strong><span class="tag tag-success">已阻断</span></div><div class="chain-status"><span class="chain-dot active"></span>编码绕过<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>敏感数据请求<span style="color:#c0c4cc;">&#x2192;</span><span class="chain-dot active"></span>已拦截</div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 3 个应用 | 5 个 Trace | 攻击者: 李四</div></div>
-</div>
-</div>
-</div>
+  <!-- 攻击链态势 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">活跃攻击链态势</div><button class="btn btn-link" onclick="goPage('../events/event-list.html','风险事件')">查看详情</button></div>
+    <div class="card-body">
+      <div class="chain-mini-list">
+        <div class="chain-mini-item" onclick="goPage('../events/event-list.html?tab=composite')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260420-003</strong><span class="tag tag-danger">进行中</span></div><div class="chain-status"><span class="chain-dot active"></span>提示词注入<span style="color:#c0c4cc;">&rarr;</span><span class="chain-dot active"></span>探测边界<span style="color:#c0c4cc;">&rarr;</span><span class="chain-dot active"></span>工具越界<span style="color:#c0c4cc;">&rarr;</span><span class="chain-dot predict"></span>数据外发<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 2 个应用 | 4 个 Trace | 攻击者: 张三</div></div>
+        <div class="chain-mini-item" onclick="goPage('../events/event-list.html?tab=composite')"><div style="display:flex;justify-content:space-between;"><strong>CHAIN-20260419-001</strong><span class="tag tag-warning">监测中</span></div><div class="chain-status"><span class="chain-dot active"></span>角色扮演<span style="color:#c0c4cc;">&rarr;</span><span class="chain-dot active"></span>模板诱导<span style="color:#c0c4cc;">&rarr;</span><span class="chain-dot predict"></span>越界调用<span class="chain-predict-label">预测</span></div><div style="font-size:12px;color:#909399;margin-top:4px;">涉及 1 个应用 | 3 个 Trace | 攻击者: 未识别</div></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="soc-layout">
-<div class="card">
-<div class="card-header"><div class="card-title">近 7 日风险时序趋势</div><div style="display:flex;gap:8px;"><span class="tag tag-danger">高</span><span class="tag tag-warning">中</span><span class="tag tag-primary">低</span></div></div>
-<div class="card-body">
-<div class="stacked-area">
-<div class="stacked-col" data-day="04-24"><div class="stack-seg" style="height:18%;background:#409EFF;"></div><div class="stack-seg" style="height:12%;background:#E6A23C;"></div><div class="stack-seg" style="height:8%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="04-23"><div class="stack-seg" style="height:22%;background:#409EFF;"></div><div class="stack-seg" style="height:10%;background:#E6A23C;"></div><div class="stack-seg" style="height:6%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="04-22"><div class="stack-seg" style="height:15%;background:#409EFF;"></div><div class="stack-seg" style="height:18%;background:#E6A23C;"></div><div class="stack-seg" style="height:14%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="04-21"><div class="stack-seg" style="height:20%;background:#409EFF;"></div><div class="stack-seg" style="height:14%;background:#E6A23C;"></div><div class="stack-seg" style="height:10%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="04-20"><div class="stack-seg" style="height:16%;background:#409EFF;"></div><div class="stack-seg" style="height:22%;background:#E6A23C;"></div><div class="stack-seg" style="height:20%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="04-19"><div class="stack-seg" style="height:24%;background:#409EFF;"></div><div class="stack-seg" style="height:16%;background:#E6A23C;"></div><div class="stack-seg" style="height:12%;background:#F56C6C;"></div></div>
-<div class="stacked-col" data-day="今日"><div class="stack-seg" style="height:12%;background:#409EFF;"></div><div class="stack-seg" style="height:20%;background:#E6A23C;"></div><div class="stack-seg" style="height:28%;background:#F56C6C;"></div></div>
-</div>
-</div>
-</div>
+  <!-- 时序趋势 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">近 7 日风险时序趋势</div><div style="display:flex;gap:8px;"><span class="tag tag-danger">高</span><span class="tag tag-warning">中</span><span class="tag tag-primary">低</span></div></div>
+    <div class="card-body">
+      <div class="stacked-area">
+        <div class="stacked-col" data-day="04-24"><div class="stack-seg" style="height:18%;background:#409EFF;"></div><div class="stack-seg" style="height:12%;background:#E6A23C;"></div><div class="stack-seg" style="height:8%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="04-23"><div class="stack-seg" style="height:22%;background:#409EFF;"></div><div class="stack-seg" style="height:10%;background:#E6A23C;"></div><div class="stack-seg" style="height:6%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="04-22"><div class="stack-seg" style="height:15%;background:#409EFF;"></div><div class="stack-seg" style="height:18%;background:#E6A23C;"></div><div class="stack-seg" style="height:14%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="04-21"><div class="stack-seg" style="height:20%;background:#409EFF;"></div><div class="stack-seg" style="height:14%;background:#E6A23C;"></div><div class="stack-seg" style="height:10%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="04-20"><div class="stack-seg" style="height:16%;background:#409EFF;"></div><div class="stack-seg" style="height:22%;background:#E6A23C;"></div><div class="stack-seg" style="height:20%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="04-19"><div class="stack-seg" style="height:24%;background:#409EFF;"></div><div class="stack-seg" style="height:16%;background:#E6A23C;"></div><div class="stack-seg" style="height:12%;background:#F56C6C;"></div></div>
+        <div class="stacked-col" data-day="今日"><div class="stack-seg" style="height:12%;background:#409EFF;"></div><div class="stack-seg" style="height:20%;background:#E6A23C;"></div><div class="stack-seg" style="height:28%;background:#F56C6C;"></div></div>
+      </div>
+    </div>
+  </div>
 
-<div class="card">
-<div class="card-header"><div class="card-title">今日行为基线偏离告警</div><button class="btn btn-link" onclick="goPage('behavior-baseline.html','行为基线管理')">查看全部</button></div>
-<div class="card-body">
-<div class="timeline-row"><div class="timeline-time">14:32</div><span class="timeline-badge" style="background:#fde2e2;color:#f56c6c;">高</span><div style="flex:1;font-size:13px;"><strong>研发代码审查助手</strong> 调用频率偏离基线 3.2σ<div style="font-size:12px;color:#909399;">当前 142 次/小时，基线 45±12 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-001')">查看</button></div>
-<div class="timeline-row"><div class="timeline-time">13:15</div><span class="timeline-badge" style="background:#fdf6ec;color:#e6a23c;">中</span><div style="flex:1;font-size:13px;"><strong>财务审计 Agent</strong> 工具使用种类偏离基线 2.1σ<div style="font-size:12px;color:#909399;">当前使用 5 种工具，基线 2±1 种</div></div><button class="btn btn-link" onclick="goBaseline('bl-002')">查看</button></div>
-<div class="timeline-row"><div class="timeline-time">11:48</div><span class="timeline-badge" style="background:#ecf5ff;color:#409eff;">低</span><div style="flex:1;font-size:13px;"><strong>智能客服 Copilot</strong> 响应时长偏离基线 1.8σ<div style="font-size:12px;color:#909399;">当前平均 2.3s，基线 1.2±0.4s</div></div><button class="btn btn-link" onclick="goBaseline('bl-003')">查看</button></div>
-<div class="timeline-row"><div class="timeline-time">09:22</div><span class="timeline-badge" style="background:#fde2e2;color:#f56c6c;">高</span><div style="flex:1;font-size:13px;"><strong>人事档案助理</strong> 敏感数据访问偏离基线 4.1σ<div style="font-size:12px;color:#909399;">当前 28 次/小时，基线 3±2 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-004')">查看</button></div>
-</div>
-</div>
+  <!-- 基线告警 -->
+  <div class="card">
+    <div class="card-header"><div class="card-title">今日行为基线偏离告警</div><button class="btn btn-link" onclick="goPage('behavior-baseline.html','行为基线管理')">查看全部</button></div>
+    <div class="card-body">
+      <div class="timeline-row"><div class="timeline-time">14:32</div><span class="timeline-badge" style="background:rgba(239, 68, 68, 0.1);color:#ef4444;border-color:rgba(239, 68, 68, 0.2);">高</span><div style="flex:1;font-size:13px;"><strong>研发代码审查助手</strong> 调用频率偏离基线 3.2σ<div style="font-size:12px;color:#94a3b8;">当前 142 次/小时，基线 45±12 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-001')">查看</button></div>
+      <div class="timeline-row"><div class="timeline-time">13:15</div><span class="timeline-badge" style="background:rgba(245, 158, 11, 0.1);color:#f59e0b;border-color:rgba(245, 158, 11, 0.2);">中</span><div style="flex:1;font-size:13px;"><strong>财务审计 Agent</strong> 工具使用种类偏离基线 2.1σ<div style="font-size:12px;color:#94a3b8;">当前使用 5 种工具，基线 2±1 种</div></div><button class="btn btn-link" onclick="goBaseline('bl-002')">查看</button></div>
+      <div class="timeline-row"><div class="timeline-time">11:48</div><span class="timeline-badge" style="background:rgba(59, 130, 246, 0.1);color:#3b82f6;border-color:rgba(59, 130, 246, 0.2);">低</span><div style="flex:1;font-size:13px;"><strong>智能客服 Copilot</strong> 响应时长偏离基线 1.8σ<div style="font-size:12px;color:#94a3b8;">当前平均 2.3s，基线 1.2±0.4s</div></div><button class="btn btn-link" onclick="goBaseline('bl-003')">查看</button></div>
+      <div class="timeline-row"><div class="timeline-time">09:22</div><span class="timeline-badge" style="background:rgba(239, 68, 68, 0.1);color:#ef4444;border-color:rgba(239, 68, 68, 0.2);">高</span><div style="flex:1;font-size:13px;"><strong>人事档案助理</strong> 敏感数据访问偏离基线 4.1σ<div style="font-size:12px;color:#94a3b8;">当前 28 次/小时，基线 3±2 次/小时</div></div><button class="btn btn-link" onclick="goBaseline('bl-004')">查看</button></div>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -129,7 +294,6 @@ function goPage(page,label){
 if(typeof navigateTo==='function'){navigateTo('pages/monitor/'+page,label,null);}else{window.location.href=page;}
 }
 function goPersona(id){toastSuccess('跳转人员风险分析: '+id);}
-function goChain(id){toastSuccess('跳转攻击链详情: '+id);}
 function goBaseline(id){toastSuccess('跳转行为基线详情: '+id);}
 </script>
 </body>
