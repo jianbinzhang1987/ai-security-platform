@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>业务风险告警规则</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .condition-box { background:#f5f7fa; border:1px solid #EBEEF5; border-radius:4px; padding:10px; font-family:Consolas, monospace; font-size:12px; line-height:1.8; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">业务风险告警规则</div>
+        <div class="page-subtitle">统一配置高危 Prompt、工具越界、敏感输出、事件超时和审批超时等业务风险告警。</div>
+      </div>
+      <button class="btn btn-primary" type="button" onclick="openAlertRuleModal()">新增告警</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>规则名称</th>
+              <th>触发条件</th>
+              <th>聚合 / 抑制窗口</th>
+              <th>通知渠道</th>
+              <th>自动创建事件</th>
+              <th>响应动作</th>
+              <th>状态</th>
+              <th style="width:200px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>高危 Prompt / 越狱事件聚合</td>
+              <td>risk_type in prompt_jailbreak 且 risk_level = high，5 分钟内 ≥ 3 次</td>
+              <td>5 分钟 / 30 分钟</td>
+              <td>飞书安全运营机器人</td>
+              <td><span class="tag tag-success">是</span></td>
+              <td>通知负责人 + 创建风险事件 + 升级值班人</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('高危 Prompt / 越狱事件聚合')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('高危 Prompt / 越狱事件聚合')">历史样本回放</button></td>
+            </tr>
+            <tr>
+              <td>工具越界调用频次超阈值</td>
+              <td>risk_type = tool_boundary 且 app_id 相同，10 分钟内 ≥ 5 次</td>
+              <td>10 分钟 / 60 分钟</td>
+              <td>飞书 + 邮件汇总</td>
+              <td><span class="tag tag-success">是</span></td>
+              <td>通知应用负责人 + 建议 Tool 级限制</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('工具越界调用频次超阈值')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('工具越界调用频次超阈值')">历史样本回放</button></td>
+            </tr>
+            <tr>
+              <td>敏感数据输出持续发生</td>
+              <td>risk_type = sensitive_output 且同一 app_id 30 分钟内 ≥ 4 次</td>
+              <td>30 分钟 / 2 小时</td>
+              <td>邮件汇总 + 飞书</td>
+              <td><span class="tag tag-success">是</span></td>
+              <td>通知合规负责人 + 触发脱敏策略复核</td>
+              <td><span class="tag tag-warning">灰度</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('敏感数据输出持续发生')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('敏感数据输出持续发生')">历史样本回放</button></td>
+            </tr>
+            <tr>
+              <td>事件超时未确认</td>
+              <td>event_status = pending_confirm 且超过 SLA 30 分钟</td>
+              <td>15 分钟 / 60 分钟</td>
+              <td>飞书安全运营机器人</td>
+              <td><span class="tag tag-info">否</span></td>
+              <td>升级事件负责人 + 通知值班主管</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('事件超时未确认')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('事件超时未确认')">历史样本回放</button></td>
+            </tr>
+            <tr>
+              <td>高危审批超时</td>
+              <td>approval_status = pending 且 risk_level = high，超过 20 分钟</td>
+              <td>10 分钟 / 30 分钟</td>
+              <td>短信紧急通道 + 飞书</td>
+              <td><span class="tag tag-info">否</span></td>
+              <td>升级审批人 + 通知安全负责人</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td><button class="btn btn-link" type="button" onclick="openAlertRuleModal('高危审批超时')">编辑</button><button class="btn btn-link" type="button" onclick="openTestModal('高危审批超时')">历史样本回放</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="alertRuleModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title">新增 / 编辑业务风险告警</div>
+        <div class="modal-close" onclick="closeModal('alertRuleModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="alertRuleForm">
+          <div class="form-row"><div class="form-label required">规则名称</div><div class="form-field"><input id="alertRuleName" class="form-control" value="高危 Prompt / 越狱事件聚合" required></div></div>
+          <div class="form-row"><div class="form-label">风险类型</div><div class="form-field"><select class="form-select"><option>高危 Prompt / 越狱</option><option>工具能力边界越界</option><option>敏感数据输出</option><option>事件超时未确认</option><option>高危审批超时</option></select></div></div>
+          <div class="form-row"><div class="form-label">条件表达式</div><div class="form-field"><input class="form-control" value="risk_level = high AND count(app_id, 5m) >= 3"></div></div>
+          <div class="form-row"><div class="form-label">聚合窗口</div><div class="form-field"><select class="form-select"><option>5 分钟</option><option>10 分钟</option><option>15 分钟</option><option>30 分钟</option></select></div></div>
+          <div class="form-row"><div class="form-label">抑制窗口</div><div class="form-field"><select class="form-select"><option>30 分钟</option><option>60 分钟</option><option>2 小时</option><option>4 小时</option></select></div></div>
+          <div class="form-row"><div class="form-label">通知渠道</div><div class="form-field"><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div>
+          <div class="form-row"><div class="form-label">响应动作</div><div class="form-field"><div class="checkbox-group"><label class="checkbox-item"><input type="checkbox" checked> 自动创建风险事件</label><label class="checkbox-item"><input type="checkbox" checked> 通知负责人</label><label class="checkbox-item"><input type="checkbox"> 升级值班人</label><label class="checkbox-item"><input type="checkbox"> 触发策略复核</label></div></div></div>
+          <div class="form-row"><div class="form-label">启用状态</div><div class="form-field"><select class="form-select"><option>启用</option><option>灰度</option><option>停用</option></select></div></div>
+        </form>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('alertRuleModal')">取消</button><button class="btn btn-primary" type="button" onclick="submitAlertRule()">保存</button></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="testModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title">规则测试：<span id="testRuleName"></span></div>
+        <div class="modal-close" onclick="closeModal('testModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <div class="form-row"><div class="form-label">历史样本</div><div class="form-field"><input class="form-control" value="EVT-2026-00018 / TRC-20260416-018"></div></div>
+        <div class="condition-box">输入：app_id=app_rd_code_review, risk_type=tool_boundary, count_10m=5
+结果：命中
+动作：创建风险事件、通知应用负责人、建议 Tool 级限制</div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-default" type="button" onclick="closeModal('testModal')">关闭</button><button class="btn btn-primary" type="button" onclick="toastSuccess('测试结果已保存')">保存测试结果</button></div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '统一策略中心' }, { label: '业务风险告警规则' }]);
+      }
+    });
+
+    function openAlertRuleModal(name) {
+      document.getElementById('alertRuleName').value = name || '高危 Prompt / 越狱事件聚合';
+      openModal('alertRuleModal');
+    }
+
+    function submitAlertRule() {
+      closeModal('alertRuleModal');
+      toastSuccess('业务风险告警规则已保存');
+    }
+
+    function openTestModal(name) {
+      document.getElementById('testRuleName').textContent = name;
+      openModal('testModal');
+    }
+  </script>
+</body>
+</html>

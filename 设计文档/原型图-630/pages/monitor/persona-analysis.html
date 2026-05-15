@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>人员风险分析</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.persona-layout{display:grid;grid-template-columns:420px minmax(0,1fr);gap:16px;align-items:start}
+.user-list{display:grid;gap:8px}
+.user-row{display:grid;grid-template-columns:36px 1fr 48px auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid #EBEEF5;border-radius:4px;cursor:pointer;background:#fff}
+.user-row:hover,.user-row.active{background:#F5FAFF;border-color:#B3D8FF}
+.user-avatar-r{width:36px;height:36px;border-radius:50%;background:#409EFF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+.user-score-ring{width:44px;height:44px;border-radius:50%;border:3px solid #EBEEF5;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.user-score-ring.high{border-color:#f56c6c;color:#f56c6c}
+.user-score-ring.mid{border-color:#e6a23c;color:#e6a23c}
+.user-score-ring.low{border-color:#67c23a;color:#67c23a}
+.score-gauge{height:180px;display:flex;align-items:center;justify-content:center;position:relative}
+.score-circle{width:140px;height:140px;border-radius:50%;border:10px solid #EBEEF5;border-top-color:#f56c6c;border-right-color:#f56c6c;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center}
+.score-circle.mid{border-top-color:#e6a23c;border-right-color:#e6a23c}
+.score-circle.low{border-top-color:#67c23a;border-right-color:#67c23a}
+.score-text{transform:rotate(45deg);font-size:36px;font-weight:700;color:#303133}
+.score-label{position:absolute;bottom:0;font-size:12px;color:#909399}
+.trend-chart{height:140px;display:flex;align-items:flex-end;gap:6px;padding:0 4px 20px;border:1px solid #EBEEF5;border-radius:4px;background:#fff}
+.trend-bar{flex:1;border-radius:4px 4px 0 0;position:relative}
+.trend-bar::after{content:attr(data-day);position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);font-size:11px;color:#909399}
+.baseline-card{border:1px solid #EBEEF5;border-radius:4px;padding:12px;background:#fff}
+.baseline-card.deviant{border-color:#fde2e2;background:#FFF7F7}
+.baseline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.baseline-metric{font-size:12px;color:#606266}
+.baseline-value{font-size:18px;font-weight:700;color:#303133}
+.baseline-expected{font-size:12px;color:#909399}
+.session-node{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F7FA}
+.session-node:last-child{border-bottom:none}
+.node-dot{width:10px;height:10px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.node-dot.high{background:#f56c6c}
+.node-dot.mid{background:#e6a23c}
+.node-dot.low{background:#409EFF}
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+<div class="page-header"><div><div class="page-title">人员风险分析</div><div class="page-subtitle">面向 SOC 分析师的用户级风险分析，聚合跨应用、跨会话、跨时间的风险数据。</div></div></div>
+
+<div class="search-bar">
+<div class="search-item"><span class="form-label">用户标识</span><input class="form-control" placeholder="用户名 / user_id"></div>
+<div class="search-item"><span class="form-label">部门</span><select class="form-select"><option value="">全部</option><option>研发部</option><option>财务中心</option><option>客服部</option><option>运营中心</option></select></div>
+<div class="search-item"><span class="form-label">风险等级</span><select class="form-select"><option value="">全部</option><option>高 (≥80)</option><option>中 (50-79)</option><option>低 (<50)</option></select></div>
+<div class="search-item"><span class="form-label">风险趋势</span><select class="form-select"><option value="">全部</option><option>上升</option><option>平稳</option><option>下降</option></select></div>
+<div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('用户列表已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+</div>
+
+<div class="persona-layout">
+<div class="card" style="margin:0;">
+<div class="card-header"><div class="card-title">用户风险列表</div><span class="form-hint">共 86 人</span></div>
+<div class="card-body">
+<div class="user-list">
+<div class="user-row active" onclick="selectUser(this,'user_zhangsan')"><div class="user-avatar-r">张</div><div><div style="font-weight:600;">张三 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 8 | 跨应用 3 | 基线偏离 2</div></div><div class="user-score-ring high">92</div><span class="tag tag-danger">上升</span></div>
+<div class="user-row" onclick="selectUser(this,'user_lisi')"><div class="user-avatar-r">李</div><div><div style="font-weight:600;">李四 <span class="tag tag-info">财务中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 6 | 跨应用 2 | 基线偏离 1</div></div><div class="user-score-ring high">87</div><span class="tag tag-danger">上升</span></div>
+<div class="user-row" onclick="selectUser(this,'user_wangwu')"><div class="user-avatar-r">王</div><div><div style="font-weight:600;">王五 <span class="tag tag-info">客服部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 5 | 跨应用 1 | 基线偏离 0</div></div><div class="user-score-ring mid">68</div><span class="tag tag-warning">平稳</span></div>
+<div class="user-row" onclick="selectUser(this,'user_zhaoliu')"><div class="user-avatar-r">赵</div><div><div style="font-weight:600;">赵六 <span class="tag tag-info">运营中心</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 4 | 跨应用 2 | 基线偏离 1</div></div><div class="user-score-ring mid">55</div><span class="tag tag-warning">上升</span></div>
+<div class="user-row" onclick="selectUser(this,'user_qianqi')"><div class="user-avatar-r">钱</div><div><div style="font-weight:600;">钱七 <span class="tag tag-info">研发部</span></div><div style="font-size:12px;color:#909399;margin-top:2px;">事件 3 | 跨应用 1 | 基线偏离 0</div></div><div class="user-score-ring low">42</div><span class="tag tag-success">下降</span></div>
+</div>
+</div>
+</div>
+
+<div id="personaPanel">
+<div class="card" style="margin-bottom:14px;"><div class="card-header"><div class="card-title">用户风险画像：张三</div><div><span class="tag tag-info">研发部</span><span class="tag tag-info">业务线: 平台研发</span></div></div>
+<div class="card-body" style="display:grid;grid-template-columns:200px 1fr;gap:16px;">
+<div>
+<div class="score-gauge"><div class="score-circle"><div class="score-text">92</div></div><div class="score-label">高风险 (上升)</div></div>
+<div style="text-align:center;margin-top:10px;font-size:12px;color:#909399;">账号创建: 2023-06-15<br>最近风险: 2026-04-20</div>
+</div>
+<div>
+<div style="font-weight:600;margin-bottom:8px;">近 30 日风险趋势</div>
+<div class="trend-chart">
+<div class="trend-bar" data-day="03-25" style="height:35%;background:#67C23A;"></div>
+<div class="trend-bar" data-day="03-30" style="height:42%;background:#67C23A;"></div>
+<div class="trend-bar" data-day="04-05" style="height:48%;background:#E6A23C;"></div>
+<div class="trend-bar" data-day="04-10" style="height:55%;background:#E6A23C;"></div>
+<div class="trend-bar" data-day="04-15" style="height:68%;background:#F56C6C;"></div>
+<div class="trend-bar" data-day="04-20" style="height:92%;background:#F56C6C;"></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+<div class="baseline-card deviant"><div class="baseline-header"><div><div style="font-weight:600;">调用频率</div><div class="baseline-metric">工具调用次数/小时</div></div><span class="tag tag-danger">偏离 3.2σ</span></div><div class="baseline-value">142 <span style="font-size:12px;color:#909399;font-weight:400;">次/小时</span></div><div class="baseline-expected">基线: 45±12 次/小时</div></div>
+<div class="baseline-card deviant"><div class="baseline-header"><div><div style="font-weight:600;">工具种类</div><div class="baseline-metric">使用不同工具数量</div></div><span class="tag tag-danger">偏离 2.8σ</span></div><div class="baseline-value">8 <span style="font-size:12px;color:#909399;font-weight:400;">种</span></div><div class="baseline-expected">基线: 3±1 种</div></div>
+<div class="baseline-card"><div class="baseline-header"><div><div style="font-weight:600;">Prompt 模式多样性</div><div class="baseline-metric">Prompt 语义类别数</div></div><span class="tag tag-success">正常</span></div><div class="baseline-value">4 <span style="font-size:12px;color:#909399;font-weight:400;">类</span></div><div class="baseline-expected">基线: 3±2 类</div></div>
+<div class="baseline-card"><div class="baseline-header"><div><div style="font-weight:600;">响应时长</div><div class="baseline-metric">平均响应时间</div></div><span class="tag tag-success">正常</span></div><div class="baseline-value">1.4 <span style="font-size:12px;color:#909399;font-weight:400;">秒</span></div><div class="baseline-expected">基线: 1.2±0.5 秒</div></div>
+</div>
+
+<div class="card" style="margin-bottom:14px;"><div class="card-header"><div class="card-title">跨会话风险累积</div><span class="tag tag-warning">跨应用累积</span></div>
+<div class="card-body">
+<div style="font-size:12px;color:#909399;margin-bottom:10px;">accumulation_type: application_cross | 累积评分: 0.88 | 风险等级: 高</div>
+<div class="session-node"><div class="node-dot high"></div><div style="flex:1;"><div style="font-weight:600;">SES-20260420-018</div><div style="font-size:12px;color:#909399;">研发代码审查助手 · 工具越界 · 评分 0.86</div></div><span class="tag tag-danger">高</span></div>
+<div class="session-node"><div class="node-dot mid"></div><div style="flex:1;"><div style="font-weight:600;">SES-20260419-012</div><div style="font-size:12px;color:#909399;">测试环境助手 · 提示词注入 · 评分 0.62</div></div><span class="tag tag-warning">中</span></div>
+<div class="session-node"><div class="node-dot mid"></div><div style="flex:1;"><div style="font-weight:600;">SES-20260418-005</div><div style="font-size:12px;color:#909399;">内部知识库助手 · 敏感数据请求 · 评分 0.58</div></div><span class="tag tag-warning">中</span></div>
+<div class="session-node"><div class="node-dot low"></div><div style="flex:1;"><div style="font-weight:600;">SES-20260415-003</div><div style="font-size:12px;color:#909399;">智能客服 Copilot · 意图偏移 · 评分 0.35</div></div><span class="tag tag-primary">低</span></div>
+</div>
+</div>
+
+<div class="card"><div class="card-header"><div class="card-title">关联风险事件</div><button class="btn btn-link" onclick="toastSuccess('跳转风险事件列表')">查看全部 8 条</button></div>
+<div class="card-body">
+<table class="data-table">
+<thead><tr><th>事件 ID</th><th>应用</th><th>风险类型</th><th>检测来源</th><th>时间</th><th>操作</th></tr></thead>
+<tbody>
+<tr><td class="mono">EVT-2026-00018</td><td>研发代码审查助手</td><td><span class="tag tag-danger">工具越界</span></td><td>规则+AI联合</td><td>2026-04-20 10:25</td><td><button class="btn btn-link" onclick="goEvent('EVT-2026-00018')">详情</button></td></tr>
+<tr><td class="mono">EVT-2026-00012</td><td>测试环境助手</td><td><span class="tag tag-warning">提示词注入</span></td><td>AI检出</td><td>2026-04-19 16:40</td><td><button class="btn btn-link" onclick="goEvent('EVT-2026-00012')">详情</button></td></tr>
+<tr><td class="mono">EVT-2026-00009</td><td>内部知识库助手</td><td><span class="tag tag-warning">敏感数据</span></td><td>规则检出</td><td>2026-04-18 09:15</td><td><button class="btn btn-link" onclick="goEvent('EVT-2026-00009')">详情</button></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'},{label:'人员风险分析'}]);
+});
+function selectUser(el,id){
+document.querySelectorAll('.user-row').forEach(function(r){r.classList.remove('active');});
+el.classList.add('active');
+toastSuccess('已加载用户画像: '+id);
+}
+function goEvent(id){toastSuccess('跳转事件详情: '+id);}
+</script>
+</body>
+</html>

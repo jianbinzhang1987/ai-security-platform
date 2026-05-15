@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>会话风险追踪</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .tracking-layout { display:grid; grid-template-columns: 360px minmax(0, 1fr) 360px; gap:16px; align-items:start; }
+    .session-list { display:grid; gap:10px; }
+    .session-card { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; cursor:pointer; }
+    .session-card.active { border-color:#409EFF; background:#F5FAFF; box-shadow:0 0 0 2px rgba(64,158,255,.08); }
+    .session-title { display:flex; justify-content:space-between; gap:8px; margin-bottom:6px; }
+    .session-meta { color:#909399; font-size:12px; line-height:1.7; }
+    .risk-curve-wrap { border:1px solid #EBEEF5; border-radius:4px; background:#fff; padding:16px 12px 28px; position:relative; }
+    .risk-curve-canvas { height:200px; position:relative; }
+    .curve-grid-line { position:absolute; left:0; right:0; height:1px; opacity:.5; }
+    .curve-grid-label { position:absolute; right:0; font-size:11px; padding:0 4px; border-radius:2px; background:rgba(255,255,255,.9); }
+    .curve-legend { display:flex; gap:16px; margin-bottom:10px; font-size:12px; color:#606266; align-items:center; }
+    .curve-legend-dot { display:inline-block; width:10px; height:3px; border-radius:2px; vertical-align:middle; margin-right:4px; }
+    .curve-turn-labels { display:flex; justify-content:space-around; margin-top:6px; font-size:12px; color:#909399; }
+    /* SVG curve lines */
+    .curve-line { fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .curve-dot { stroke:#fff; stroke-width:2; cursor:pointer; }
+    .curve-dot:hover { r:6; }
+    .curve-threshold { stroke-dasharray:6 3; stroke-width:1; fill:none; }
+    .turn-grid { display:grid; gap:10px; margin-top:14px; }
+    .turn-item { display:grid; grid-template-columns:72px 1fr auto; gap:12px; border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; align-items:start; }
+    .turn-item.risk { border-color:#F5C2C2; background:#FFF7F7; }
+    .turn-index { color:#606266; font-weight:600; }
+    .turn-text { color:#303133; line-height:1.7; }
+    .ai-panel { border:1px solid #EBEEF5; border-radius:4px; padding:12px; background:#fff; margin-bottom:12px; }
+    .ai-panel-title { font-weight:600; color:#303133; margin-bottom:8px; display:flex; justify-content:space-between; gap:8px; }
+    .ai-kv { display:grid; grid-template-columns:96px 1fr; gap:8px; font-size:13px; line-height:1.8; }
+    .ai-kv .k { color:#909399; }
+    .reason-list { margin:0; padding-left:18px; color:#606266; line-height:1.8; }
+    .mono { font-family:Consolas, "Courier New", monospace; }
+    @media (max-width: 1500px) {
+      .tracking-layout { grid-template-columns: 320px minmax(0, 1fr); }
+      .side-panel { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">会话风险追踪</div>
+        <div class="page-subtitle">按同一会话聚合多轮输入、模型响应和工具调用，识别会话内风险累积与关键转折点。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="toastSuccess('会话风险明细已导出')">导出明细</button>
+        <button class="btn btn-primary" onclick="goEventDetail()">查看关联事件</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">时间范围</span><select class="form-select"><option>今日</option><option selected>近 7 天</option><option>近 30 天</option></select></div>
+      <div class="search-item"><span class="form-label">接入应用</span><select class="form-select"><option>全部应用</option><option selected>研发代码审查助手</option><option>智能客服 Copilot</option></select></div>
+      <div class="search-item"><span class="form-label">AI状态</span><select class="form-select"><option>全部</option><option>success</option><option>timeout</option><option>circuit_open</option><option>skipped_by_policy</option></select></div>
+      <div class="search-item"><span class="form-label">session_id</span><input class="form-control mono" value="SES-20260416-018"></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('会话风险已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="tracking-layout">
+      <div class="card">
+        <div class="card-header"><div class="card-title">高风险会话</div><span class="tag tag-danger">Top 20</span></div>
+        <div class="card-body">
+          <div class="session-list">
+            <div class="session-card active">
+              <div class="session-title"><strong>SES-20260416-018</strong><span class="tag tag-danger">高</span></div>
+              <div class="session-meta">研发代码审查助手 · 8 轮 · 关键转折：第 5 轮<br>规则+AI联合检出 · ai_status=success</div>
+            </div>
+            <div class="session-card">
+              <div class="session-title"><strong>SES-20260416-012</strong><span class="tag tag-warning">中</span></div>
+              <div class="session-meta">人事档案助理 · 5 轮 · 响应输出复核<br>规则检出 · ai_status=skipped_by_policy</div>
+            </div>
+            <div class="session-card">
+              <div class="session-title"><strong>SES-20260416-009</strong><span class="tag tag-primary">低</span></div>
+              <div class="session-meta">智能客服 Copilot · 3 轮 · 低置信待复核<br>规则检出 · 已标记误报</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">会话内风险曲线</div><div><span class="tag tag-info">Turn 1-8</span> <span class="tag tag-danger">关键转折点</span></div></div>
+          <div class="card-body">
+            <div class="curve-legend">
+              <span><span class="curve-legend-dot" style="background:#409EFF;"></span>规则评分</span>
+              <span><span class="curve-legend-dot" style="background:#7c3aed;"></span>AI评分</span>
+              <span><span class="curve-legend-dot" style="background:#F56C6C;"></span>综合评分</span>
+              <span style="margin-left:auto;"><span class="curve-legend-dot" style="background:#E6A23C;border-style:dashed;"></span>中风险阈值 0.50</span>
+              <span><span class="curve-legend-dot" style="background:#F56C6C;border-style:dashed;"></span>高风险阈值 0.70</span>
+            </div>
+            <div class="risk-curve-wrap">
+              <div class="risk-curve-canvas">
+                <!-- Grid lines -->
+                <div class="curve-grid-line" style="bottom:50%;background:#E6A23C;"></div>
+                <div class="curve-grid-line" style="bottom:70%;background:#F56C6C;"></div>
+                <div class="curve-grid-label" style="bottom:48%;color:#E6A23C;">0.50</div>
+                <div class="curve-grid-label" style="bottom:68%;color:#F56C6C;">0.70</div>
+                <!-- SVG overlay for lines -->
+                <svg id="curveSvg" width="100%" height="100%" style="position:absolute;top:0;left:0;" viewBox="0 0 800 200" preserveAspectRatio="none">
+                  <!-- Threshold lines -->
+                  <line class="curve-threshold" x1="0" y1="100" x2="800" y2="100" stroke="#E6A23C"/>
+                  <line class="curve-threshold" x1="0" y1="60" x2="800" y2="60" stroke="#F56C6C"/>
+                  <!-- Rule score line (blue) -->
+                  <polyline class="curve-line" stroke="#409EFF" points="50,164 150,150 250,130 350,104 450,44 550,60 650,116 750,124"/>
+                  <!-- AI score line (purple) -->
+                  <polyline class="curve-line" stroke="#7c3aed" points="50,170 150,160 250,116 350,90 450,36 550,50 650,104 750,120"/>
+                  <!-- Combined score line (red, bold) -->
+                  <polyline class="curve-line" stroke="#F56C6C" stroke-width="3" points="50,156 150,144 250,112 350,84 450,28 550,44 650,92 750,104"/>
+                  <!-- Data dots - Rule -->
+                  <circle class="curve-dot" fill="#409EFF" cx="50" cy="164" r="4" title="T1 规则: 0.18" onclick="showTurnTooltip('T1','rule',0.18)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="150" cy="150" r="4" title="T2 规则: 0.25" onclick="showTurnTooltip('T2','rule',0.25)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="250" cy="130" r="4" title="T3 规则: 0.35" onclick="showTurnTooltip('T3','rule',0.35)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="350" cy="104" r="4" title="T4 规则: 0.48" onclick="showTurnTooltip('T4','rule',0.48)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="450" cy="44" r="5" title="T5 规则: 0.78 (关键转折)" onclick="showTurnTooltip('T5','rule',0.78)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="550" cy="60" r="4" title="T6 规则: 0.70" onclick="showTurnTooltip('T6','rule',0.70)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="650" cy="116" r="4" title="T7 规则: 0.42" onclick="showTurnTooltip('T7','rule',0.42)"/>
+                  <circle class="curve-dot" fill="#409EFF" cx="750" cy="124" r="4" title="T8 规则: 0.38" onclick="showTurnTooltip('T8','rule',0.38)"/>
+                  <!-- Data dots - AI -->
+                  <circle class="curve-dot" fill="#7c3aed" cx="50" cy="170" r="4" title="T1 AI: 0.15" onclick="showTurnTooltip('T1','ai',0.15)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="150" cy="160" r="4" title="T2 AI: 0.20" onclick="showTurnTooltip('T2','ai',0.20)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="250" cy="116" r="4" title="T3 AI: 0.42" onclick="showTurnTooltip('T3','ai',0.42)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="350" cy="90" r="4" title="T4 AI: 0.55" onclick="showTurnTooltip('T4','ai',0.55)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="450" cy="36" r="5" title="T5 AI: 0.82 (关键转折)" onclick="showTurnTooltip('T5','ai',0.82)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="550" cy="50" r="4" title="T6 AI: 0.75" onclick="showTurnTooltip('T6','ai',0.75)"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="650" cy="104" r="4" title="T7 AI: timeout" onclick="showTurnTooltip('T7','ai','timeout')"/>
+                  <circle class="curve-dot" fill="#7c3aed" cx="750" cy="120" r="4" title="T8 AI: 0.40" onclick="showTurnTooltip('T8','ai',0.40)"/>
+                  <!-- Data dots - Combined -->
+                  <circle class="curve-dot" fill="#F56C6C" cx="50" cy="156" r="4" title="T1 综合: 0.22" onclick="showTurnTooltip('T1','combined',0.22)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="150" cy="144" r="4" title="T2 综合: 0.28" onclick="showTurnTooltip('T2','combined',0.28)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="250" cy="112" r="4" title="T3 综合: 0.44" onclick="showTurnTooltip('T3','combined',0.44)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="350" cy="84" r="4" title="T4 综合: 0.58" onclick="showTurnTooltip('T4','combined',0.58)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="450" cy="28" r="6" title="T5 综合: 0.86 (关键转折)" onclick="showTurnTooltip('T5','combined',0.86)" style="outline:2px solid #F56C6C;outline-offset:2px;"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="550" cy="44" r="4" title="T6 综合: 0.78" onclick="showTurnTooltip('T6','combined',0.78)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="650" cy="92" r="4" title="T7 综合: 0.54" onclick="showTurnTooltip('T7','combined',0.54)"/>
+                  <circle class="curve-dot" fill="#F56C6C" cx="750" cy="104" r="4" title="T8 综合: 0.48" onclick="showTurnTooltip('T8','combined',0.48)"/>
+                </svg>
+              </div>
+              <div class="curve-turn-labels"><span>T1</span><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>T8</span></div>
+            </div>
+            <div class="turn-grid">
+              <div class="turn-item"><div class="turn-index">Turn 3</div><div class="turn-text">用户要求"只做配置检查"，模型开始规划读取仓库配置。<div class="meta-sub">检测来源: 规则+AI联合 | ai_status: success | 风险类型: 工具能力边界越界</div></div><span class="tag tag-warning">0.44</span></div>
+              <div class="turn-item"><div class="turn-index">Turn 4 <span class="tag tag-danger" style="font-size:11px;padding:1px 4px;">转折点</span></div><div class="turn-text">模型计划调用 repo_reader 与 external_http_post，风险开始累积。<div class="meta-sub">检测来源: 规则+AI联合 | ai_status: success | 风险类型: 工具能力边界越界</div></div><span class="tag tag-warning">0.58</span></div>
+              <div class="turn-item risk"><div class="turn-index">Turn 5 <span class="tag tag-danger" style="font-size:11px;padding:1px 4px;">关键转折</span></div><div class="turn-text">Tool Input 包含 external.example/upload 与 repo_path=internal/payment，形成工具边界越界关键证据。<div class="meta-sub">检测来源: 规则+AI联合 | ai_status: success | 风险类型: 工具能力边界越界</div></div><span class="tag tag-danger">0.86</span></div>
+              <div class="turn-item"><div class="turn-index">Turn 6</div><div class="turn-text">响应输出包含内部仓库路径摘要，已脱敏展示并关联风险事件。<div class="meta-sub">检测来源: 规则+AI联合 | ai_status: success | 风险类型: 敏感数据输出</div></div><span class="tag tag-danger">0.78</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-panel">
+        <div class="card">
+          <div class="card-header"><div class="card-title">AI累积研判</div><span class="tag tag-success">success</span></div>
+          <div class="card-body">
+            <div class="ai-panel">
+              <div class="ai-panel-title">风险结论 <span class="tag tag-danger">高风险</span></div>
+              <div class="ai-kv"><div class="k">检测来源</div><div>规则+AI联合检出</div><div class="k">攻击/风险类型</div><div>工具能力边界越界</div><div class="k">置信度</div><div>0.91</div><div class="k">模型版本</div><div class="mono">sec-detector-v1.4</div></div>
+            </div>
+            <div class="ai-panel">
+              <div class="ai-panel-title">关键转折点</div>
+              <ul class="reason-list">
+                <li>Turn 4 出现外部 HTTP POST 工具计划。</li>
+                <li>Turn 5 工具输入包含内部仓库路径。</li>
+                <li>Turn 6 输出摘要出现内部路径信息，已触发脱敏。</li>
+              </ul>
+            </div>
+            <div class="ai-panel">
+              <div class="ai-panel-title">降级与安全约束</div>
+              <div class="ai-kv"><div class="k">数据级别</div><div>L1 内部</div><div class="k">Raw访问</div><div>需审批后查看</div><div class="k">超时策略</div><div>规则优先，AI超时跳过</div></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-primary" onclick="goEventDetail()">进入事件详情</button>
+              <button class="btn btn-default" onclick="goTrace()">查看溯源</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '安全监控' }, { label: '会话风险追踪' }]);
+      }
+    });
+    function goEventDetail() {
+      navigateTo('pages/events/event-detail.html?id=EVT-2026-00018', '风险事件详情', '../events/event-detail.html?id=EVT-2026-00018');
+    }
+    function goTrace() {
+      navigateTo('pages/monitor/trace-list.html?trace_id=TRC-20260416-018', '风险溯源工作台', 'trace-list.html?trace_id=TRC-20260416-018');
+    }
+    function showTurnTooltip(turn, line, score) {
+      var lineLabel = { rule: '规则评分', ai: 'AI评分', combined: '综合评分' };
+      var scoreText = (typeof score === 'string') ? score : score.toFixed(2);
+      toastInfo(turn + ' ' + lineLabel[line] + '：' + scoreText);
+    }
+  </script>
+</body>
+</html>

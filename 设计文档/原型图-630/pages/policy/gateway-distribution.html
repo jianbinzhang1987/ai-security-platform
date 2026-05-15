@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>绑定与下发 (网关侧)</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .object-title { font-size: 14px; color: #163154; font-weight: 500; }
+    .meta-sub { font-size: 12px; color: #8a9ab2; margin-top: 4px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="border-bottom: 1px solid #e7eef8; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="page-title">绑定与下发</div>
+        <div class="page-subtitle">按网关策略查看当前绑定对象、引用版本和下发状态，支持访问控制、流量治理、内容安全策略的统一下发管理。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="toastSuccess('刷新成功')">刷新下发回执</button>
+        <button class="btn btn-default" onclick="toastSuccess('打开历史')">查看下发历史</button>
+        <button class="btn btn-primary" onclick="toastSuccess('打开弹窗')">新建绑定</button>
+      </div>
+    </div>
+
+    <div class="kpi-cards" style="display: flex; gap: 16px; margin-bottom: 20px;">
+      <div class="card kpi-card" style="flex: 1;">
+        <div class="kpi-title">绑定总数</div><div class="kpi-value" style="color: #2d5fe7;">4</div>
+      </div>
+      <div class="card kpi-card" style="flex: 1;">
+        <div class="kpi-title">已同步</div><div class="kpi-value" style="color: #67c23a;">2</div>
+      </div>
+      <div class="card kpi-card" style="flex: 1;">
+        <div class="kpi-title">下发中</div><div class="kpi-value" style="color: #e6a23c;">1</div>
+      </div>
+      <div class="card kpi-card" style="flex: 1;">
+        <div class="kpi-title">下发异常</div><div class="kpi-value" style="color: #f56c6c;">1</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">策略类型：</span>
+        <select class="form-select" style="width: 180px;">
+          <option>全部</option>
+          <option>访问控制策略</option>
+          <option>流量与服务治理</option>
+          <option>内容安全策略</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">绑定范围：</span>
+        <select class="form-select" style="width: 160px;">
+          <option>全部</option>
+          <option>全局默认</option>
+          <option>路由覆盖</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">下发状态：</span>
+        <select class="form-select" style="width: 160px;">
+          <option>全部</option>
+          <option>已同步</option>
+          <option>下发中</option>
+          <option>下发异常</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('列表已刷新')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="min-width: 180px;">绑定名称</th>
+              <th>策略类型</th>
+              <th>绑定范围</th>
+              <th>绑定对象</th>
+              <th>当前版本</th>
+              <th>下发状态</th>
+              <th>最近下发时间</th>
+              <th style="width: 180px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="object-title">全局访问控制基线</span>
+                <div class="meta-sub">dist-gw-001 · 访问控制策略：全局 APIKey 认证</div>
+              </td>
+              <td>访问控制策略</td>
+              <td>全局默认</td>
+              <td>全部 AI 路由</td>
+              <td><span class="tag tag-success">v1.3</span></td>
+              <td><span class="tag tag-success">已同步</span></td>
+              <td>2026-04-21 16:35</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link">查看回执</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="object-title">核心模型流量治理</span>
+                <div class="meta-sub">dist-gw-002 · 流量策略：全局应用调用限流</div>
+              </td>
+              <td>流量与服务治理</td>
+              <td>路由覆盖</td>
+              <td>llm-core-route</td>
+              <td><span class="tag tag-warning">v0.9</span></td>
+              <td><span class="tag tag-warning">下发中 (72%)</span></td>
+              <td>2026-04-21 14:26</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link">查看回执</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="object-title">客服路由内容安全</span>
+                <div class="meta-sub">dist-gw-003 · 内容策略：客服输入输出安全...</div>
+              </td>
+              <td>内容安全策略</td>
+              <td>路由覆盖</td>
+              <td>ai-response-safety-guard...</td>
+              <td><span class="tag tag-success">v1.0</span></td>
+              <td><span class="tag tag-danger">下发异常 (45%)</span></td>
+              <td>2026-04-21 13:12</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link">查看回执</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="object-title">财务路由输入安全</span>
+                <div class="meta-sub">dist-gw-004 · 内容策略：财务路由 PII 拦截</div>
+              </td>
+              <td>内容安全策略</td>
+              <td>路由覆盖</td>
+              <td>finance-app / finance...</td>
+              <td><span class="tag tag-success">v1.1</span></td>
+              <td><span class="tag tag-success">已同步</span></td>
+              <td>2026-04-21 11:08</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link">查看回执</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '绑定与下发' }
+      ]);
+    }
+  </script>
+</body>
+</html>

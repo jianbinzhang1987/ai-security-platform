@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>组织风险态势</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.view-switch{display:flex;gap:8px;margin-bottom:14px}
+.view-chip{border:1px solid #DCDFE6;background:#fff;color:#606266;border-radius:999px;padding:4px 14px;font-size:13px;cursor:pointer}
+.view-chip.active{color:#409EFF;border-color:#B3D8FF;background:#ECF5FF}
+.org-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.org-card{border:1px solid #EBEEF5;border-radius:6px;padding:14px;background:#fff;cursor:pointer;transition:all .2s ease}
+.org-card:hover{border-color:#C6E2FF;box-shadow:0 6px 16px rgba(64,158,255,.08)}
+.org-card.high{border-top:3px solid #f56c6c}
+.org-card.mid{border-top:3px solid #e6a23c}
+.org-card.low{border-top:3px solid #67c23a}
+.org-name{font-weight:600;color:#303133;font-size:14px}
+.org-score{font-size:28px;font-weight:700;margin:8px 0}
+.org-score.high{color:#f56c6c}
+.org-score.mid{color:#e6a23c}
+.org-score.low{color:#67c23a}
+.org-meta{font-size:12px;color:#909399;line-height:1.8}
+.hotspot-tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;background:#f4f4f5;color:#606266;margin:2px}
+.dept-tree{padding-left:16px;border-left:2px solid #DCDFE6}
+.dept-item{padding:8px 0;display:flex;justify-content:space-between;align-items:center}
+.dept-bar{height:8px;background:#EBEEF5;border-radius:4px;overflow:hidden;margin-top:4px}
+.dept-bar-fill{height:100%;border-radius:4px}
+.tenant-table .risk-spread{display:flex;gap:4px;flex-wrap:wrap}
+.spread-tag{padding:2px 6px;border-radius:4px;font-size:11px;background:#fde2e2;color:#d93026}
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+<div class="page-header"><div><div class="page-title">组织风险态势</div><div class="page-subtitle">按业务线、部门、租户维度聚合风险数据，识别组织内风险热点。</div></div></div>
+
+<div class="view-switch">
+<button class="view-chip active" onclick="switchView(this,'business')">业务线视角</button>
+<button class="view-chip" onclick="switchView(this,'dept')">部门视角</button>
+<button class="view-chip" onclick="switchView(this,'tenant')">租户视角</button>
+</div>
+
+<div id="view-business">
+<div class="org-grid">
+<div class="org-card high" onclick="goBusinessDetail('platform')"><div class="org-name">平台研发 <span class="tag tag-danger">高风险</span></div><div class="org-score high">78</div><div class="org-meta">事件 42 | 应用 6 | 已处置 31 | 处置率 74%</div><div style="margin-top:8px;"><div style="font-size:12px;color:#606266;margin-bottom:4px;">热点应用</div><span class="hotspot-tag">研发代码审查助手</span><span class="hotspot-tag">测试环境助手</span></div></div>
+<div class="org-card mid" onclick="goBusinessDetail('finance')"><div class="org-name">财务中心 <span class="tag tag-warning">中风险</span></div><div class="org-score mid">62</div><div class="org-meta">事件 28 | 应用 4 | 已处置 22 | 处置率 79%</div><div style="margin-top:8px;"><div style="font-size:12px;color:#606266;margin-bottom:4px;">热点应用</div><span class="hotspot-tag">财务审计 Agent</span><span class="hotspot-tag">票据识别助手</span></div></div>
+<div class="org-card low" onclick="goBusinessDetail('service')"><div class="org-name">客户服务中心 <span class="tag tag-success">低风险</span></div><div class="org-score low">35</div><div class="org-meta">事件 15 | 应用 3 | 已处置 14 | 处置率 93%</div><div style="margin-top:8px;"><div style="font-size:12px;color:#606266;margin-bottom:4px;">热点应用</div><span class="hotspot-tag">智能客服 Copilot</span></div></div>
+<div class="org-card low" onclick="goBusinessDetail('hr')"><div class="org-name">人力资源 <span class="tag tag-success">低风险</span></div><div class="org-score low">28</div><div class="org-meta">事件 8 | 应用 2 | 已处置 7 | 处置率 88%</div><div style="margin-top:8px;"><div style="font-size:12px;color:#606266;margin-bottom:4px;">热点应用</div><span class="hotspot-tag">人事档案助理</span></div></div>
+<div class="org-card mid" onclick="goBusinessDetail('ops')"><div class="org-name">运营中心 <span class="tag tag-warning">中风险</span></div><div class="org-score mid">55</div><div class="org-meta">事件 22 | 应用 5 | 已处置 18 | 处置率 82%</div><div style="margin-top:8px;"><div style="font-size:12px;color:#606266;margin-bottom:4px;">热点应用</div><span class="hotspot-tag">订单查询节点</span><span class="hotspot-tag">数据报表助手</span></div></div>
+</div>
+<div class="card" style="margin-top:14px;"><div class="card-header"><div class="card-title">业务线风险对比</div></div>
+<div class="card-body">
+<table class="data-table">
+<thead><tr><th>业务线</th><th>风险评分</th><th>事件数</th><th>应用数</th><th>人均事件</th><th>处置效率</th><th>基线覆盖率</th></tr></thead>
+<tbody>
+<tr><td><strong>平台研发</strong></td><td><span style="color:#f56c6c;font-weight:700;">78</span></td><td>42</td><td>6</td><td>2.1</td><td>74%</td><td>83%</td></tr>
+<tr><td><strong>财务中心</strong></td><td><span style="color:#e6a23c;font-weight:700;">62</span></td><td>28</td><td>4</td><td>1.8</td><td>79%</td><td>92%</td></tr>
+<tr><td><strong>运营中心</strong></td><td><span style="color:#e6a23c;font-weight:700;">55</span></td><td>22</td><td>5</td><td>1.4</td><td>82%</td><td>76%</td></tr>
+<tr><td><strong>客户服务中心</strong></td><td><span style="color:#67c23a;font-weight:700;">35</span></td><td>15</td><td>3</td><td>0.9</td><td>93%</td><td>100%</td></tr>
+<tr><td><strong>人力资源</strong></td><td><span style="color:#67c23a;font-weight:700;">28</span></td><td>8</td><td>2</td><td>0.6</td><td>88%</td><td>100%</td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+
+<div id="view-dept" style="display:none;">
+<div class="card"><div class="card-header"><div class="card-title">组织结构树与风险热力</div></div>
+<div class="card-body">
+<div style="margin-bottom:12px;"><div style="font-weight:600;margin-bottom:6px;">平台研发 <span class="tag tag-danger">78</span></div><div class="dept-tree">
+<div class="dept-item"><div style="flex:1;"><div>后端研发部 <span class="tag tag-danger">82</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:82%;background:#f56c6c;"></div></div></div><div style="font-size:12px;color:#909399;">12 人 | 事件 25</div></div>
+<div class="dept-item"><div style="flex:1;"><div>前端研发部 <span class="tag tag-warning">65</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:65%;background:#e6a23c;"></div></div></div><div style="font-size:12px;color:#909399;">8 人 | 事件 12</div></div>
+<div class="dept-item"><div style="flex:1;"><div>AI 工程部 <span class="tag tag-warning">58</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:58%;background:#e6a23c;"></div></div></div><div style="font-size:12px;color:#909399;">6 人 | 事件 5</div></div>
+</div></div>
+<div style="margin-bottom:12px;"><div style="font-weight:600;margin-bottom:6px;">财务中心 <span class="tag tag-warning">62</span></div><div class="dept-tree">
+<div class="dept-item"><div style="flex:1;"><div>审计部 <span class="tag tag-danger">75</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:75%;background:#f56c6c;"></div></div></div><div style="font-size:12px;color:#909399;">5 人 | 事件 15</div></div>
+<div class="dept-item"><div style="flex:1;"><div>结算部 <span class="tag tag-success">35</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:35%;background:#67c23a;"></div></div></div><div style="font-size:12px;color:#909399;">8 人 | 事件 8</div></div>
+</div></div>
+<div><div style="font-weight:600;margin-bottom:6px;">客户服务中心 <span class="tag tag-success">35</span></div><div class="dept-tree">
+<div class="dept-item"><div style="flex:1;"><div>客服一部 <span class="tag tag-warning">42</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:42%;background:#e6a23c;"></div></div></div><div style="font-size:12px;color:#909399;">10 人 | 事件 9</div></div>
+<div class="dept-item"><div style="flex:1;"><div>客服二部 <span class="tag tag-success">28</span></div><div class="dept-bar"><div class="dept-bar-fill" style="width:28%;background:#67c23a;"></div></div></div><div style="font-size:12px;color:#909399;">8 人 | 事件 6</div></div>
+</div></div>
+</div></div>
+</div>
+
+<div id="view-tenant" style="display:none;">
+<div class="card"><div class="card-header"><div class="card-title">租户级风险聚合</div></div>
+<div class="card-body">
+<table class="data-table tenant-table">
+<thead><tr><th>租户</th><th>风险评分</th><th>应用数</th><th>事件数</th><th>共享工具风险传播</th><th>跨租户影响</th></tr></thead>
+<tbody>
+<tr><td><strong>Tenant-A (总部)</strong></td><td><span style="color:#f56c6c;font-weight:700;">72</span></td><td>18</td><td>105</td><td><div class="risk-spread"><span class="spread-tag">external_http_post</span><span class="spread-tag">direct_db_write</span></div></td><td><span class="tag tag-warning">影响 2 租户</span></td></tr>
+<tr><td><strong>Tenant-B (分公司)</strong></td><td><span style="color:#e6a23c;font-weight:700;">58</span></td><td>8</td><td>42</td><td><div class="risk-spread"><span class="spread-tag">external_http_post</span></div></td><td><span class="tag tag-success">无跨租户</span></td></tr>
+<tr><td><strong>Tenant-C (合作伙伴)</strong></td><td><span style="color:#67c23a;font-weight:700;">32</span></td><td>4</td><td>15</td><td><div class="risk-spread">-</div></td><td><span class="tag tag-success">无跨租户</span></td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'},{label:'组织风险态势'}]);
+});
+function switchView(el,view){
+document.querySelectorAll('.view-chip').forEach(function(c){c.classList.remove('active');});
+el.classList.add('active');
+['business','dept','tenant'].forEach(function(id){document.getElementById('view-'+id).style.display=(id===view)?'block':'none';});
+}
+function goBusinessDetail(id){toastSuccess('查看业务线详情: '+id);}
+</script>
+</body>
+</html>

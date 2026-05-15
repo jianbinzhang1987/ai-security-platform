@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>报告订阅</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">报告订阅</div>
+        <div class="page-subtitle">配置定期生成的报告模板、发送周期以及邮件/Webhook接收方。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">新建订阅任务</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>任务名称</th><th>报告模板</th><th>发送周期</th><th>收件人/渠道</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>每周应用合规巡检推报</td><td>应用合规基线</td><td>每周一 09:00</td><td>security-team@example.com</td><td><span class="tag tag-success">运行中</span></td><td><button class="btn btn-link">执行记录</button><button class="btn btn-link">编辑</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '报告订阅' }
+      ]);
+    }
+  </script>
+</body>
+</html>

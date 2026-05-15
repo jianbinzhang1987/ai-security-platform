@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Skills管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .skill-name { font-size: 14px; color: #2d5fe7; font-weight: 600; line-height: 1.35; }
+    .skill-slug { margin-top: 4px; font-size: 12px; line-height: 1.35; color: #8a9ab2; word-break: break-all; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .summary-text { color: #4c6485; line-height: 1.6; font-size: 13px; }
+    .toolbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="background: radial-gradient(circle at left top, rgba(88, 138, 255, 0.12), transparent 34%), linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 255, 0.98));">
+      <div>
+        <div class="page-title">Skills管理</div>
+        <div class="page-subtitle">统一管理平台内可用的 Skill 资产，查看作者来源、能力分类、版本信息、标签描述和使用热度。本页面为静态演示页，暂不接入后台接口。</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">名称：</span>
+        <input type="text" class="form-control" placeholder="请输入名称" style="width: 240px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">类型：</span>
+        <select class="form-select" style="width: 140px;">
+          <option value="">请选择</option>
+          <option>平台内置</option>
+          <option>团队沉淀</option>
+          <option>社区引入</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">分类：</span>
+        <select class="form-select" style="width: 140px;">
+          <option value="">请选择</option>
+          <option>搜索</option>
+          <option>安全</option>
+          <option>运维</option>
+          <option>知识治理</option>
+          <option>开发辅助</option>
+          <option>流程自动化</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar-row">
+        <button class="btn btn-primary" onclick="showStaticMessage('新增Skill')">新增Skill</button>
+        <button class="btn btn-default" onclick="showStaticMessage('Skill安全扫描记录')">Skill安全扫描记录</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:60px; text-align:center;">序号</th>
+              <th style="min-width:260px;">名称</th>
+              <th style="min-width:100px;">作者</th>
+              <th style="width:100px;">分类</th>
+              <th style="width:80px;">版本</th>
+              <th style="min-width:240px;">标签</th>
+              <th style="min-width:300px;">简介</th>
+              <th style="width:90px; text-align:right;">使用次数</th>
+              <th style="width:150px;">更新时间</th>
+              <th style="width:170px;text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align:center;">1</td>
+              <td>
+                <div class="skill-name">RAG Citation Auditor</div>
+                <div class="skill-slug">skill-rag-citation-auditor</div>
+              </td>
+              <td>知识工程组</td>
+              <td>知识治理</td>
+              <td>1.4.2</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">引用校验</span>
+                  <span class="tag tag-default">答案归因</span>
+                  <span class="tag tag-default">知识库质检</span>
+                </div>
+              </td>
+              <td><div class="summary-text">自动检查回答中的引用来源是否完整、片段是否匹配，用于降低知识问答中的错误归因风险。</div></td>
+              <td style="text-align:right;">2,481</td>
+              <td>2026/04/27 15:42:18</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('下载')">下载</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">2</td>
+              <td>
+                <div class="skill-name">Prompt Policy Reviewer</div>
+                <div class="skill-slug">skill-prompt-policy-reviewer</div>
+              </td>
+              <td>模型安全组</td>
+              <td>安全</td>
+              <td>2.1.0</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">提示词审查</span>
+                  <span class="tag tag-default">越权检测</span>
+                  <span class="tag tag-default">规则对齐</span>
+                </div>
+              </td>
+              <td><div class="summary-text">对系统提示词和工作流提示模板进行策略审查，识别潜在越权、绕过和不合规表达。</div></td>
+              <td style="text-align:right;">3,614</td>
+              <td>2026/04/28 09:20:11</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('下载')">下载</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">3</td>
+              <td>
+                <div class="skill-name">K8s Root Cause Guide</div>
+                <div class="skill-slug">skill-k8s-root-cause-guide</div>
+              </td>
+              <td>云原生平台</td>
+              <td>运维</td>
+              <td>1.8.6</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">故障定位</span>
+                  <span class="tag tag-default">Pod异常</span>
+                  <span class="tag tag-default">集群巡检</span>
+                </div>
+              </td>
+              <td><div class="summary-text">面向 Kubernetes 场景的分步排障 Skill，结合事件、日志与资源状态辅助定位根因。</div></td>
+              <td style="text-align:right;">1,879</td>
+              <td>2026/04/24 18:07:39</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('下载')">下载</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">4</td>
+              <td>
+                <div class="skill-name">OpenSearch Query Copilot</div>
+                <div class="skill-slug">skill-opensearch-query-copilot</div>
+              </td>
+              <td>安全运营中心</td>
+              <td>搜索</td>
+              <td>1.3.9</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">日志检索</span>
+                  <span class="tag tag-default">DSL生成</span>
+                  <span class="tag tag-default">异常追踪</span>
+                </div>
+              </td>
+              <td><div class="summary-text">根据自然语言问题辅助生成 OpenSearch 查询条件，用于日志排查、错误聚合和行为检索。</div></td>
+              <td style="text-align:right;">2,942</td>
+              <td>2026/04/26 20:15:42</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('下载')">下载</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '安全扫描' },
+        { label: 'Skills扫描' }
+      ]);
+    }
+    function searchData() { toastSuccess('查询完毕'); }
+    function showStaticMessage(action) {
+      toastSuccess(action + ' 为静态演示内容，暂未接入后台逻辑');
+    }
+  </script>
+</body>
+</html>

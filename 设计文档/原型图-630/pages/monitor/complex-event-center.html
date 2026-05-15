@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>复杂事件分析中心</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.overview-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.ov-card { background: #fff; border: 1px solid #EBEEF5; border-radius: 6px; padding: 14px; text-align: center; }
+.ov-value { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+.ov-value.high { color: #f56c6c; }
+.ov-value.mid { color: #e6a23c; }
+.ov-value.low { color: #409EFF; }
+.ov-label { font-size: 12px; color: #909399; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* Table Styles */
+.data-table { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px; }
+.data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #EBEEF5; }
+.data-table th { background: #f5f7fa; color: #909399; font-weight: 500; }
+.data-table tr:hover { background-color: #f5f7fa; }
+.ce-type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; }
+.ce-type-badge.info { background: #f0f9ff; color: #409EFF; }
+.ce-type-badge.warning { background: #fdf6ec; color: #e6a23c; }
+.ce-type-badge.danger { background: #fef0f0; color: #f56c6c; }
+.ce-type-badge.success { background: #f2f9f2; color: #67c23a; }
+.table-pagination { display: flex; justify-content: flex-end; padding: 16px; background: #fff; border-top: 1px solid #EBEEF5; }
+.tag { font-size: 12px; padding: 2px 6px; border-radius: 4px; background: #f4f4f5; color: #909399; }
+.tag-danger { background: #fef0f0; color: #f56c6c; }
+.tag-warning { background: #fdf6ec; color: #e6a23c; }
+.tag-primary { background: #ecf5ff; color: #409EFF; }
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">复杂事件分析中心</div>
+      <div class="page-subtitle">统一的多场景复杂事件检测工作台：支持渐进式信息获取、意图分片逃逸、数据外泄链路、行为基线偏离等多模式复合事件分析与处置。</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-default" onclick="toastSuccess('复合事件报告已导出')">导出报告</button>
+      <button class="btn btn-primary" onclick="openModal('createPatternModal')">+ 创建检测模式</button>
+    </div>
+  </div>
+
+  <div class="overview-stats">
+    <div class="ov-card"><div class="ov-value high">12</div><div class="ov-label">今日复合事件</div></div>
+    <div class="ov-card"><div class="ov-value high">3</div><div class="ov-label">高风险待处置</div></div>
+    <div class="ov-card"><div class="ov-value mid">5</div><div class="ov-label">中风险监测中</div></div>
+    <div class="ov-card"><div class="ov-value" style="color:#67c23a;">4</div><div class="ov-label">已闭环归档</div></div>
+  </div>
+
+  <div class="filter-row">
+    <div class="search-item"><span class="form-label">时间范围</span><select class="form-select"><option>今日</option><option selected>近 7 天</option><option>近 30 天</option></select></div>
+    <div class="search-item"><span class="form-label">场景类型</span>
+      <select class="form-select">
+        <option value="">全部场景</option>
+        <option>渐进式信息获取</option>
+        <option>意图分片逃逸</option>
+        <option>数据外泄链路</option>
+        <option>行为基线偏离</option>
+        <option>工具链越权</option>
+      </select>
+    </div>
+    <div class="search-item"><span class="form-label">匹配模式</span>
+      <select class="form-select">
+        <option value="">全部模式</option>
+        <option>累积模式</option>
+        <option>时序模式</option>
+        <option>引用链模式</option>
+        <option>偏离模式</option>
+        <option>闭环模式</option>
+      </select>
+    </div>
+    <div class="search-item"><span class="form-label">风险等级</span>
+      <select class="form-select"><option value="">全部</option><option>高风险</option><option>中风险</option><option>低风险</option></select>
+    </div>
+    <div class="search-btns">
+      <button class="btn btn-primary" onclick="toastSuccess('复合事件列表已刷新')">查询</button>
+      <button class="btn btn-default">重置</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin:0;">
+    <div class="card-header">
+      <div class="card-title">复杂事件列表</div>
+      <span class="form-hint">共 23 条</span>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>事件 ID</th>
+            <th>场景类型</th>
+            <th>匹配模式</th>
+            <th>关联实体</th>
+            <th>时间跨度 / 覆盖度</th>
+            <th>风险评估</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-family: Consolas, monospace; font-weight: 600;">CE-20260420-001</td>
+            <td><span class="ce-type-badge danger">意图分片逃逸</span></td>
+            <td>时序: recon-to-exploit</td>
+            <td>用户: 张三 (3 会话)</td>
+            <td>跨度 23 分钟</td>
+            <td><span class="tag tag-danger">0.94 高风险</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="navigateTo('pages/monitor/complex-event-detail.html', '复合事件详情', this)">查看详情</button></td>
+          </tr>
+          <tr>
+            <td style="font-family: Consolas, monospace; font-weight: 600;">CE-20260419-002</td>
+            <td><span class="ce-type-badge danger">渐进式信息获取</span></td>
+            <td>累积: info-surface-escalation</td>
+            <td>用户: 李四 (1 会话)</td>
+            <td>覆盖度 82%</td>
+            <td><span class="tag tag-danger">0.91 高风险</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="navigateTo('pages/monitor/complex-event-detail.html', '复合事件详情', this)">查看详情</button></td>
+          </tr>
+          <tr>
+            <td style="font-family: Consolas, monospace; font-weight: 600;">CE-20260418-003</td>
+            <td><span class="ce-type-badge warning">数据外泄链路</span></td>
+            <td>闭环: data-exfil-pipeline</td>
+            <td>用户: 王五 (2 会话)</td>
+            <td>匹配度 68%</td>
+            <td><span class="tag tag-warning">0.68 中风险</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="navigateTo('pages/monitor/complex-event-detail.html', '复合事件详情', this)">查看详情</button></td>
+          </tr>
+          <tr>
+            <td style="font-family: Consolas, monospace; font-weight: 600;">CE-20260417-004</td>
+            <td><span class="ce-type-badge warning">行为基线偏离</span></td>
+            <td>偏离: behavior-baseline-drift</td>
+            <td>用户: 赵六 (30天基线)</td>
+            <td>偏离 3.2sigma</td>
+            <td><span class="tag tag-warning">0.62 中风险</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="navigateTo('pages/monitor/complex-event-detail.html', '复合事件详情', this)">查看详情</button></td>
+          </tr>
+          <tr>
+            <td style="font-family: Consolas, monospace; font-weight: 600;">CE-20260416-005</td>
+            <td><span class="ce-type-badge success">工具链越权</span></td>
+            <td>闭环: tool-chain-escalation</td>
+            <td>用户: 周七 (1 会话)</td>
+            <td>读析写闭环</td>
+            <td><span class="tag tag-primary">0.55 低风险</span></td>
+            <td><button class="btn btn-sm btn-primary" onclick="navigateTo('pages/monitor/complex-event-detail.html', '复合事件详情', this)">查看详情</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="table-pagination">
+        <span style="font-size: 13px; color: #606266; margin-right: auto; padding-top: 4px;">显示 1 到 5 条，共 23 条</span>
+        <button class="btn btn-sm btn-default" disabled>&lt; 上一页</button>
+        <button class="btn btn-sm btn-primary" style="margin: 0 4px;">1</button>
+        <button class="btn btn-sm btn-default" style="margin: 0 4px;">2</button>
+        <button class="btn btn-sm btn-default" style="margin: 0 4px;">3</button>
+        <button class="btn btn-sm btn-default">下一页 &gt;</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 创建检测模式 Modal -->
+<div class="modal-overlay" id="createPatternModal">
+  <div class="modal-box modal-lg">
+    <div class="modal-header"><div class="modal-title">创建检测模式</div><div class="modal-close" onclick="closeModal('createPatternModal')">&#215;</div></div>
+    <div class="modal-body">
+      <form>
+        <div class="form-row"><div class="form-label required">模式名称</div><div class="form-field"><input class="form-control" placeholder="如：探测->武器化->验证"></div></div>
+        <div class="form-row"><div class="form-label required">模式ID</div><div class="form-field"><input class="form-control mono" placeholder="recon-to-exploit"></div></div>
+        <div class="form-row"><div class="form-label required">模式类型</div><div class="form-field">
+          <select class="form-select">
+            <option value="">请选择</option>
+            <option>时序模式 (SEQUENCE) - 多阶段按序发生</option>
+            <option>累积模式 (ACCUMULATION) - 指标单调递增</option>
+            <option>引用链模式 (REFERENCE) - 实体跨事件引用</option>
+            <option>偏离模式 (DEVIATION) - 偏离行为基线</option>
+            <option>闭环模式 (CLOSURE) - 状态转换闭环</option>
+          </select>
+        </div></div>
+        <div class="form-row"><div class="form-label required">聚合维度</div><div class="form-field">
+          <select class="form-select"><option>user_id</option><option>session_id</option><option>user_id + device_fingerprint</option><option>app_id</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">时间窗口</div><div class="form-field">
+          <select class="form-select"><option>会话生命周期</option><option>1 小时</option><option selected>4 小时</option><option>24 小时</option><option>7 天</option></select>
+        </div></div>
+        <div class="form-row"><div class="form-label">触发阈值</div><div class="form-field"><input class="form-control" value="匹配 >= 75% 阶段" placeholder="匹配条件"></div></div>
+        <div class="form-row"><div class="form-label">场景类型</div><div class="form-field">
+          <select class="form-select"><option>渐进式信息获取</option><option>意图分片逃逸</option><option>数据外泄链路</option><option>行为基线偏离</option><option>工具链越权</option><option>自定义</option></select>
+        </div></div>
+      </form>
+    </div>
+    <div class="modal-footer"><button class="btn btn-default" onclick="closeModal('createPatternModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('检测模式已保存');closeModal('createPatternModal')">保存模式</button></div>
+  </div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof updateBreadcrumb === 'function') {
+    updateBreadcrumb([{ label: '安全监控' }, { label: '复杂事件分析中心' }]);
+  }
+});
+</script>
+</body>
+</html>

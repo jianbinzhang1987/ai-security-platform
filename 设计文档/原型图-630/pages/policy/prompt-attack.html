@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>提示词防护策略</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .object-title { font-size: 14px; color: #163154; font-weight: 500; }
+    .description-col { width: 220px; white-space: pre-wrap; word-break: break-all; line-height: 1.4; font-size: 13px; color: #607495; }
+    .dimension-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .dimension-tag { background: #f0f4ff; color: #2d5fe7; border: 1px solid #d6e2ff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="border-bottom: 1px solid #e7eef8; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="page-title">提示词防护策略</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作成功')">新建防护策略</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">策略名称：</span>
+        <input type="text" class="form-control" placeholder="策略名称" style="width: 200px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">检测方向：</span>
+        <select class="form-select" style="width: 130px;">
+          <option value="">全部</option>
+          <option>模型输入 (Input)</option>
+          <option>模型输出 (Output)</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">策略状态：</span>
+        <select class="form-select" style="width: 110px;">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>草稿</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('防护策略列表已刷新')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 72px; text-align: center;">序号</th>
+              <th>策略名称</th>
+              <th>描述</th>
+              <th>检测方向</th>
+              <th>防护维度</th>
+              <th>执行动作</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">1</td>
+              <td><span class="object-title">提示词攻击防御策略</span></td>
+              <td><div class="description-col">防御针对模型的提示词注入与越狱尝试。</div></td>
+              <td>模型输入</td>
+              <td>
+                <div class="dimension-tags">
+                  <span class="dimension-tag">提示词注入</span>
+                  <span class="dimension-tag">越狱攻击</span>
+                </div>
+              </td>
+              <td>拦截 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">2</td>
+              <td><span class="object-title">内部数据窃取阻断</span></td>
+              <td><div class="description-col">防止企业核心商业机密被传入大模型。</div></td>
+              <td>模型输入</td>
+              <td>
+                <div class="dimension-tags">
+                  <span class="dimension-tag">商业机密 / 涉密标识</span>
+                </div>
+              </td>
+              <td>拦截 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">3</td>
+              <td><span class="object-title">核心涉密数据防泄漏</span></td>
+              <td><div class="description-col">严格拦截模型输出的企业商业机密与内部涉密数据。</div></td>
+              <td>模型输出</td>
+              <td>
+                <div class="dimension-tags">
+                  <span class="dimension-tag">内部涉密数据泄露</span>
+                </div>
+              </td>
+              <td>拦截 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">4</td>
+              <td><span class="object-title">高危工具执行安全控制</span></td>
+              <td><div class="description-col">阻断高危工具调用的结果恶意反馈至模型，防范工具链攻击。</div></td>
+              <td>模型输入</td>
+              <td>
+                <div class="dimension-tags">
+                  <span class="dimension-tag">工具返回恶意载荷</span>
+                </div>
+              </td>
+              <td>拦截 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">5</td>
+              <td><span class="object-title">PII 输入动态脱敏</span></td>
+              <td><div class="description-col">对输入中包含的用户隐私及敏感凭据进行动态掩码。</div></td>
+              <td>模型输入</td>
+              <td>
+                <div class="dimension-tags">
+                  <span class="dimension-tag">PII 敏感信息传入</span>
+                </div>
+              </td>
+              <td>脱敏/隐藏 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 5 条数据，第 1-5 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '提示词防护策略' }
+      ]);
+    }
+  </script>
+</body>
+</html>

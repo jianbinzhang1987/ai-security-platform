@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>通知渠道管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">通知渠道管理</div>
+        <div class="page-subtitle">配置并管理风险告警和事件分发渠道，如 Webhook、钉钉、飞书、邮件等。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作成功')">新增通知渠道</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('刷新成功')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>渠道名称</th><th>渠道类型</th><th>目标地址/群组</th><th>触发条件</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>安全团队飞书群</td><td>飞书机器人</td><td>https://open.feishu.cn/open-apis/bot/v2/...</td><td>高危风险、阻断事件</td><td><span class="tag tag-success">正常</span></td><td><button class="btn btn-link">测试连通性</button><button class="btn btn-link">编辑</button></td></tr>
+            <tr><td>2</td><td>SOC 告警邮箱</td><td>邮件</td><td>soc-alert@example.com</td><td>极高风险</td><td><span class="tag tag-success">正常</span></td><td><button class="btn btn-link">测试连通性</button><button class="btn btn-link">编辑</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '通知渠道管理' }
+      ]);
+    }
+  </script>
+</body>
+</html>

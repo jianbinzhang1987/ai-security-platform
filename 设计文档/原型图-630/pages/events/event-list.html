@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>风险事件</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .risk-type { font-weight: 500; color: #163154; }
+    .object-main { font-size: 13px; color: #606266; }
+    .evidence-text { font-size: 13px; color: #606266; line-height: 1.5; }
+    .time-main { font-size: 13px; color: #909399; }
+    .status-new { color: #f56c6c; border-color: #fbc4c4; background-color: #fef0f0; }
+    .status-false_positive { color: #909399; border-color: #d3d4d6; background-color: #f4f4f5; }
+    .status-closed { color: #67c23a; border-color: #e1f3d8; background-color: #f0f9eb; }
+    .risk-critical { color: #f56c6c; border-color: #fbc4c4; background-color: #fef0f0; }
+    .risk-high { color: #e6a23c; border-color: #f5dab1; background-color: #fdf6ec; }
+    .risk-medium { color: #e6a23c; border-color: #f5dab1; background-color: #fdf6ec; }
+    .risk-low { color: #409eff; border-color: #d9ecff; background-color: #ecf5ff; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">风险事件</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="openBatchDisposeModal()">批量处置</button>
+      </div>
+    </div>
+
+    <!-- 搜索区：对齐 Vue 源码的查询项 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">时间范围</span>
+        <select class="form-select" id="searchDays">
+          <option value="1">近 1 天</option>
+          <option value="7">近 7 天</option>
+          <option value="30" selected>近 30 天</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">事件状态</span>
+        <select class="form-select" id="searchStatus">
+          <option value="">全部</option>
+          <option value="new">待处置</option>
+          <option value="false_positive">误报</option>
+          <option value="closed">已处置</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险等级</span>
+        <select class="form-select" id="searchRiskLevel">
+          <option value="">全部</option>
+          <option value="critical">极高风险</option>
+          <option value="high">高风险</option>
+          <option value="medium">中风险</option>
+          <option value="low">低风险</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">风险类型</span>
+        <select class="form-select" id="searchRiskType">
+          <option value="">全部</option>
+          <option value="tool_blacklist">工具越权</option>
+          <option value="prompt_injection">Prompt注入</option>
+          <option value="sensitive_data_leak">敏感数据泄露</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">负责人</span>
+        <select class="form-select" id="searchAssignee">
+          <option value="">全部</option>
+          <option>张安全</option>
+          <option>李运营</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table" id="eventTable">
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox" id="selectAll"></th>
+              <th style="width:70px;">序号</th>
+              <th>风险类型</th>
+              <th>应用</th>
+              <th style="width:110px;">风险等级</th>
+              <th>证据要点</th>
+              <th style="width:180px;">发生时间</th>
+              <th style="width:110px;">事件状态</th>
+              <th>负责人</th>
+              <th style="width:200px;text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="evt_demo_ops_001">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>1</td>
+              <td><span class="risk-type">异常工具调用</span></td>
+              <td><div class="object-main">运维排障 Copilot</div></td>
+              <td><span class="tag risk-critical">极高风险</span></td>
+              <td><div class="evidence-text">普通告警分析任务尝试执行高危 shell 命令，平台在工具执行前阻断。</div></td>
+              <td><div class="time-main">2026-05-13 10:25:30</div></td>
+              <td><span class="tag status-new">待处置</span></td>
+              <td>平台运维部 / 赵工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openDisposeModal('evt_demo_ops_001')">处置登记</button>
+                  <button class="btn btn-link" onclick="openFalsePositiveModal('evt_demo_ops_001')">标记误报</button>
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_ops_001')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="evt_demo_material_002">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>2</td>
+              <td><span class="risk-type">异常子任务</span></td>
+              <td><div class="object-main">材料提炼智能体</div></td>
+              <td><span class="tag risk-critical">极高风险</span></td>
+              <td><div class="evidence-text">模型派生外部发送子任务，平台在工具执行前完成阻断。</div></td>
+              <td><div class="time-main">2026-05-13 09:42:00</div></td>
+              <td><span class="tag status-new">待处置</span></td>
+              <td>业务运营部 / 李工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openDisposeModal('evt_demo_material_002')">处置登记</button>
+                  <button class="btn btn-link" onclick="openFalsePositiveModal('evt_demo_material_002')">标记误报</button>
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_material_002')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="evt_demo_material_001">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>3</td>
+              <td><span class="risk-type">提示词注入</span></td>
+              <td><div class="object-main">材料提炼智能体</div></td>
+              <td><span class="tag risk-high">高风险</span></td>
+              <td><div class="evidence-text">上传材料包含隐藏提示注入，模型提炼阶段受到外发诱导。</div></td>
+              <td><div class="time-main">2026-05-13 09:35:10</div></td>
+              <td><span class="tag status-new">待处置</span></td>
+              <td>业务运营部 / 李工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openDisposeModal('evt_demo_material_001')">处置登记</button>
+                  <button class="btn btn-link" onclick="openFalsePositiveModal('evt_demo_material_001')">标记误报</button>
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_material_001')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="evt_demo_meeting_001">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>4</td>
+              <td><span class="risk-type">敏感数据泄露</span></td>
+              <td><div class="object-main">会议纪要助手</div></td>
+              <td><span class="tag risk-medium">中风险</span></td>
+              <td><div class="evidence-text">会议纪要输入中出现参会人员联系方式和证件号片段，平台记录敏感信息告警。</div></td>
+              <td><div class="time-main">2026-05-13 08:15:20</div></td>
+              <td><span class="tag status-new">待处置</span></td>
+              <td>会务保障部 / 王工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openDisposeModal('evt_demo_meeting_001')">处置登记</button>
+                  <button class="btn btn-link" onclick="openFalsePositiveModal('evt_demo_meeting_001')">标记误报</button>
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_meeting_001')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="evt_demo_kb_001">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>5</td>
+              <td><span class="risk-type">越权访问</span></td>
+              <td><div class="object-main">知识库问答智能体</div></td>
+              <td><span class="tag risk-high">高风险</span></td>
+              <td><div class="evidence-text">公开权限用户检索到内部文档，内部文档已被过滤。</div></td>
+              <td><div class="time-main">2026-05-12 16:30:00</div></td>
+              <td><span class="tag status-closed">已处置</span></td>
+              <td>研发效能部 / 张工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_kb_001')">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="evt_demo_document_001">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>6</td>
+              <td><span class="risk-type">参数注入</span></td>
+              <td><div class="object-main">公文流转系统</div></td>
+              <td><span class="tag risk-high">高风险</span></td>
+              <td><div class="evidence-text">公文流转查询参数出现 OR 1=1 注入片段，查询工具调用被阻断。</div></td>
+              <td><div class="time-main">2026-05-12 11:20:00</div></td>
+              <td><span class="tag status-false_positive">误报</span></td>
+              <td>保密办公室 / 陈工</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="goDetail('evt_demo_document_001')">详情</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 2 条数据，第 1-2 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 事件处置登记弹窗 -->
+  <div class="modal-overlay" id="disposeModal">
+    <div class="modal-box modal-md">
+      <div class="modal-header">
+        <div class="modal-title" id="disposeModalTitle">事件处置登记</div>
+        <div class="modal-close" onclick="closeModal('disposeModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="disposeForm">
+          <div class="form-row">
+            <div class="form-label required">处置状态</div>
+            <div class="form-field">
+              <select class="form-select" id="formDisposeStatus" required>
+                <option value="closed">处置登记 (已处置)</option>
+                <option value="false_positive">标记误报</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">处置备注</div>
+            <div class="form-field">
+              <textarea class="form-textarea" placeholder="说明处置过程、判断依据等" rows="4" maxlength="500" required></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('disposeModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitDispose()">提交登记</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '风险事件' },
+        { label: '风险事件' }
+      ]);
+    }
+
+    function searchData() { toastSuccess('列表已刷新'); }
+    function resetSearch() {
+      document.getElementById('searchDays').value = '30';
+      document.getElementById('searchStatus').value = '';
+      document.getElementById('searchRiskLevel').value = '';
+      document.getElementById('searchRiskType').value = '';
+      document.getElementById('searchAssignee').value = '';
+    }
+
+    function openDisposeModal(eventId) {
+      document.getElementById('disposeModalTitle').textContent = '事件处置登记';
+      document.getElementById('disposeForm').reset();
+      document.getElementById('formDisposeStatus').value = 'closed';
+      openModal('disposeModal');
+    }
+
+    function openFalsePositiveModal(eventId) {
+      document.getElementById('disposeModalTitle').textContent = '事件处置登记';
+      document.getElementById('disposeForm').reset();
+      document.getElementById('formDisposeStatus').value = 'false_positive';
+      openModal('disposeModal');
+    }
+
+    function openBatchDisposeModal() {
+      document.getElementById('disposeModalTitle').textContent = '批量处置登记';
+      document.getElementById('disposeForm').reset();
+      openModal('disposeModal');
+    }
+
+    function submitDispose() {
+      closeModal('disposeModal');
+      toastSuccess('处置登记成功');
+    }
+
+    function goDetail(eventId) {
+      navigateTo('pages/events/event-detail.html?id=' + eventId, '事件详情', 'event-detail.html?id=' + eventId);
+    }
+  </script>
+</body>
+</html>

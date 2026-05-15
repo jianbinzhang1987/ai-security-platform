@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>操作审计日志</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">操作审计日志</div>
+        <div class="page-subtitle">记录管理控制台内的所有高敏感配置变更及数据访问操作，满足等保合规要求。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">导出日志</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>操作时间</th><th>操作人</th><th>操作IP</th><th>功能模块</th><th>操作内容</th><th>结果</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>2026-05-13 14:02:11</td><td>admin</td><td>10.0.1.5</td><td>策略包管理</td><td>发布新版本 v3.1.0</td><td><span class="tag tag-success">成功</span></td><td><button class="btn btn-link">详情</button></td></tr>
+            <tr><td>2</td><td>2026-05-13 13:45:00</td><td>zhang_sec</td><td>10.0.2.11</td><td>风险事件</td><td>对 EVT-001 进行处置登记</td><td><span class="tag tag-success">成功</span></td><td><button class="btn btn-link">详情</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '操作审计日志' }
+      ]);
+    }
+  </script>
+</body>
+</html>

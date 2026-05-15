@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>用户与权限</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">用户与权限</div>
+        <div class="page-subtitle">管理控制台的登录账号、部门组织架构及基于 RBAC 的访问角色。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">新增用户</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>账号</th><th>姓名</th><th>部门</th><th>角色</th><th>状态</th><th>最后登录时间</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>admin</td><td>系统管理员</td><td>安全部</td><td>超级管理员</td><td><span class="tag tag-success">正常</span></td><td>2026-05-13 10:00:00</td><td><button class="btn btn-link">分配角色</button></td></tr>
+            <tr><td>2</td><td>zhoumin</td><td>周敏</td><td>客服中心</td><td>应用管理员</td><td><span class="tag tag-success">正常</span></td><td>2026-05-13 14:15:00</td><td><button class="btn btn-link">分配角色</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '用户与权限' }
+      ]);
+    }
+  </script>
+</body>
+</html>

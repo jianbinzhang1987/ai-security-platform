@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>接入应用</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .app-name { font-size: 14px; color: #606266; }
+    .risk-highlight { color: #ef4b57; font-weight: 600; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">接入应用</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="openAddModal()">新增接入应用</button>
+      </div>
+    </div>
+
+    <!-- 搜索区：对齐 Vue 源码的查询项 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">接入应用：</span>
+        <input type="text" class="form-control" id="searchAppName" placeholder="请输入接入应用名称">
+      </div>
+      <div class="search-item">
+        <span class="form-label">运行状态：</span>
+        <select class="form-select" id="searchStatus">
+          <option value="">全部</option>
+          <option>在线</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default" onclick="resetSearch()">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table" id="appTable">
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox" id="selectAll"></th>
+              <th style="width:70px;">序号</th>
+              <th>接入应用</th>
+              <th>运行状态</th>
+              <th>责任归属</th>
+              <th>活跃实例</th>
+              <th>近24h调用次数</th>
+              <th>近24h风险</th>
+              <th>更新时间</th>
+              <th style="width:130px;text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-id="app_copilot_service">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>1</td>
+              <td><div class="app-name">智能客服 Copilot (app_copilot_service)</div></td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>客服中心 / 周敏</td>
+              <td>18 / 18</td>
+              <td>42.1万</td>
+              <td><span class="risk-highlight">12</span></td>
+              <td>2026-04-15 17:21:09</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openEditModal()">编辑</button>
+                  <button class="btn btn-link" onclick="goDetail(this)">详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr data-id="app_rd_code_review">
+              <td><input type="checkbox" class="row-checkbox"></td>
+              <td>2</td>
+              <td><div class="app-name">研发代码审查助手 (app_rd_code_review)</div></td>
+              <td><span class="tag tag-success">在线</span></td>
+              <td>研发部 / 李航</td>
+              <td>7 / 7</td>
+              <td>12.4万</td>
+              <td><span class="risk-highlight">19</span></td>
+              <td>2026-04-15 17:18:44</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="openEditModal()">编辑</button>
+                  <button class="btn btn-link" onclick="goDetail(this)">详情</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 2 条数据，第 1-2 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗：对齐 Vue 源码的表单字段 -->
+  <div class="modal-overlay" id="appModal">
+    <div class="modal-box modal-lg">
+      <div class="modal-header">
+        <div class="modal-title" id="appModalTitle">新增接入应用</div>
+        <div class="modal-close" onclick="closeModal('appModal')">×</div>
+      </div>
+      <div class="modal-body">
+        <form id="appForm">
+          <div class="form-row">
+            <div class="form-label required">app_id</div>
+            <div class="form-field">
+              <input id="formAppId" class="form-control" placeholder="如 app_copilot_service" required>
+              <div class="form-hint">用于 SDK 上报鉴权、策略绑定和事件归属，创建后不建议修改。</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-label required">应用名称</div>
+            <div class="form-field"><input id="formAppName" class="form-control" placeholder="请输入业务可读名称" maxlength="100" required></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">所属部门</div>
+            <div class="form-field"><input id="formDept" class="form-control" placeholder="请输入所属部门" maxlength="100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">负责人</div>
+            <div class="form-field"><input id="formOwner" class="form-control" placeholder="请输入负责人" maxlength="100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-label">说明</div>
+            <div class="form-field"><textarea class="form-textarea" placeholder="业务场景、接入范围、SLA 或合规说明" rows="4" maxlength="500"></textarea></div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-default" onclick="closeModal('appModal')">取消</button>
+        <button class="btn btn-primary" onclick="submitApp()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '资产中心' },
+        { label: '接入应用' }
+      ]);
+    }
+
+    function searchData() { toastSuccess('应用列表已刷新'); }
+    function resetSearch() {
+      document.getElementById('searchAppName').value = '';
+      document.getElementById('searchStatus').value = '';
+    }
+
+    function openAddModal() {
+      document.getElementById('appModalTitle').textContent = '新增接入应用';
+      document.getElementById('appForm').reset();
+      document.getElementById('formAppId').disabled = false;
+      openModal('appModal');
+    }
+
+    function openEditModal() {
+      document.getElementById('appModalTitle').textContent = '编辑接入应用';
+      document.getElementById('formAppId').value = 'app_copilot_service';
+      document.getElementById('formAppId').disabled = true;
+      document.getElementById('formAppName').value = '智能客服 Copilot';
+      document.getElementById('formDept').value = '客服中心';
+      document.getElementById('formOwner').value = '周敏';
+      openModal('appModal');
+    }
+
+    function submitApp() {
+      closeModal('appModal');
+      toastSuccess('保存成功');
+    }
+
+    function goDetail(el) {
+      toastSuccess('跳转到应用详情...');
+    }
+  </script>
+</body>
+</html>

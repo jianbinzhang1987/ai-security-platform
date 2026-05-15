@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>访问控制策略</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .object-title { font-size: 14px; color: #163154; font-weight: 500; }
+    .description-col { width: 260px; white-space: pre-wrap; word-break: break-all; line-height: 1.4; font-size: 13px; color: #607495; }
+    .risk-level-tag { border-radius: 4px; padding: 2px 6px; font-size: 12px; }
+    .risk-high { color: #f56c6c; border: 1px solid #fbc4c4; background: #fff5f5; }
+    .risk-medium { color: #e6a23c; border: 1px solid #f4d7a4; background: #fff9ef; }
+    .risk-low { color: #409eff; border: 1px solid #b7d8ff; background: #f2f8ff; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="border-bottom: 1px solid #e7eef8; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="page-title">访问控制策略</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作成功')">新建访问策略</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">策略名称：</span>
+        <input type="text" class="form-control" placeholder="策略名称" style="width: 200px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">认证方式：</span>
+        <select class="form-select" style="width: 130px;">
+          <option value="">全部</option>
+          <option>APIKey</option>
+          <option>JWT Token</option>
+          <option>OIDC</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">策略状态：</span>
+        <select class="form-select" style="width: 110px;">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>草稿</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('访问控制策略列表已刷新')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 72px; text-align: center;">序号</th>
+              <th>策略名称</th>
+              <th>描述</th>
+              <th>风险类型</th>
+              <th>风险等级</th>
+              <th>认证方式</th>
+              <th>失败动作</th>
+              <th>策略状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">1</td>
+              <td><span class="object-title">全局模型认证</span></td>
+              <td><div class="description-col">对网关所有外部模型调用请求进行 API Key 强认证。</div></td>
+              <td>未授权访问</td>
+              <td><span class="risk-level-tag risk-high">高风险</span></td>
+              <td>APIKey</td>
+              <td>拒绝访问 + 告警</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">2</td>
+              <td><span class="object-title">企业 OIDC 认证</span></td>
+              <td><div class="description-col">集成企业 SSO 身份中心，针对客服应用提供 OIDC 认证能力。</div></td>
+              <td>未授权访问</td>
+              <td><span class="risk-level-tag risk-medium">中风险</span></td>
+              <td>OIDC</td>
+              <td>拒绝访问 + 告警</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">3</td>
+              <td><span class="object-title">企业 JWT 认证</span></td>
+              <td><div class="description-col">内部办公系统 JWT 鉴权策略，校验 Token 有效期与签发方。</div></td>
+              <td>未授权访问</td>
+              <td><span class="risk-level-tag risk-low">低风险</span></td>
+              <td>JWT Token</td>
+              <td>拒绝访问 + 写入审计</td>
+              <td><span class="tag tag-warning">草稿</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">4</td>
+              <td><span class="object-title">内部应用MCP管控</span></td>
+              <td><div class="description-col">针对 MCP 协议调用的内部应用进行访问控制，防止越权调用工具。</div></td>
+              <td>未授权的工具调用</td>
+              <td><span class="risk-level-tag risk-high">高风险</span></td>
+              <td>APIKey</td>
+              <td>拒绝访问 + 告警 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '访问控制策略' }
+      ]);
+    }
+  </script>
+</body>
+</html>

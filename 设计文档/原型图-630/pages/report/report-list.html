@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>报告管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">报告管理</div>
+        <div class="page-subtitle">查看和下载由系统定期生成或手动触发的安全运营分析报告。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">生成即时报告</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>报告名称</th><th>报告类型</th><th>生成周期</th><th>生成时间</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>全局安全态势月报_202604</td><td>安全态势</td><td>月度</td><td>2026-05-01 08:00:00</td><td><span class="tag tag-success">已生成</span></td><td><button class="btn btn-link">预览</button><button class="btn btn-link">下载PDF</button></td></tr>
+            <tr><td>2</td><td>智能客服安全周报</td><td>应用专属</td><td>周度</td><td>2026-05-11 08:00:00</td><td><span class="tag tag-success">已生成</span></td><td><button class="btn btn-link">预览</button><button class="btn btn-link">下载PDF</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '报告管理' }
+      ]);
+    }
+  </script>
+</body>
+</html>

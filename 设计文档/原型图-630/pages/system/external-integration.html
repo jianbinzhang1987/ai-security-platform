@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>外部集成配置</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">外部集成配置</div>
+        <div class="page-subtitle">管理与企业现有 IT 设施（如 LDAP、SSO、SIEM/SOC系统）的集成对接参数。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">添加集成项</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>集成类型</th><th>集成名称</th><th>状态</th><th>最后同步/调用</th><th>说明</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>SSO 登录</td><td>公司内网 OAuth2 认证</td><td><span class="tag tag-success">已启用</span></td><td>2026-05-13 15:00</td><td>允许员工使用内网账号一键登录控制台</td><td><button class="btn btn-link">配置</button><button class="btn btn-link danger">停用</button></td></tr>
+            <tr><td>SIEM 对接</td><td>日志推送到 Splunk</td><td><span class="tag tag-info">未启用</span></td><td>-</td><td>将告警事件以 Syslog/Webhook 形式转发至安全运营中心</td><td><button class="btn btn-link">配置</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '外部集成配置' }
+      ]);
+    }
+  </script>
+</body>
+</html>

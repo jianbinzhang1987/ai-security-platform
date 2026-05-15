@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>行为基线管理</title>
+<link rel="stylesheet" href="../../css/style.css">
+<style>
+.tab-bar{display:flex;border-bottom:2px solid #e4e7ed;margin-bottom:14px}
+.tab-item{padding:10px 20px;cursor:pointer;color:#606266;font-size:14px;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab-item.active{color:#409EFF;border-bottom-color:#409EFF;font-weight:600}
+.baseline-card{border:1px solid #EBEEF5;border-radius:4px;padding:14px;background:#fff;margin-bottom:10px}
+.baseline-card:hover{border-color:#C6E2FF}
+.baseline-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.baseline-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.metric-box{text-align:center;padding:10px;background:#f5f7fa;border-radius:4px}
+.metric-box .v{font-size:18px;font-weight:700;color:#303133}
+.metric-box .k{font-size:11px;color:#909399;margin-top:4px}
+.alert-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #F5F7FA}
+.alert-row:last-child{border-bottom:none}
+.alert-sigma{width:50px;text-align:center;font-weight:700;font-size:14px}
+.alert-sigma.high{color:#f56c6c}
+.alert-sigma.mid{color:#e6a23c}
+.anomaly-chart{height:160px;display:flex;align-items:flex-end;gap:8px;padding:0 8px 20px;border:1px solid #EBEEF5;border-radius:4px;background:#fff}
+.anomaly-bar{flex:1;border-radius:4px 4px 0 0;position:relative}
+.anomaly-bar::after{content:attr(data-label);position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);font-size:11px;color:#909399}
+</style>
+</head>
+<body class="page-content">
+<div class="sub-page">
+<div class="page-header"><div><div class="page-title">行为基线管理</div><div class="page-subtitle">配置应用/Agent 行为基线，管理偏离告警与全局异常检测。</div></div><div style="display:flex;gap:8px;"><button class="btn btn-primary" onclick="openBaselineModal()">新建基线</button></div></div>
+
+<div class="tab-bar">
+<div class="tab-item active" onclick="switchTab(this,'config')">基线配置</div>
+<div class="tab-item" onclick="switchTab(this,'alert')">偏离告警</div>
+<div class="tab-item" onclick="switchTab(this,'anomaly')">全局异常检测</div>
+</div>
+
+<div id="panel-config">
+<div class="search-bar">
+<div class="search-item"><span class="form-label">基线名称</span><input class="form-control" placeholder="基线名称"></div>
+<div class="search-item"><span class="form-label">目标类型</span><select class="form-select"><option value="">全部</option><option>应用</option><option>Agent</option></select></div>
+<div class="search-item"><span class="form-label">监控指标</span><select class="form-select"><option value="">全部</option><option>调用频率</option><option>工具使用种类</option><option>Prompt模式多样性</option><option>响应时长</option></select></div>
+<div class="search-item"><span class="form-label">状态</span><select class="form-select"><option value="">全部</option><option>启用</option><option>停用</option></select></div>
+<div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('基线列表已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+</div>
+<div class="baseline-card"><div class="baseline-header"><div><div style="font-weight:600;">研发代码审查助手-调用频率基线</div><div style="font-size:12px;color:#909399;margin-top:2px;">目标: 应用 | 指标: 调用频率 | 窗口: 1小时</div></div><div style="display:flex;gap:8px;"><span class="tag tag-success">启用</span><button class="btn btn-link" onclick="openBaselineModal('bl-001')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('基线已停用')">停用</button></div></div><div class="baseline-metrics"><div class="metric-box"><div class="v">45</div><div class="k">均值(次/小时)</div></div><div class="metric-box"><div class="v">12</div><div class="k">标准差 σ</div></div><div class="metric-box"><div class="v">2.5σ</div><div class="k">偏离阈值</div></div><div class="metric-box"><div class="v" style="color:#f56c6c;">3.2σ</div><div class="k">当前偏离</div></div></div></div>
+<div class="baseline-card"><div class="baseline-header"><div><div style="font-weight:600;">财务审计 Agent-工具种类基线</div><div style="font-size:12px;color:#909399;margin-top:2px;">目标: Agent | 指标: 工具使用种类 | 窗口: 1天</div></div><div style="display:flex;gap:8px;"><span class="tag tag-success">启用</span><button class="btn btn-link" onclick="openBaselineModal('bl-002')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('基线已停用')">停用</button></div></div><div class="baseline-metrics"><div class="metric-box"><div class="v">2</div><div class="k">均值(种)</div></div><div class="metric-box"><div class="v">1</div><div class="k">标准差 σ</div></div><div class="metric-box"><div class="v">2.0σ</div><div class="k">偏离阈值</div></div><div class="metric-box"><div class="v" style="color:#e6a23c;">2.1σ</div><div class="k">当前偏离</div></div></div></div>
+<div class="baseline-card"><div class="baseline-header"><div><div style="font-weight:600;">智能客服 Copilot-响应时长基线</div><div style="font-size:12px;color:#909399;margin-top:2px;">目标: 应用 | 指标: 响应时长 | 窗口: 1小时</div></div><div style="display:flex;gap:8px;"><span class="tag tag-success">启用</span><button class="btn btn-link" onclick="openBaselineModal('bl-003')">编辑</button><button class="btn btn-link warning" onclick="toastSuccess('基线已停用')">停用</button></div></div><div class="baseline-metrics"><div class="metric-box"><div class="v">1.2</div><div class="k">均值(秒)</div></div><div class="metric-box"><div class="v">0.4</div><div class="k">标准差 σ</div></div><div class="metric-box"><div class="v">2.0σ</div><div class="k">偏离阈值</div></div><div class="metric-box"><div class="v" style="color:#67c23a;">1.8σ</div><div class="k">当前偏离</div></div></div></div>
+</div>
+
+<div id="panel-alert" style="display:none;">
+<div class="search-bar">
+<div class="search-item"><span class="form-label">目标</span><input class="form-control" placeholder="应用/Agent 名称"></div>
+<div class="search-item"><span class="form-label">偏离级别</span><select class="form-select"><option value="">全部</option><option>高 (≥3σ)</option><option>中 (2-3σ)</option><option>低 (<2σ)</option></select></div>
+<div class="search-item"><span class="form-label">状态</span><select class="form-select"><option value="">全部</option><option>未确认</option><option>已确认</option><option>误报</option><option>已忽略</option></select></div>
+<div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('告警列表已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+</div>
+<div class="card"><div class="card-body">
+<div class="alert-row"><div class="alert-sigma high">3.2σ</div><div style="flex:1;"><div style="font-weight:600;">研发代码审查助手 · 调用频率偏离</div><div style="font-size:12px;color:#909399;">当前 142 次/小时，基线 45±12 | 14:32</div></div><span class="tag tag-danger">未确认</span><div style="display:flex;gap:8px;"><button class="btn btn-link" onclick="toastSuccess('已确认告警')">确认</button><button class="btn btn-link" onclick="toastSuccess('已标记误报')">误报</button><button class="btn btn-link" onclick="toastSuccess('已加入白名单')">忽略</button></div></div>
+<div class="alert-row"><div class="alert-sigma high">4.1σ</div><div style="flex:1;"><div style="font-weight:600;">人事档案助理 · 敏感数据访问偏离</div><div style="font-size:12px;color:#909399;">当前 28 次/小时，基线 3±2 | 09:22</div></div><span class="tag tag-warning">已确认</span><div style="display:flex;gap:8px;"><button class="btn btn-link" onclick="toastSuccess('查看详情')">查看</button><button class="btn btn-link" onclick="toastSuccess('已创建处置工单')">处置</button></div></div>
+<div class="alert-row"><div class="alert-sigma mid">2.1σ</div><div style="flex:1;"><div style="font-weight:600;">财务审计 Agent · 工具使用种类偏离</div><div style="font-size:12px;color:#909399;">当前使用 5 种，基线 2±1 | 13:15</div></div><span class="tag tag-danger">未确认</span><div style="display:flex;gap:8px;"><button class="btn btn-link" onclick="toastSuccess('已确认告警')">确认</button><button class="btn btn-link" onclick="toastSuccess('已标记误报')">误报</button><button class="btn btn-link" onclick="toastSuccess('已加入白名单')">忽略</button></div></div>
+<div class="alert-row"><div class="alert-sigma mid">2.8σ</div><div style="flex:1;"><div style="font-weight:600;">研发代码审查助手 · 工具种类偏离</div><div style="font-size:12px;color:#909399;">当前使用 8 种，基线 3±1 | 14:32</div></div><span class="tag tag-info">已忽略</span><div style="display:flex;gap:8px;"><button class="btn btn-link" onclick="toastSuccess('已移出白名单')">恢复</button></div></div>
+</div></div>
+</div>
+
+<div id="panel-anomaly" style="display:none;">
+<div class="card" style="margin-bottom:14px;"><div class="card-header"><div class="card-title">近 30 日异常检测趋势</div></div>
+<div class="card-body"><div class="anomaly-chart">
+<div class="anomaly-bar" data-label="03-25" style="height:25%;background:#67C23A;"></div>
+<div class="anomaly-bar" data-label="03-30" style="height:30%;background:#67C23A;"></div>
+<div class="anomaly-bar" data-label="04-05" style="height:45%;background:#E6A23C;"></div>
+<div class="anomaly-bar" data-label="04-10" style="height:60%;background:#E6A23C;"></div>
+<div class="anomaly-bar" data-label="04-15" style="height:85%;background:#F56C6C;"></div>
+<div class="anomaly-bar" data-label="04-20" style="height:75%;background:#F56C6C;"></div>
+</div></div></div>
+<div class="card"><div class="card-header"><div class="card-title">异常事件聚类</div></div>
+<div class="card-body">
+<table class="data-table">
+<thead><tr><th>聚类 ID</th><th>异常类型</th><th>涉及目标</th><th>事件数</th><th>置信度</th><th>首次出现</th><th>最近出现</th></tr></thead>
+<tbody>
+<tr><td class="mono">CLS-20260420-001</td><td>高频工具调用异常</td><td>研发代码审查助手</td><td>12</td><td>0.94</td><td>2026-04-18</td><td>2026-04-20</td></tr>
+<tr><td class="mono">CLS-20260419-002</td><td>跨应用敏感数据访问</td><td>张三(用户)</td><td>5</td><td>0.87</td><td>2026-04-15</td><td>2026-04-19</td></tr>
+<tr><td class="mono">CLS-20260418-003</td><td>未知工具首次调用</td><td>多个 Agent</td><td>8</td><td>0.82</td><td>2026-04-12</td><td>2026-04-18</td></tr>
+</tbody>
+</table>
+</div></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="baselineModal">
+<div class="modal-box modal-lg">
+<div class="modal-header"><div class="modal-title" id="baselineModalTitle">新建行为基线</div><div class="modal-close" onclick="closeModal('baselineModal')">&#xD7;</div></div>
+<div class="modal-body">
+<form id="baselineForm">
+<div class="form-row"><div class="form-label required">基线名称</div><div class="form-field"><input class="form-control" required placeholder="如：研发代码审查助手-调用频率基线"></div></div>
+<div class="form-row"><div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div class="form-label required">目标类型</div><select class="form-select" required><option value="">请选择</option><option>应用</option><option>Agent</option></select></div><div><div class="form-label required">目标选择</div><select class="form-select" required><option value="">请选择</option><option>研发代码审查助手</option><option>财务审计 Agent</option><option>智能客服 Copilot</option></select></div></div></div>
+<div class="form-row"><div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div class="form-label required">监控指标</div><select class="form-select" required><option value="">请选择</option><option>调用频率</option><option>工具使用种类</option><option>Prompt模式多样性</option><option>响应时长</option><option>敏感数据访问次数</option></select></div><div><div class="form-label required">计算窗口</div><select class="form-select" required><option value="">请选择</option><option>1小时</option><option>1天</option><option>7天</option><option>30天</option></select></div></div></div>
+<div class="form-row"><div class="form-label required">偏离阈值 (σ)</div><div class="form-field"><input type="range" min="1" max="5" value="2" step="0.5" style="width:100%;"><div class="form-hint" style="display:flex;justify-content:space-between;"><span>1σ</span><span id="sigmaValue">2.0σ</span><span>5σ</span></div></div></div>
+<div class="form-row"><div class="form-label">告警配置</div><div class="form-field"><div class="form-grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div style="font-size:12px;color:#909399;margin-bottom:4px;">告警级别</div><select class="form-select"><option>高</option><option>中</option><option>低</option></select></div><div><div style="font-size:12px;color:#909399;margin-bottom:4px;">通知渠道</div><select class="form-select"><option>飞书安全运营机器人</option><option>邮件汇总投递</option><option>短信紧急通道</option></select></div></div></div></div>
+<div class="form-row"><div class="form-label">抑制窗口</div><div class="form-field"><input class="form-control" value="30" placeholder="分钟"><div class="form-hint">同一目标同类告警的最小间隔时间</div></div></div>
+</form>
+</div>
+<div class="modal-footer"><button class="btn btn-default" onclick="closeModal('baselineModal')">取消</button><button class="btn btn-primary" onclick="toastSuccess('行为基线已保存');closeModal('baselineModal')">保存</button></div>
+</div>
+</div>
+
+<script src="../../js/common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',function(){
+if(typeof updateBreadcrumb==='function')updateBreadcrumb([{label:'安全监控'},{label:'行为基线管理'}]);
+});
+function switchTab(el,tab){
+document.querySelectorAll('.tab-item').forEach(function(t){t.classList.remove('active');});
+el.classList.add('active');
+['config','alert','anomaly'].forEach(function(id){document.getElementById('panel-'+id).style.display=(id===tab)?'block':'none';});
+}
+function openBaselineModal(id){
+document.getElementById('baselineModalTitle').textContent=id?'编辑行为基线':'新建行为基线';
+document.getElementById('baselineForm').reset();
+openModal('baselineModal');
+}
+</script>
+</body>
+</html>

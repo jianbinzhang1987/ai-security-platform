@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>策略模板库</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .template-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+    .template-card { border:1px solid #EBEEF5; border-radius:6px; padding:16px; background:#fff; cursor:pointer; transition:all .2s; }
+    .template-card:hover { border-color:#C6E2FF; box-shadow:0 4px 12px rgba(64,158,255,.1); transform:translateY(-1px); }
+    .template-card-title { font-size:14px; font-weight:600; color:#303133; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+    .template-card-desc { font-size:12px; color:#909399; line-height:1.6; margin-bottom:10px; }
+    .template-card-tags { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
+    .template-card-footer { display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#909399; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">策略模板库</div>
+        <div class="page-subtitle">预置安全策略模板，支持一键创建策略，覆盖常见安全场景与合规要求。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-default" onclick="toastSuccess('模板库已同步')">同步官方模板</button>
+        <button class="btn btn-primary" onclick="toastSuccess('自定义模板创建入口')">创建自定义模板</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item"><span class="form-label">模板名称</span><input class="form-control" placeholder="搜索模板名称"></div>
+      <div class="search-item"><span class="form-label">安全域</span><select class="form-select"><option value="">全部</option><option>提示词攻击</option><option>输入安全</option><option>输出安全</option><option>会话安全</option><option>工具管控</option><option>数据防泄露</option></select></div>
+      <div class="search-item"><span class="form-label">合规框架</span><select class="form-select"><option value="">全部</option><option>等保2.0</option><option>GDPR</option><option>企业内控</option></select></div>
+      <div class="search-btns"><button class="btn btn-primary" onclick="toastSuccess('模板列表已刷新')">查询</button><button class="btn btn-default">重置</button></div>
+    </div>
+
+    <div class="template-grid">
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>提示词攻击防护基线</span><span class="tag tag-success">官方</span></div>
+        <div class="template-card-desc">覆盖越狱、提示词注入、系统提示词套取、上下文污染等常见攻击手法，适用于所有 AI 路由的默认防护基线。</div>
+        <div class="template-card-tags"><span class="type-tag">提示词攻击</span><span class="type-tag">规则+AI</span><span class="type-tag">等保2.0</span></div>
+        <div class="template-card-footer"><span>引用 28 次</span><span>v3 · 2026-04-20 更新</span></div>
+      </div>
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>PII 脱敏防护模板</span><span class="tag tag-success">官方</span></div>
+        <div class="template-card-desc">内置手机号、身份证、邮箱、银行卡等常见 PII 正则规则，配合脱敏动作，满足 GDPR 和等保数据脱敏要求。</div>
+        <div class="template-card-tags"><span class="type-tag">数据防泄露</span><span class="type-tag">正则规则</span><span class="type-tag">GDPR</span></div>
+        <div class="template-card-footer"><span>引用 15 次</span><span>v2 · 2026-04-18 更新</span></div>
+      </div>
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>工具调用管控基线</span><span class="tag tag-success">官方</span></div>
+        <div class="template-card-desc">工具白名单 + 参数约束 + 频率限制，防止工具越界调用和参数注入，适用于工具密集型 AI 应用。</div>
+        <div class="template-card-tags"><span class="type-tag">工具管控</span><span class="type-tag">Glob匹配</span><span class="type-tag">企业内控</span></div>
+        <div class="template-card-footer"><span>引用 12 次</span><span>v2 · 2026-04-15 更新</span></div>
+      </div>
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>敏感输出防护模板</span><span class="tag tag-success">官方</span></div>
+        <div class="template-card-desc">输出侧 PII 泄露、企业敏感词、违规内容检测，支持分段检测和流结束检测两种模式。</div>
+        <div class="template-card-tags"><span class="type-tag">输出安全</span><span class="type-tag">规则+AI</span><span class="type-tag">等保2.0</span></div>
+        <div class="template-card-footer"><span>引用 9 次</span><span>v1 · 2026-04-10 更新</span></div>
+      </div>
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>会话风险累积监控</span><span class="tag tag-primary">社区</span></div>
+        <div class="template-card-desc">跨轮次上下文风险累积检测，包含连续命中阈值、上下文窗口、跨轮次试探识别规则。</div>
+        <div class="template-card-tags"><span class="type-tag">会话安全</span><span class="type-tag">阈值规则</span><span class="type-tag">企业内控</span></div>
+        <div class="template-card-footer"><span>引用 4 次</span><span>v1 · 2026-04-08 更新</span></div>
+      </div>
+      <div class="template-card" onclick="toastSuccess('已基于模板创建策略')">
+        <div class="template-card-title"><span>Token 预算限流模板</span><span class="tag tag-warning">自定义</span></div>
+        <div class="template-card-desc">按租户/应用维度的 Token 预算限制与超额动作，配合 AI 跳过条件，控制 AI 检测成本。</div>
+        <div class="template-card-tags"><span class="type-tag">限流配额</span><span class="type-tag">阈值规则</span></div>
+        <div class="template-card-footer"><span>引用 2 次</span><span>v1 · 2026-04-05 更新</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '知识库管理' }, { label: '策略模板库' }]);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>流量与服务治理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .object-title { font-size: 14px; color: #163154; font-weight: 500; }
+    .description-col { width: 260px; white-space: pre-wrap; word-break: break-all; line-height: 1.4; font-size: 13px; color: #607495; }
+    .threshold-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .threshold-tag { background: #f0f4ff; color: #2d5fe7; border: 1px solid #d6e2ff; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="border-bottom: 1px solid #e7eef8; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="page-title">流量与服务治理</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作成功')">新建限流策略</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">策略名称：</span>
+        <input type="text" class="form-control" placeholder="策略名称" style="width: 200px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">控制维度：</span>
+        <select class="form-select" style="width: 130px;">
+          <option value="">全部</option>
+          <option>应用</option>
+          <option>用户</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">策略状态：</span>
+        <select class="form-select" style="width: 110px;">
+          <option value="">全部</option>
+          <option>启用</option>
+          <option>草稿</option>
+          <option>停用</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('流量策略列表已刷新')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 72px; text-align: center;">序号</th>
+              <th>策略名称</th>
+              <th>描述</th>
+              <th>控制维度</th>
+              <th>作用对象</th>
+              <th>阈值限制</th>
+              <th>失败动作</th>
+              <th>策略状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">1</td>
+              <td><span class="object-title">全局应用调用限流</span></td>
+              <td><div class="description-col">对网关全局应用调用设置基础限流，保护后端服务稳定性。</div></td>
+              <td>应用</td>
+              <td>全部 AI 路由</td>
+              <td>
+                <div class="threshold-tags">
+                  <span class="threshold-tag">QPS: 200</span>
+                  <span class="threshold-tag">并发数: 80</span>
+                  <span class="threshold-tag">Token 配额: 500000</span>
+                </div>
+              </td>
+              <td>拒绝访问 + 告警</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">2</td>
+              <td><span class="object-title">财务模型高峰保护</span></td>
+              <td><div class="description-col">针对财务敏感模型提供高峰时段流量突发保护，防止过载。</div></td>
+              <td>用户</td>
+              <td>财务模型路由</td>
+              <td>
+                <div class="threshold-tags">
+                  <span class="threshold-tag">QPS: 40</span>
+                  <span class="threshold-tag">并发数: 96</span>
+                  <span class="threshold-tag">Token 配额: 100000</span>
+                </div>
+              </td>
+              <td>拒绝访问 + 告警</td>
+              <td><span class="tag tag-warning">草稿</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">3</td>
+              <td><span class="object-title">智能客服应用访问控制</span></td>
+              <td><div class="description-col">对智能客服应用设置特定的访问频率限制，避免资源浪费。</div></td>
+              <td>应用</td>
+              <td>客服应用路由</td>
+              <td>
+                <div class="threshold-tags">
+                  <span class="threshold-tag">QPS: 100</span>
+                  <span class="threshold-tag">并发数: 50</span>
+                </div>
+              </td>
+              <td>告警 + 写入审计</td>
+              <td><span class="tag tag-success">启用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">4</td>
+              <td><span class="object-title">外部合作伙伴接口限速</span></td>
+              <td><div class="description-col">针对第三方合作伙伴调用的接口进行配额限制。</div></td>
+              <td>用户</td>
+              <td>全部 AI 路由</td>
+              <td>
+                <div class="threshold-tags">
+                  <span class="threshold-tag">QPS: 50</span>
+                  <span class="threshold-tag">并发数: 20</span>
+                  <span class="threshold-tag">Token 配额: 200000</span>
+                </div>
+              </td>
+              <td>拒绝访问 + 告警</td>
+              <td><span class="tag tag-info">停用</span></td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">编辑</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '流量与服务治理' }
+      ]);
+    }
+  </script>
+</body>
+</html>

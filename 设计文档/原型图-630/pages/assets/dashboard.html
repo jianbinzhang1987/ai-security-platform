@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>安全总览</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .metric-row { display: flex; gap: 16px; margin-bottom: 20px; }
+    .metric-card {
+      flex: 1;
+      padding: 20px;
+      border: 1px solid #d7e3f3;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(24, 61, 109, 0.05);
+      border-left: 4px solid transparent;
+      cursor: pointer;
+    }
+    .metric-card.accent-blue { border-left-color: #3f8cff; }
+    .metric-card.accent-red { border-left-color: #ef4b57; }
+    .metric-card.accent-green { border-left-color: #1cad62; }
+    .metric-card.accent-orange { border-left-color: #e58b28; }
+    
+    .metric-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .metric-label { font-size: 14px; color: #163154; }
+    .metric-link { font-size: 12px; color: #8da0bc; }
+    .metric-value { font-size: 36px; font-weight: bold; margin-bottom: 10px; }
+    .accent-blue .metric-value { color: #3f8cff; }
+    .accent-red .metric-value { color: #ef4b57; }
+    .accent-green .metric-value { color: #1cad62; }
+    .accent-orange .metric-value { color: #e58b28; }
+    .metric-sub { font-size: 14px; color: #607495; }
+
+    .panel-row { display: flex; gap: 16px; margin-bottom: 20px; }
+    .panel-card {
+      flex: 1;
+      border: 1px solid #d7e3f3;
+      border-radius: 12px;
+      background: #fff;
+      padding: 20px;
+    }
+    .panel-header { font-size: 16px; font-weight: bold; color: #163154; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .object-top-grid { display: flex; gap: 16px; }
+    .object-top-column { flex: 1; }
+    .object-top-column__title { font-size: 14px; font-weight: bold; color: #163154; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+    .object-top-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px dashed #f0f0f0; }
+    .object-top-item__index { width: 24px; height: 24px; line-height: 24px; text-align: center; background: #f4f4f5; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 12px; color: #909399; }
+    .object-top-item:nth-child(2) .object-top-item__index { background: #fee2e2; color: #ef4444; }
+    .object-top-item:nth-child(3) .object-top-item__index { background: #ffedd5; color: #f97316; }
+    .object-top-item:nth-child(4) .object-top-item__index { background: #fef9c3; color: #eab308; }
+    .object-top-item__body { flex: 1; }
+    .object-top-item__name { font-size: 14px; color: #333; margin-bottom: 4px; }
+    .object-top-item__desc { font-size: 12px; color: #999; }
+    
+    .chart-placeholder { height: 260px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 8px; color: #94a3b8; border: 1px dashed #cbd5e1; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="background: radial-gradient(circle at left top, rgba(255, 160, 122, 0.16), transparent 32%), linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(247, 250, 255, 0.98)); border-radius: 14px; padding: 16px 18px; margin-bottom: 16px; border: 1px solid #d7e3f3;">
+      <div>
+        <div class="page-title" style="color: #163154; font-size: 24px;">安全总览</div>
+        <div class="page-subtitle" style="margin-top: 8px;">聚焦接入应用、高风险待处置事件、拦截请求和已处置结果，让安全运营优先看到最需要推进的部分。</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select class="form-select" style="width:120px;">
+          <option value="1">最近 1 天</option>
+          <option value="7" selected>最近 7 天</option>
+          <option value="30">最近 30 天</option>
+        </select>
+        <button class="btn btn-primary" onclick="toastSuccess('刷新完毕')">刷新</button>
+      </div>
+    </div>
+
+    <!-- 数据指标卡片 -->
+    <div class="metric-row">
+      <div class="metric-card accent-blue">
+        <div class="metric-head">
+          <span class="metric-label">在线应用数</span>
+          <span class="metric-link">查看应用</span>
+        </div>
+        <div class="metric-value">18</div>
+        <div class="metric-sub">当前共 24 个接入应用</div>
+      </div>
+      <div class="metric-card accent-red">
+        <div class="metric-head">
+          <span class="metric-label">未处置高风险事件</span>
+          <span class="metric-link">查看事件</span>
+        </div>
+        <div class="metric-value">32</div>
+        <div class="metric-sub" style="color:#ef4b57;">较昨日 +14% vs 昨日</div>
+      </div>
+      <div class="metric-card accent-green">
+        <div class="metric-head">
+          <span class="metric-label">已处置风险事件</span>
+          <span class="metric-link">查看处置</span>
+        </div>
+        <div class="metric-value">156</div>
+        <div class="metric-sub" style="color:#1cad62;">当前时间范围内已完成处置</div>
+      </div>
+      <div class="metric-card accent-orange">
+        <div class="metric-head">
+          <span class="metric-label">今日拦截请求</span>
+          <span class="metric-link">查看处置</span>
+        </div>
+        <div class="metric-value">428</div>
+        <div class="metric-sub" style="color:#ef4b57;">较昨日 +5% vs 昨日</div>
+      </div>
+    </div>
+
+    <!-- 图表区 -->
+    <div class="panel-row">
+      <div class="panel-card" style="flex: 1.5;">
+        <div class="panel-header">
+          <span>安全事件趋势</span>
+          <span style="font-size: 12px; font-weight: normal; color: #666;">红: 高危 | 黄: 中危 | 蓝: 低危</span>
+        </div>
+        <div id="trendChart" style="height: 260px;"></div>
+      </div>
+      <div class="panel-card" style="flex: 1;">
+        <div class="panel-header">
+          <span>事件类型分布</span>
+        </div>
+        <div id="typePieChart" style="height: 260px;"></div>
+      </div>
+    </div>
+
+    <!-- 高风险对象排行 -->
+    <div class="panel-row">
+      <div class="panel-card" style="flex: 1;">
+        <div class="panel-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+          <span>高风险对象排行</span>
+          <span style="font-size: 12px; font-weight: normal; color: #999;">拆分应用、工具、智能体 / 节点维度，避免混合排行造成误判</span>
+        </div>
+        <div class="object-top-grid">
+          <!-- 应用TOP5 -->
+          <div class="object-top-column">
+            <div class="object-top-column__title">高风险应用 TOP5</div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">1</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">研发代码审查助手</div>
+                <div class="object-top-item__desc">高风险 19 | 未处置 7</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">2</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">财务票据审计助手</div>
+                <div class="object-top-item__desc">高风险 14 | 未处置 3</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">3</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">客服知识库问答 Agent</div>
+                <div class="object-top-item__desc">高风险 5 | 未处置 0</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">4</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">合同条款评估助手</div>
+                <div class="object-top-item__desc">高风险 3 | 未处置 1</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">5</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">人事档案助理</div>
+                <div class="object-top-item__desc">高风险 2 | 未处置 0</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+          </div>
+          
+          <!-- 工具TOP5 -->
+          <div class="object-top-column">
+            <div class="object-top-column__title">高风险工具 TOP5</div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">1</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">external_http_post</div>
+                <div class="object-top-item__desc">高风险调用 26 | 关联 6 个应用</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">2</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">direct_db_write</div>
+                <div class="object-top-item__desc">高风险调用 12 | 关联 3 个应用</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">3</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">filesystem_read</div>
+                <div class="object-top-item__desc">高风险调用 8 | 关联 2 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">4</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">browser_open_tab</div>
+                <div class="object-top-item__desc">高风险调用 5 | 关联 1 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">5</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">mcp.invoke</div>
+                <div class="object-top-item__desc">高风险调用 3 | 关联 2 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+          </div>
+
+          <!-- 节点TOP5 -->
+          <div class="object-top-column">
+            <div class="object-top-column__title">高风险智能体 / 节点 TOP5</div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">1</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">代码审查工作流</div>
+                <div class="object-top-item__desc">高风险节点 18 | 关联 4 个应用</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">2</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">财务审批 Agent</div>
+                <div class="object-top-item__desc">高风险节点 11 | 关联 2 个应用</div>
+              </div>
+              <span class="tag tag-danger">高</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">3</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">订单查询节点</div>
+                <div class="object-top-item__desc">高风险节点 5 | 关联 1 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">4</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">采购风控编排节点</div>
+                <div class="object-top-item__desc">高风险节点 4 | 关联 1 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+            <div class="object-top-item">
+              <div class="object-top-item__index">5</div>
+              <div class="object-top-item__body">
+                <div class="object-top-item__name">Prompt 清洗节点</div>
+                <div class="object-top-item__desc">高风险节点 2 | 关联 2 个应用</div>
+              </div>
+              <span class="tag tag-warning">中</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script src="https://lib.baomitu.com/echarts/5.5.0/echarts.min.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '安全总览' }
+      ]);
+    }
+
+    function initCharts() {
+      if (typeof echarts === 'undefined') {
+        setTimeout(initCharts, 200);
+        return;
+      }
+
+      var trendChartDiv = document.getElementById('trendChart');
+      var pieChartDiv = document.getElementById('typePieChart');
+      if (!trendChartDiv || !pieChartDiv) return;
+
+      // 1. 折线图：安全事件趋势
+      var trendChart = echarts.init(trendChartDiv);
+      var trendOption = {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['高危', '中危', '低危'], bottom: 0 },
+        grid: { left: '3%', right: '4%', bottom: '12%', top: '5%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: ['05-07', '05-08', '05-09', '05-10', '05-11', '05-12', '05-13']
+        },
+        yAxis: { type: 'value' },
+        series: [
+          {
+            name: '高危', type: 'line', smooth: true,
+            itemStyle: { color: '#ef4b57' },
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{offset: 0, color: 'rgba(239,75,87,0.3)'}, {offset: 1, color: 'rgba(239,75,87,0)'}]) },
+            data: [12, 14, 9, 21, 18, 25, 32]
+          },
+          {
+            name: '中危', type: 'line', smooth: true,
+            itemStyle: { color: '#e58b28' },
+            data: [35, 41, 38, 55, 48, 62, 58]
+          },
+          {
+            name: '低危', type: 'line', smooth: true,
+            itemStyle: { color: '#3f8cff' },
+            data: [120, 132, 101, 134, 90, 230, 210]
+          }
+        ]
+      };
+      trendChart.setOption(trendOption);
+
+      // 2. 饼图：事件类型分布
+      var pieChart = echarts.init(pieChartDiv);
+      var pieOption = {
+        tooltip: { trigger: 'item' },
+        legend: { bottom: 0, left: 'center', itemWidth: 10, itemHeight: 10, textStyle: { fontSize: 12 } },
+        color: ['#3f8cff', '#ef4b57', '#1cad62', '#e58b28', '#8e44ad'],
+        series: [
+          {
+            name: '风险类型',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            avoidLabelOverlap: false,
+            itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+            label: { show: false, position: 'center' },
+            emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } },
+            labelLine: { show: false },
+            data: [
+              { value: 335, name: '提示词注入' },
+              { value: 124, name: '越狱尝试' },
+              { value: 218, name: '数据泄露' },
+              { value: 86, name: '异常工具调用' },
+              { value: 102, name: '恶意内容生成' }
+            ]
+          }
+        ]
+      };
+      pieChart.setOption(pieOption);
+
+      window.addEventListener('resize', function() {
+        trendChart.resize();
+        pieChart.resize();
+      });
+    }
+
+    // 页面加载完成后开始检测和初始化
+    window.addEventListener('load', initCharts);
+    // 同时做个保底定时执行（如果缓存了 onload 事件错过）
+    setTimeout(initCharts, 500);
+  </script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>Prompt检测</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .session-id { font-family: monospace; color: #2d5fe7; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Prompt检测</div>
+        <div class="page-subtitle">检索系统捕获的各类 Prompt 会话记录，快速定位相关的风险会话与分析结论。</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键词：</span>
+        <input type="text" class="form-control" placeholder="请输入 Prompt 关键词" style="width: 240px;">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">检索</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="min-width:180px;">Session ID</th>
+              <th style="width:160px;">风险类型</th>
+              <th style="width:120px;">风险等级</th>
+              <th style="width:180px;">时间</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="session-id">sess_9a8b7c6d5e4f</span></td>
+              <td>Prompt 注入</td>
+              <td><span class="tag tag-danger">高风险</span></td>
+              <td>2026-05-13 14:32:15</td>
+            </tr>
+            <tr>
+              <td><span class="session-id">sess_1b2c3d4e5f6a</span></td>
+              <td>敏感数据泄漏</td>
+              <td><span class="tag tag-warning">中风险</span></td>
+              <td>2026-05-13 11:20:00</td>
+            </tr>
+            <tr>
+              <td><span class="session-id">sess_5f6a7b8c9d0e</span></td>
+              <td>有害内容</td>
+              <td><span class="tag tag-danger">高风险</span></td>
+              <td>2026-05-12 16:45:30</td>
+            </tr>
+            <tr>
+              <td><span class="session-id">sess_1a2b3c4d5e6f</span></td>
+              <td>-</td>
+              <td><span class="tag tag-success">安全</span></td>
+              <td>2026-05-12 10:15:00</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '安全扫描' },
+        { label: 'Prompt检测' }
+      ]);
+    }
+    function searchData() { toastSuccess('检索完毕'); }
+  </script>
+</body>
+</html>

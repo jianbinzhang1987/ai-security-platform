@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>MCP管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .mcp-name { font-size: 14px; color: #2d5fe7; font-weight: 600; line-height: 1.35; }
+    .mcp-endpoint { margin-top: 4px; font-size: 12px; line-height: 1.35; color: #8a9ab2; word-break: break-all; }
+    .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .summary-text { color: #4c6485; line-height: 1.6; font-size: 13px; }
+    .toolbar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="background: radial-gradient(circle at left top, rgba(88, 138, 255, 0.14), transparent 34%), linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 255, 0.98));">
+      <div>
+        <div class="page-title">MCP管理</div>
+        <div class="page-subtitle">统一查看 MCP 服务的接入信息、用途分类、版本情况与使用热度。本页面为静态演示页，当前用于展示管理端列表布局与信息密度。</div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">名称：</span>
+        <input type="text" class="form-control" placeholder="请输入名称" style="width: 240px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">类型：</span>
+        <select class="form-select" style="width: 140px;">
+          <option value="">请选择</option>
+          <option>本地</option>
+          <option>远程</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">分类：</span>
+        <select class="form-select" style="width: 140px;">
+          <option value="">请选择</option>
+          <option>搜索</option>
+          <option>数据库</option>
+          <option>运维</option>
+          <option>协同</option>
+          <option>安全</option>
+          <option>研发效能</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="searchData()">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar-row">
+        <button class="btn btn-primary" onclick="showStaticMessage('新增MCP')">新增MCP</button>
+        <button class="btn btn-default" onclick="showStaticMessage('MCP安全扫描记录')">MCP安全扫描记录</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:60px; text-align:center;">序号</th>
+              <th style="min-width:250px;">名称</th>
+              <th style="min-width:100px;">作者</th>
+              <th style="width:80px;">类型</th>
+              <th style="width:90px;">分类</th>
+              <th style="min-width:200px;">标签</th>
+              <th style="width:80px;">版本</th>
+              <th style="min-width:260px;">简介</th>
+              <th style="width:90px; text-align:right;">使用次数</th>
+              <th style="width:150px;">更新时间</th>
+              <th style="width:140px;text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align:center;">1</td>
+              <td>
+                <div class="mcp-name">mcp-github-enterprise</div>
+                <div class="mcp-endpoint">https://mcp.devops.zf.local/github-enterprise</div>
+              </td>
+              <td>研发流程组</td>
+              <td>远程</td>
+              <td>研发效能</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">代码检索</span>
+                  <span class="tag tag-default">PR审查</span>
+                  <span class="tag tag-default">组织仓库</span>
+                </div>
+              </td>
+              <td>2.4.1</td>
+              <td><div class="summary-text">面向内部 GitHub Enterprise 的仓库检索、Pull Request 审查与变更上下文聚合服务。</div></td>
+              <td style="text-align:right;">1,842</td>
+              <td>2026/04/26 18:42:09</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">2</td>
+              <td>
+                <div class="mcp-name">mcp-postgres-audit-readonly</div>
+                <div class="mcp-endpoint">local://mcp/postgres-audit-readonly</div>
+              </td>
+              <td>数据平台组</td>
+              <td>本地</td>
+              <td>数据库</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">只读查询</span>
+                  <span class="tag tag-default">审计报表</span>
+                  <span class="tag tag-default">SQL辅助</span>
+                </div>
+              </td>
+              <td>1.8.3</td>
+              <td><div class="summary-text">提供 PostgreSQL 审计库的只读查询能力，适用于统计核对、工单排查与审计取证。</div></td>
+              <td style="text-align:right;">2,675</td>
+              <td>2026/04/24 09:16:52</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">3</td>
+              <td>
+                <div class="mcp-name">mcp-k8s-cluster-observer</div>
+                <div class="mcp-endpoint">https://mcp.ops.zf.local/k8s-observer</div>
+              </td>
+              <td>云原生平台</td>
+              <td>远程</td>
+              <td>运维</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">集群巡检</span>
+                  <span class="tag tag-default">Pod诊断</span>
+                  <span class="tag tag-default">事件告警</span>
+                </div>
+              </td>
+              <td>3.1.0</td>
+              <td><div class="summary-text">聚合 Kubernetes 集群运行态信息，支持命名空间视角的 Pod、事件与资源健康诊断。</div></td>
+              <td style="text-align:right;">3,219</td>
+              <td>2026/04/28 08:55:41</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align:center;">4</td>
+              <td>
+                <div class="mcp-name">mcp-opensearch-logbridge</div>
+                <div class="mcp-endpoint">local://mcp/opensearch-logbridge</div>
+              </td>
+              <td>安全运营中心</td>
+              <td>本地</td>
+              <td>搜索</td>
+              <td>
+                <div class="tag-list">
+                  <span class="tag tag-default">日志检索</span>
+                  <span class="tag tag-default">错误定位</span>
+                  <span class="tag tag-default">索引聚合</span>
+                </div>
+              </td>
+              <td>1.6.4</td>
+              <td><div class="summary-text">对接 OpenSearch 日志索引，为异常排障、链路检索与关键字聚合分析提供统一入口。</div></td>
+              <td style="text-align:right;">4,096</td>
+              <td>2026/04/25 21:12:03</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link" onclick="showStaticMessage('详情')">详情</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('编辑')">编辑</button>
+                  <button class="btn btn-link" onclick="showStaticMessage('删除')">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 4 条数据，第 1-4 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '安全扫描' },
+        { label: 'MCP协议检测' }
+      ]);
+    }
+    function searchData() { toastSuccess('查询完毕'); }
+    function showStaticMessage(action) {
+      toastSuccess(action + ' 为静态演示内容，暂未接入后台逻辑');
+    }
+  </script>
+</body>
+</html>

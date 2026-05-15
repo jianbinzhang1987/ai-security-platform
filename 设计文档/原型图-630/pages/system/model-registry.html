@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>模型注册管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">模型注册管理</div>
+        <div class="page-subtitle">登记企业正在使用的大模型服务（LLM/Embeddings），供策略网关进行路由和容灾调度。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作触发')">注册新模型</button>
+      </div>
+    </div>
+
+    <!-- 简化版搜索区 -->
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">关键字检索：</span>
+        <input type="text" class="form-control" placeholder="请输入...">
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('数据刷新完毕')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        
+        <table class="data-table">
+          <thead><tr><th>序号</th><th>模型别名</th><th>提供方</th><th>Endpoint</th><th>状态</th><th>关联策略</th><th>操作</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>GPT-4-Turbo</td><td>OpenAI</td><td>https://api.openai.com/...</td><td><span class="tag tag-success">健康</span></td><td>3个路由</td><td><button class="btn btn-link">编辑</button></td></tr>
+            <tr><td>2</td><td>Qwen-Max-Local</td><td>自研部署</td><td>http://10.20.1.1:8000/v1</td><td><span class="tag tag-warning">高延迟</span></td><td>备用容灾</td><td><button class="btn btn-link">编辑</button></td></tr>
+          </tbody>
+        </table>
+        
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '控制台菜单' },
+        { label: '模型注册管理' }
+      ]);
+    }
+  </script>
+</body>
+</html>

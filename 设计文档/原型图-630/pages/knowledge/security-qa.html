@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>安全知识问答</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .qa-layout { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
+    .qa-input-area { border:1px solid #EBEEF5; border-radius:6px; padding:16px; background:#fff; }
+    .qa-input-row { display:flex; gap:8px; margin-bottom:12px; }
+    .qa-input-row input { flex:1; }
+    .qa-history { max-height:400px; overflow-y:auto; }
+    .qa-turn { margin-bottom:16px; }
+    .qa-question { background:#F5F7FA; border-radius:6px; padding:10px 14px; font-size:13px; color:#303133; margin-bottom:8px; }
+    .qa-answer { border-left:3px solid #409EFF; padding:10px 14px; font-size:13px; color:#606266; line-height:1.7; }
+    .qa-answer .source-ref { font-size:11px; color:#409EFF; margin-top:6px; }
+    .qa-suggestions { border:1px solid #EBEEF5; border-radius:6px; padding:14px; background:#fff; }
+    .qa-suggest-item { padding:8px 0; border-bottom:1px solid #F5F7FA; font-size:13px; color:#606266; cursor:pointer; }
+    .qa-suggest-item:hover { color:#409EFF; }
+    .qa-suggest-item:last-child { border-bottom:none; }
+    .qa-suggest-label { font-size:12px; color:#909399; margin-bottom:8px; }
+    .qa-tag { display:inline-block; background:#F5F0FF; color:#7c3aed; border:1px solid #E0D4FF; border-radius:12px; padding:2px 8px; font-size:11px; margin-right:4px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header">
+      <div>
+        <div class="page-title">安全知识问答</div>
+        <div class="page-subtitle">基于安全知识库的 AI 问答助手，帮助安全运营人员快速获取策略配置、威胁情报和合规要求的解答。</div>
+      </div>
+    </div>
+
+    <div class="qa-layout">
+      <div>
+        <div class="qa-input-area">
+          <div class="qa-input-row">
+            <input class="form-control" id="qaInput" placeholder="输入安全相关问题，如：如何配置提示词攻击防护策略？">
+            <button class="btn btn-primary" onclick="askQuestion()">提问</button>
+          </div>
+          <div class="qa-history" id="qaHistory">
+            <div class="qa-turn">
+              <div class="qa-question">提示词注入攻击有哪些常见手法？如何配置防护策略？</div>
+              <div class="qa-answer">
+                <p><strong>提示词注入攻击常见手法：</strong></p>
+                <p>1. <strong>直接注入</strong>：用户在输入中嵌入恶意指令，如"忽略之前所有指令"。</p>
+                <p>2. <strong>间接注入</strong>：通过外部数据源（网页、文档）嵌入隐藏指令。</p>
+                <p>3. <strong>上下文污染</strong>：在多轮对话中逐步引导模型偏离安全约束。</p>
+                <p>4. <strong>系统提示词套取</strong>：通过特定话术诱导模型泄露系统提示词。</p>
+                <p style="margin-top:8px;"><strong>防护策略配置建议：</strong></p>
+                <p>• 在"内容安全策略 → 输入安全"中启用<strong>提示词攻击防护基线</strong>模板</p>
+                <p>• 配置规则+AI联合检测，AI置信度阈值建议设为 0.6</p>
+                <p>• 对高风险命中启用 BLOCK 动作，中风险启用 ALERT + 人工复核</p>
+                <div class="source-ref">来源：知识条目 KB-SEC-001 · 策略模板"提示词攻击防护基线" v3</div>
+              </div>
+            </div>
+            <div class="qa-turn">
+              <div class="qa-question">等保2.0对AI输出内容有哪些安全要求？</div>
+              <div class="qa-answer">
+                <p>等保2.0三级要求中与AI输出安全相关的条款：</p>
+                <p>• <strong>数据完整性</strong>（8.1.4.3）：确保输出内容不被篡改，需配置输出完整性校验规则</p>
+                <p>• <strong>个人信息保护</strong>（8.1.5.2）：AI输出不得包含未脱敏的个人信息，需配置PII检测+脱敏策略</p>
+                <p>• <strong>内容安全</strong>（8.1.4.5）：输出内容需符合内容安全审查要求，需配置违规内容检测</p>
+                <p>建议使用"PII脱敏防护模板"+"敏感输出防护模板"组合配置。</p>
+                <div class="source-ref">来源：知识条目 KB-COMP-003 · 合规框架"等保2.0"</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="qa-suggestions">
+          <div class="qa-suggest-label"><span class="qa-tag">AI 问答</span> 推荐问题</div>
+          <div class="qa-suggest-item" onclick="quickAsk('如何设置AI检测的置信度阈值？')">如何设置AI检测的置信度阈值？</div>
+          <div class="qa-suggest-item" onclick="quickAsk('熔断机制如何配置？超时策略有哪些选项？')">熔断机制如何配置？超时策略有哪些选项？</div>
+          <div class="qa-suggest-item" onclick="quickAsk('工具越界调用的检测规则如何编写？')">工具越界调用的检测规则如何编写？</div>
+          <div class="qa-suggest-item" onclick="quickAsk('如何评估规则+AI联合检测的效果？')">如何评估规则+AI联合检测的效果？</div>
+          <div class="qa-suggest-item" onclick="quickAsk('样本库管理中误报样本如何沉淀和复用？')">样本库管理中误报样本如何沉淀和复用？</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof updateBreadcrumb === 'function') {
+        updateBreadcrumb([{ label: '知识库管理' }, { label: '安全知识问答' }]);
+      }
+    });
+
+    function askQuestion() {
+      var input = document.getElementById('qaInput');
+      var q = input.value.trim();
+      if (!q) return;
+      var history = document.getElementById('qaHistory');
+      history.innerHTML += '<div class="qa-turn"><div class="qa-question">' + q + '</div>' +
+        '<div class="qa-answer"><p>正在基于安全知识库生成回答...</p><div class="source-ref">来源：AI 实时生成 · 知识库检索</div></div></div>';
+      input.value = '';
+      toastSuccess('问题已提交，AI 正在生成回答');
+    }
+
+    function quickAsk(q) {
+      document.getElementById('qaInput').value = q;
+      askQuestion();
+    }
+  </script>
+</body>
+</html>

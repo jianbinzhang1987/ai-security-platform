@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "GLM Coding Guard",
+  "version": "0.1.0",
+  "description": "GLM Coding Plan 限售提醒与辅助点击扩展，保留最终人工确认。",
+  "permissions": [
+    "notifications",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.bigmodel.cn/glm-coding*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.bigmodel.cn/glm-coding*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

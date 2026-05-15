@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>策略包管理</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <style>
+    .object-title { font-size: 14px; color: #163154; font-weight: 500; }
+    .description-col { width: 220px; white-space: pre-wrap; word-break: break-all; line-height: 1.4; font-size: 13px; color: #607495; }
+    .rule-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .rule-tag { background: #f8f9fc; color: #4c6485; border: 1px solid #dce3f0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+  </style>
+</head>
+<body class="page-content">
+  <div class="sub-page">
+    <div class="page-header" style="border-bottom: 1px solid #e7eef8; padding-bottom: 12px; margin-bottom: 16px;">
+      <div>
+        <div class="page-title">策略包管理</div>
+        <div class="page-subtitle">将各类零散的原子策略（访问控制、内容安全、流量治理等）打包整合，形成标准的探针策略包，支持一键下发给业务应用。</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="toastSuccess('操作成功')">新建策略包</button>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-item">
+        <span class="form-label">策略包名称：</span>
+        <input type="text" class="form-control" placeholder="请输入名称" style="width: 200px;">
+      </div>
+      <div class="search-item">
+        <span class="form-label">预置模板：</span>
+        <select class="form-select" style="width: 150px;">
+          <option value="">全部</option>
+          <option>宽松级分层策略</option>
+          <option>基础级分层策略</option>
+          <option>严格级分层策略</option>
+        </select>
+      </div>
+      <div class="search-item">
+        <span class="form-label">下发状态：</span>
+        <select class="form-select" style="width: 110px;">
+          <option value="">全部</option>
+          <option>已同步</option>
+          <option>下发中</option>
+          <option>未下发</option>
+        </select>
+      </div>
+      <div class="search-btns">
+        <button class="btn btn-primary" onclick="toastSuccess('列表已刷新')">查询</button>
+        <button class="btn btn-default">重置</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 72px; text-align: center;">序号</th>
+              <th>策略包名称</th>
+              <th>描述</th>
+              <th>预置模板</th>
+              <th style="width: 260px;">包含策略能力</th>
+              <th>下发状态</th>
+              <th>更新时间</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center;">1</td>
+              <td><span class="object-title">基础审计与合规观测包</span></td>
+              <td><div class="description-col">以入口认证、基础限流和输入输出风险审计为主，适合低干扰观察场景。</div></td>
+              <td>宽松级分层策略</td>
+              <td>
+                <div class="rule-tags">
+                  <span class="rule-tag">访问控制策略</span>
+                  <span class="rule-tag">流量与服务治理</span>
+                  <span class="rule-tag">内容安全策略</span>
+                </div>
+              </td>
+              <td><span class="tag tag-warning">未下发</span></td>
+              <td>2026-05-06 10:40:57</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">配置策略</button>
+                  <button class="btn btn-link">绑定下发</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">2</td>
+              <td><span class="object-title">敏感数据脱敏与防护包</span></td>
+              <td><div class="description-col">以入口认证、基础限流和输入输出脱敏为主，适合常规生产接入场景。</div></td>
+              <td>基础级分层策略</td>
+              <td>
+                <div class="rule-tags">
+                  <span class="rule-tag">访问控制策略</span>
+                  <span class="rule-tag">流量与服务治理</span>
+                  <span class="rule-tag">内容安全策略</span>
+                </div>
+              </td>
+              <td><span class="tag tag-warning">下发中 (72%)</span></td>
+              <td>2026-05-06 09:15:06</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">配置策略</button>
+                  <button class="btn btn-link">绑定下发</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">3</td>
+              <td><span class="object-title">深度管控与风险拦截包</span></td>
+              <td><div class="description-col">以入口认证、内部应用 MCP 管控和高风险内容拦截为主，适合高敏场景。</div></td>
+              <td>严格级分层策略</td>
+              <td>
+                <div class="rule-tags">
+                  <span class="rule-tag">访问控制策略</span>
+                  <span class="rule-tag">流量与服务治理</span>
+                  <span class="rule-tag">内容安全策略</span>
+                </div>
+              </td>
+              <td><span class="tag tag-success">已同步</span></td>
+              <td>2026-05-06 11:05:22</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">配置策略</button>
+                  <button class="btn btn-link">绑定下发</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">4</td>
+              <td><span class="object-title">开发环境默认审计包</span></td>
+              <td><div class="description-col">针对开发与测试环境的通用审计策略，开启输入输出风险审计，不进行阻断。</div></td>
+              <td>宽松级分层策略</td>
+              <td>
+                <div class="rule-tags">
+                  <span class="rule-tag">内容安全策略</span>
+                </div>
+              </td>
+              <td><span class="tag tag-success">已同步</span></td>
+              <td>2026-05-07 14:20:03</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">配置策略</button>
+                  <button class="btn btn-link">绑定下发</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">5</td>
+              <td><span class="object-title">高敏感应用防护包</span></td>
+              <td><div class="description-col">专门为高敏感类 Agent 设计的高强度防护包，强制开启涉密拦截与 MCP 管控。</div></td>
+              <td>严格级分层策略</td>
+              <td>
+                <div class="rule-tags">
+                  <span class="rule-tag">访问控制策略</span>
+                  <span class="rule-tag">内容安全策略</span>
+                </div>
+              </td>
+              <td><span class="tag tag-success">已同步</span></td>
+              <td>2026-05-07 16:45:47</td>
+              <td>
+                <div class="table-action-col">
+                  <button class="btn btn-link">配置策略</button>
+                  <button class="btn btn-link">绑定下发</button>
+                  <button class="btn btn-link btn-danger">删除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination-wrapper">
+        <div class="pagination-info">共 5 条数据，第 1-5 条</div>
+        <div class="pagination">
+          <button class="page-btn" disabled>上一页</button>
+          <button class="page-btn active">1</button>
+          <button class="page-btn" disabled>下一页</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="../../js/common.js"></script>
+  <script>
+    if (typeof updateBreadcrumb === 'function') {
+      updateBreadcrumb([
+        { label: '统一策略中心' },
+        { label: '策略包管理' }
+      ]);
+    }
+  </script>
+</body>
+</html>
